@@ -109,11 +109,11 @@ class _HelpSupportScreenWebState extends ConsumerState<HelpSupportScreenWeb> {
                   flex: 3,
                   child: _buildCustomerServices(context, borderColor, primaryColor, iconColor),
                 ),
-                const SizedBox(width: 24),
-                Expanded(
-                  flex: 2,
-                  child: _buildEnquireForm(context, borderColor, primaryColor, iconColor),
-                ),
+                // const SizedBox(width: 24),
+                // Expanded(
+                //   flex: 2,
+                //   child: _buildEnquireForm(context, borderColor, primaryColor, iconColor),
+                // ),
               ],
             ),
           ),

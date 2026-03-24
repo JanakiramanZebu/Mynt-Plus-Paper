@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import 'dart:typed_data';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:ui_web' as ui_web;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
@@ -207,80 +211,113 @@ class _ProfileDetailsScreenWebState
 
   // ─── Cancel Request Confirmation Dialog ───
   void _showCancelRequestDialog(String type, String displayName) {
-    final themeVal = ref.read(themeProvider);
-    final isDark = themeVal.isDarkMode;
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor:
-            isDark ? const Color(0xFF121212) : const Color(0xFFF1F3F8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 380),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 400,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header with divider
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
+                    ),
+                  ),
+                ),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Cancel request?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: Icon(Icons.close,
-                          size: 20,
-                          color: isDark
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Are you sure you want to cancel your "$displayName" request?',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _cancelRequest(type);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Are you sure you want to cancel your "$displayName" request?',
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
                       ),
                     ),
-                    child: const Text('Proceed',
-                        style: TextStyle(
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _cancelRequest(type);
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.errorDark,
+                              light: MyntColors.tertiary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: MyntWebTextStyles.buttonMd(
+                            context,
                             color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600)),
-                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -289,15 +326,6 @@ class _ProfileDetailsScreenWebState
 
   // ─── E-Sign Pending Confirmation Dialog (after OTP verify) ───
   void _showEsignPendingDialog(String type) {
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-    final subtitleColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    final cardBg = resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card);
-    final primaryColor = resolveThemeColor(context,
-        dark: MyntColors.primaryDark, light: MyntColors.primary);
-
     String displayName = '';
     if (type == 'mobile') {
       displayName = 'Mobile';
@@ -313,72 +341,124 @@ class _ProfileDetailsScreenWebState
       context: context,
       barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor: cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.transparent,
         child: Container(
           width: 420,
-          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('E-Sign Is Pending!',
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.semiBold, color: textColor)),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: Icon(Icons.close, size: 20, color: subtitleColor),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('Your $displayName Change request is not yet Completed.',
-                  style: MyntWebTextStyles.bodySmall(context,
-                      fontWeight: MyntFonts.medium, color: textColor)),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    final freshStatus = ref.read(profileAllDetailsProvider).mobEmailStatus;
-                    String fId = '';
-                    String em = '';
-                    String sess = '';
-                    if (type == 'mobile') {
-                      fId = freshStatus?.mobileFileId ?? '';
-                      em = (freshStatus?.mobClientEmail ?? '').toUpperCase();
-                      sess = freshStatus?.mobSession ?? '';
-                    } else if (type == 'email') {
-                      fId = freshStatus?.emailFileId ?? '';
-                      em = (freshStatus?.emailNewEmailId ?? '').toLowerCase();
-                      sess = freshStatus?.emailSession ?? '';
-                    } else if (type == 'address') {
-                      fId = freshStatus?.addressFileId ?? '';
-                      em = (freshStatus?.addressClientEmail ?? '').toLowerCase();
-                      sess = freshStatus?.addressSession ?? '';
-                    }
-                    _openDigioEsign(fileId: fId, email: em, session: sess, type: '${type}_change');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              // Header with divider
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
                     ),
-                    elevation: 0,
                   ),
-                  child: Text('Click here E-sign',
-                      style: MyntWebTextStyles.body(context,
-                          fontWeight: MyntFonts.semiBold,
-                          color: Colors.white)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'E-Sign Is Pending!',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Your $displayName Change request is not yet Completed.',
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          final freshStatus = ref.read(profileAllDetailsProvider).mobEmailStatus;
+                          String fId = '';
+                          String em = '';
+                          String sess = '';
+                          if (type == 'mobile') {
+                            fId = freshStatus?.mobileFileId ?? '';
+                            em = (freshStatus?.mobClientEmail ?? '').toUpperCase();
+                            sess = freshStatus?.mobSession ?? '';
+                          } else if (type == 'email') {
+                            fId = freshStatus?.emailFileId ?? '';
+                            em = (freshStatus?.emailNewEmailId ?? '').toLowerCase();
+                            sess = freshStatus?.emailSession ?? '';
+                          } else if (type == 'address') {
+                            fId = freshStatus?.addressFileId ?? '';
+                            em = (freshStatus?.addressClientEmail ?? '').toLowerCase();
+                            sess = freshStatus?.addressSession ?? '';
+                          }
+                          _openDigioEsign(fileId: fId, email: em, session: sess, type: '${type}_change');
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.secondary,
+                              light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Click here E-sign',
+                          style: MyntWebTextStyles.buttonMd(
+                            context,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -621,9 +701,10 @@ class _ProfileDetailsScreenWebState
         if (_kraProcessLoading)
           Container(
             color: Colors.black.withValues(alpha: 0.4),
-            child: const Center(
+            child: Center(
               child: CircularProgressIndicator(
-                color: Color(0xFF0037B7),
+                color: resolveThemeColor(context,
+                    dark: MyntColors.primaryDark, light: MyntColors.primary),
               ),
             ),
           ),
@@ -783,7 +864,12 @@ class _ProfileDetailsScreenWebState
                       .copyWith(decoration: TextDecoration.none),
                 ),
               ),
-              const SizedBox(width: 8),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -942,121 +1028,141 @@ class _ProfileDetailsScreenWebState
         dark: MyntColors.successDark, light: MyntColors.success);
 
     if (status == 'e-signed pending') {
-      return Container(
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: IntrinsicWidth(
+          child: Container(
         margin: const EdgeInsets.only(top: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: warningBg,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.info_outline, color: warningIcon, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Esign Pending - Click here to complete',
-                style: MyntWebTextStyles.bodySmall(context,
-                    color: warningText, fontWeight: MyntFonts.medium)
-                    .copyWith(decoration: TextDecoration.none),
-              ),
+            Row(
+              children: [
+                Icon(Icons.info_outline, color: warningIcon, size: 20),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    'Esign Pending - Click here to complete',
+                    style: MyntWebTextStyles.bodySmall(context,
+                        color: warningText, fontWeight: MyntFonts.medium)
+                        .copyWith(decoration: TextDecoration.none),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            esignLoading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: primaryColor))
-                : Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () async {
-                        final provider = ref.read(profileAllDetailsProvider);
-                        if (fileId.isEmpty || email.isEmpty) {
-                          await provider.fetchMobEmailStatus();
-                          if (!mounted) return;
-                          final fresh = provider.mobEmailStatus;
-                          String fId = '';
-                          String em = '';
-                          String sess = '';
-                          if (esignType == 'mobile_change') {
-                            fId = fresh?.mobileFileId ?? '';
-                            em = (fresh?.mobClientEmail ?? '').toUpperCase();
-                            sess = fresh?.mobSession ?? '';
-                          } else if (esignType == 'email_change') {
-                            fId = fresh?.emailFileId ?? '';
-                            em = (fresh?.emailNewEmailId ?? '').toLowerCase();
-                            sess = fresh?.emailSession ?? '';
-                          } else if (esignType == 'address_change') {
-                            fId = fresh?.addressFileId ?? '';
-                            em = (fresh?.addressClientEmail ?? '').toLowerCase();
-                            sess = fresh?.addressSession ?? '';
-                          }
-                          _openDigioEsign(fileId: fId, email: em, session: sess, type: esignType);
-                        } else {
-                          _openDigioEsign(fileId: fileId, email: email, session: session, type: esignType);
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(6),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        child: Text('Click here E-sign',
-                            style: MyntWebTextStyles.bodySmall(context,
-                                color: primaryColor,
-                                fontWeight: MyntFonts.semiBold)
-                                .copyWith(decoration: TextDecoration.none)),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                esignLoading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: primaryColor))
+                    : Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () async {
+                            final provider = ref.read(profileAllDetailsProvider);
+                            if (fileId.isEmpty || email.isEmpty) {
+                              await provider.fetchMobEmailStatus();
+                              if (!mounted) return;
+                              final fresh = provider.mobEmailStatus;
+                              String fId = '';
+                              String em = '';
+                              String sess = '';
+                              if (esignType == 'mobile_change') {
+                                fId = fresh?.mobileFileId ?? '';
+                                em = (fresh?.mobClientEmail ?? '').toUpperCase();
+                                sess = fresh?.mobSession ?? '';
+                              } else if (esignType == 'email_change') {
+                                fId = fresh?.emailFileId ?? '';
+                                em = (fresh?.emailNewEmailId ?? '').toLowerCase();
+                                sess = fresh?.emailSession ?? '';
+                              } else if (esignType == 'address_change') {
+                                fId = fresh?.addressFileId ?? '';
+                                em = (fresh?.addressClientEmail ?? '').toLowerCase();
+                                sess = fresh?.addressSession ?? '';
+                              }
+                              _openDigioEsign(fileId: fId, email: em, session: sess, type: esignType);
+                            } else {
+                              _openDigioEsign(fileId: fileId, email: email, session: session, type: esignType);
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(6),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            child: Text('Click here E-sign',
+                                style: MyntWebTextStyles.bodySmall(context,
+                                    color: primaryColor,
+                                    fontWeight: MyntFonts.semiBold)
+                                    .copyWith(decoration: TextDecoration.none)),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-            const SizedBox(width: 4),
-            _cancelLoading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: errorColor))
-                : Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () =>
-                          _showCancelRequestDialog(cancelType, '$label Change'),
-                      borderRadius: BorderRadius.circular(6),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        child: Text('Cancel request',
-                            style: MyntWebTextStyles.bodySmall(context,
-                                color: errorColor,
-                                fontWeight: MyntFonts.semiBold)
-                                .copyWith(decoration: TextDecoration.none)),
+                const SizedBox(width: 4),
+                _cancelLoading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: errorColor))
+                    : Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () =>
+                              _showCancelRequestDialog(cancelType, '$label Change'),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            child: Text('Cancel request',
+                                style: MyntWebTextStyles.bodySmall(context,
+                                    color: errorColor,
+                                    fontWeight: MyntFonts.semiBold)
+                                    .copyWith(decoration: TextDecoration.none)),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+              ],
+            ),
           ],
+        ),
+      ),
         ),
       );
     } else if (status == 'e-signed completed') {
-      return Container(
-        margin: const EdgeInsets.only(top: 10),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: successBg,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.hourglass_top_rounded, size: 20, color: successText),
-            const SizedBox(width: 12),
-            Text(
-              "$label change in process",
-              style: MyntWebTextStyles.bodySmall(context,
-                color: successText,
-                fontWeight: MyntFonts.medium,
-              ).copyWith(decoration: TextDecoration.none),
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: IntrinsicWidth(
+          child: Container(
+            margin: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: successBg,
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
+            child: Row(
+              children: [
+                Icon(Icons.hourglass_top_rounded, size: 20, color: successText),
+                const SizedBox(width: 12),
+                Text(
+                  "$label change in process",
+                  style: MyntWebTextStyles.bodySmall(context,
+                    color: successText,
+                    fontWeight: MyntFonts.medium,
+                  ).copyWith(decoration: TextDecoration.none),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
@@ -1107,47 +1213,17 @@ class _ProfileDetailsScreenWebState
         label: "Email",
         value: clientData.cLIENTIDMAIL ?? "N/A",
         onEdit: emailPendingOrDone ? null : _showEmailChangeDialog,
-        statusBanner: _buildStatusBanner(
-          status: emailStatus,
-          label: 'Email',
-          esignType: 'email_change',
-          cancelType: 'email_change',
-          fileId: mobStatus?.emailFileId ?? '',
-          email: (mobStatus?.emailNewEmailId ?? '').toLowerCase(),
-          session: mobStatus?.emailSession ?? '',
-          esignLoading: _emailEsignLoading,
-        ),
       ),
       _FlatFieldData(
         label: "Mobile",
         value: clientData.mOBILENO ?? "N/A",
         onEdit: mobilePendingOrDone ? null : _showMobileChangeDialog,
-        statusBanner: _buildStatusBanner(
-          status: mobileStatus,
-          label: 'Mobile',
-          esignType: 'mobile_change',
-          cancelType: 'mobile_change',
-          fileId: mobStatus?.mobileFileId ?? '',
-          email: (mobStatus?.mobClientEmail ?? '').toUpperCase(),
-          session: mobStatus?.mobSession ?? '',
-          esignLoading: _mobileEsignLoading,
-        ),
       ),
       _FlatFieldData(
         label: "Address",
         value: "${clientData.cLRESIADD1 ?? ''}  ${clientData.cLRESIADD2 ?? ''}  ${clientData.cLRESIADD3 ?? ''}"
             .toUpperCase(),
         onEdit: addressPendingOrDone ? null : _showAddressChangeDialog,
-        statusBanner: _buildStatusBanner(
-          status: addressStatus,
-          label: 'Address',
-          esignType: 'address_change',
-          cancelType: 'address_change',
-          fileId: mobStatus?.addressFileId ?? '',
-          email: (mobStatus?.addressClientEmail ?? '').toLowerCase(),
-          session: mobStatus?.addressSession ?? '',
-          esignLoading: _addressEsignLoading,
-        ),
       ),
       _FlatFieldData(
         label: "Annual Income",
@@ -1188,6 +1264,43 @@ class _ProfileDetailsScreenWebState
       ),
     ];
 
+    // Collect all esign pending/completed banners for consolidated display
+    final List<Widget> esignBanners = [
+      if (emailStatus == 'e-signed pending' || emailStatus == 'e-signed completed')
+        _buildStatusBanner(
+          status: emailStatus,
+          label: 'Email',
+          esignType: 'email_change',
+          cancelType: 'email_change',
+          fileId: mobStatus?.emailFileId ?? '',
+          email: (mobStatus?.emailNewEmailId ?? '').toLowerCase(),
+          session: mobStatus?.emailSession ?? '',
+          esignLoading: _emailEsignLoading,
+        ),
+      if (mobileStatus == 'e-signed pending' || mobileStatus == 'e-signed completed')
+        _buildStatusBanner(
+          status: mobileStatus,
+          label: 'Mobile',
+          esignType: 'mobile_change',
+          cancelType: 'mobile_change',
+          fileId: mobStatus?.mobileFileId ?? '',
+          email: (mobStatus?.mobClientEmail ?? '').toUpperCase(),
+          session: mobStatus?.mobSession ?? '',
+          esignLoading: _mobileEsignLoading,
+        ),
+      if (addressStatus == 'e-signed pending' || addressStatus == 'e-signed completed')
+        _buildStatusBanner(
+          status: addressStatus,
+          label: 'Address',
+          esignType: 'address_change',
+          cancelType: 'address_change',
+          fileId: mobStatus?.addressFileId ?? '',
+          email: (mobStatus?.addressClientEmail ?? '').toLowerCase(),
+          session: mobStatus?.addressSession ?? '',
+          esignLoading: _addressEsignLoading,
+        ),
+    ];
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -1199,7 +1312,7 @@ class _ProfileDetailsScreenWebState
           rows.add(fields.sublist(i, (i + cols).clamp(0, fields.length)));
         }
 
-        return Container(
+        final fieldGrid = Container(
           padding: const EdgeInsets.fromLTRB(28, 28, 28, 20),
           decoration: BoxDecoration(
             color: resolveThemeColor(context,
@@ -1245,6 +1358,16 @@ class _ProfileDetailsScreenWebState
               ],
             ],
           ),
+        );
+
+        if (esignBanners.isEmpty) return fieldGrid;
+
+        return Column(
+          children: [
+            fieldGrid,
+            const SizedBox(height: 12),
+            ...esignBanners,
+          ],
         );
       },
     );
@@ -1622,16 +1745,19 @@ class _MobileChangeDialogState extends State<_MobileChangeDialog> {
                           onPressed: () async {
                             if (!_formKey.currentState!.validate()) return;
                             setState(() => _isLoading = true);
-                            await widget.profileProvider.mobileotpfun(
+                            final msg = await widget.profileProvider.mobileotpfun(
                               widget.profileProvider.newMobController.text,
                               widget.clientData.cLIENTIDMAIL ?? "",
                               widget.clientData.mOBILENO ?? "",
                               widget.clientData,
                             );
-                            setState(() {
-                              _otpSent = true;
-                              _isLoading = false;
-                            });
+                            setState(() => _isLoading = false);
+                            if (!mounted) return;
+                            if (msg != null && (msg.toLowerCase().contains('otp') || msg.toLowerCase().contains('sent'))) {
+                              setState(() => _otpSent = true);
+                            } else {
+                              error(context, msg ?? 'Failed to send OTP. Please try again.');
+                            }
                           },
                         ),
                       if (_otpSent)
@@ -2875,6 +3001,7 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
 // ═══════════════════════════════════════════════════════════════════════
 //  KRA SELFIE CAPTURE DIALOG
 // ═══════════════════════════════════════════════════════════════════════
+enum _CameraState { idle, requesting, active }
 class _KraSelfieDialog extends StatefulWidget {
   final bool isDarkMode;
   const _KraSelfieDialog({required this.isDarkMode});
@@ -2885,179 +3012,576 @@ class _KraSelfieDialog extends StatefulWidget {
 
 class _KraSelfieDialogState extends State<_KraSelfieDialog> {
   List<int>? _imageBytes;
-  final bool _isUploading = false;
 
-  Future<void> _captureFromCamera() async {
+  // Camera state
+  _CameraState _cameraState = _CameraState.idle;
+  String? _cameraError;
+  html.MediaStream? _mediaStream;
+  html.VideoElement? _videoElement;
+  String? _viewId;
+
+  // Preview dimensions (center-cropped to this aspect ratio)
+  static const double _canvasW = 475;
+  static const double _canvasH = 520;
+
+  @override
+  void dispose() {
+    _stopCamera();
+    super.dispose();
+  }
+
+  void _stopCamera() {
+    _mediaStream?.getTracks().forEach((t) => t.stop());
+    _mediaStream = null;
+    _videoElement = null;
+  }
+
+  void _resetState() {
+    _stopCamera();
+    setState(() {
+      _imageBytes = null;
+      _cameraState = _CameraState.idle;
+      _viewId = null;
+      _cameraError = null;
+    });
+  }
+
+  Future<void> _openCamera() async {
+    setState(() {
+      _cameraState = _CameraState.requesting;
+      _cameraError = null;
+    });
+
     try {
-      final picker = ImagePicker();
-      final photo = await picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 475,
-        maxHeight: 520,
-        imageQuality: 80,
-      );
-      if (photo != null) {
-        final bytes = await photo.readAsBytes();
-        setState(() {
-          _imageBytes = bytes.toList();
+      final stream =
+          await html.window.navigator.mediaDevices!.getUserMedia({
+        'video': {'facingMode': 'user'},
+        'audio': false,
+      });
 
-        });
-      }
+      _mediaStream = stream;
+      final video = html.VideoElement()
+        ..autoplay = true
+        ..muted = true
+        ..srcObject = stream
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.objectFit = 'cover'
+        ..style.transform = 'scaleX(-1)'; // mirror for selfie feel
+      _videoElement = video;
+
+      final viewId =
+          'kra-selfie-${DateTime.now().microsecondsSinceEpoch}';
+      ui_web.platformViewRegistry.registerViewFactory(viewId, (_) => video);
+      _viewId = viewId;
+
+      setState(() => _cameraState = _CameraState.active);
     } catch (e) {
-      if (mounted) {
-        error(context, 'Camera not available. Please upload a photo.');
+      final errorStr = e.toString().toLowerCase();
+      String msg;
+      if (errorStr.contains('notallowed') ||
+          errorStr.contains('permission denied') ||
+          errorStr.contains('permissiondenied')) {
+        msg =
+            'Camera access denied. Click the camera or lock icon in your browser address bar, allow camera access, then tap "Open Camera" again.';
+      } else if (errorStr.contains('notfound') ||
+          errorStr.contains('devicesnotfound')) {
+        msg = 'No camera found on this device. Please upload a photo instead.';
+      } else {
+        msg = 'Unable to access camera. Please upload a photo instead.';
       }
+      setState(() {
+        _cameraState = _CameraState.idle;
+        _cameraError = msg;
+      });
     }
   }
 
-  Future<void> _uploadPhoto() async {
-    final picker = ImagePicker();
-    final photo = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 475,
-      maxHeight: 520,
-      imageQuality: 80,
+  Future<void> _capturePhoto() async {
+    final video = _videoElement;
+    if (video == null) return;
+
+    final w = video.videoWidth;
+    final h = video.videoHeight;
+    if (w == 0 || h == 0) return;
+
+    // Target dimensions matching the gallery picker (475×520 portrait)
+    const targetW = 475;
+    const targetH = 520;
+    const targetAspect = targetW / targetH; // ~0.913
+
+    // Compute center-crop source rect from the video frame
+    final srcAspect = w / h;
+    int srcX, srcY, srcW, srcH;
+    if (srcAspect > targetAspect) {
+      // Video is wider than target — crop sides
+      srcH = h;
+      srcW = (h * targetAspect).round();
+      srcX = ((w - srcW) / 2).round();
+      srcY = 0;
+    } else {
+      // Video is taller than target — crop top/bottom
+      srcW = w;
+      srcH = (w / targetAspect).round();
+      srcX = 0;
+      srcY = ((h - srcH) / 2).round();
+    }
+
+    // Draw cropped frame onto a 475×520 canvas (not mirrored — standard for KYC)
+    final canvas = html.CanvasElement(width: targetW, height: targetH);
+    canvas.context2D.drawImageScaledFromSource(
+      video, srcX, srcY, srcW, srcH, 0, 0, targetW, targetH,
     );
-    if (photo != null) {
-      final bytes = await photo.readAsBytes();
+
+    // 80% quality to match gallery picker imageQuality: 80
+    final dataUrl = canvas.toDataUrl('image/jpeg', 0.80);
+    final bytes = base64Decode(dataUrl.split(',')[1]);
+
+    _stopCamera();
+    setState(() {
+      _imageBytes = bytes.toList();
+      _cameraState = _CameraState.idle;
+      _viewId = null;
+    });
+  }
+
+  Future<void> _uploadPhoto() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png'],
+      withData: true,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+
+    // Validate file type
+    final ext = file.extension?.toLowerCase() ?? '';
+    if (!['jpg', 'jpeg', 'png'].contains(ext)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid file type. Please upload JPG, JPEG, or PNG only.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    // Center-crop uploaded image to 475×520 (same as camera capture)
+    final completer = Completer<void>();
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final img = html.ImageElement()..src = url;
+
+    img.onLoad.first.then((_) {
+      final w = img.naturalWidth;
+      final h = img.naturalHeight;
+      html.Url.revokeObjectUrl(url);
+
+      final targetW = _canvasW.toInt();
+      final targetH = _canvasH.toInt();
+      const targetAspect = _canvasW / _canvasH;
+      final srcAspect = w / h;
+
+      int srcX, srcY, srcW, srcH;
+      if (srcAspect > targetAspect) {
+        srcH = h;
+        srcW = (h * targetAspect).round();
+        srcX = ((w - srcW) / 2).round();
+        srcY = 0;
+      } else {
+        srcW = w;
+        srcH = (w / targetAspect).round();
+        srcX = 0;
+        srcY = ((h - srcH) / 2).round();
+      }
+
+      final canvas = html.CanvasElement(width: targetW, height: targetH);
+      canvas.context2D.drawImageScaledFromSource(
+        img, srcX, srcY, srcW, srcH, 0, 0, targetW, targetH,
+      );
+
+      final dataUrl = canvas.toDataUrl('image/jpeg', 0.80);
+      final croppedBytes = base64Decode(dataUrl.split(',')[1]);
+
+      if (!mounted) return;
       setState(() {
-        _imageBytes = bytes.toList();
+        _imageBytes = croppedBytes.toList();
       });
+      completer.complete();
+    });
+
+    img.onError.first.then((_) {
+      html.Url.revokeObjectUrl(url);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load image. Please try another file.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      completer.complete();
+    });
+
+    await completer.future;
+  }
+
+  /// Scales the captured/uploaded image (already 475×520) to final 350×260 output.
+  Future<void> _submitPhoto() async {
+    if (_imageBytes == null) return;
+
+    const outputW = 350;
+    const outputH = 260;
+
+    final completer = Completer<List<int>?>();
+    final blob = html.Blob([Uint8List.fromList(_imageBytes!)]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final img = html.ImageElement()..src = url;
+
+    img.onLoad.first.then((_) {
+      html.Url.revokeObjectUrl(url);
+      final canvas = html.CanvasElement(width: outputW, height: outputH);
+      canvas.context2D.drawImageScaled(img, 0, 0, outputW, outputH);
+      final dataUrl = canvas.toDataUrl('image/jpeg', 0.80);
+      final bytes = base64Decode(dataUrl.split(',')[1]);
+      completer.complete(bytes.toList());
+    });
+
+    img.onError.first.then((_) {
+      html.Url.revokeObjectUrl(url);
+      completer.complete(null);
+    });
+
+    final result = await completer.future;
+    if (result != null && mounted) {
+      Navigator.pop(context, result);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = widget.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
-    final textColor = widget.isDarkMode ? Colors.white : const Color(0xFF1A1A2E);
-    final subtitleColor = widget.isDarkMode ? Colors.grey[400]! : const Color(0xFF666666);
+    final isCameraActive = _cameraState == _CameraState.active;
+    final isRequesting = _cameraState == _CameraState.requesting;
 
     return Dialog(
-      backgroundColor: bgColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Title
-              Row(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: 420,
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.dialogDark, light: MyntColors.dialog),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider),
+                  ),
+                ),
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "Let's take a selfie",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
+                    style: MyntWebTextStyles.title(context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary)),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    onPressed: () => Navigator.pop(context, null),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () {
+                        _stopCamera();
+                        Navigator.pop(context, null);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Click a selfie for your Re-KYC verification. Please make sure you are in a well-lit area.',
-                style: TextStyle(fontSize: 13, color: subtitleColor),
-              ),
-              const SizedBox(height: 20),
+            ),
 
-              // Preview or buttons
-              if (_imageBytes != null) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.memory(
-                    Uint8List.fromList(_imageBytes!),
-                    width: 250,
-                    height: 280,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextButton.icon(
-                  onPressed: () => setState(() {
-                    _imageBytes = null;
-
-                  }),
-                  icon: const Icon(Icons.refresh, size: 16),
-                  label: const Text('Change Photo'),
-                ),
-              ] else ...[
-                // Camera button
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: ElevatedButton.icon(
-                    onPressed: _captureFromCamera,
-                    icon: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
-                    label: const Text('Open Camera',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // Description (hide when camera is streaming)
+                  if (!isCameraActive) ...[
+                    Text(
+                      'Click a selfie for your Re-KYC verification. Please make sure you are in a well-lit area.',
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.body(context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary)),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text('OR', style: TextStyle(fontSize: 13, color: subtitleColor)),
-                const SizedBox(height: 10),
-                // Upload button
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: OutlinedButton.icon(
-                    onPressed: _uploadPhoto,
-                    icon: const Icon(Icons.upload, size: 18, color: Color(0xFF0037B7)),
-                    label: const Text('Upload Photo',
-                        style: TextStyle(
-                            color: Color(0xFF0037B7), fontWeight: FontWeight.w600)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF0037B7)),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
-                ),
-              ],
+                    const SizedBox(height: 20),
+                  ],
 
-              const SizedBox(height: 20),
-              // Submit button
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: (_imageBytes == null || _isUploading)
-                      ? null
-                      : () {
-                          Navigator.pop(context, _imageBytes);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0037B7),
-                    disabledBackgroundColor: Colors.grey[400],
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: _isUploading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Text('Submit',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600)),
-                ),
+                  // ── Captured / uploaded image preview ──
+                  if (_imageBytes != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: AspectRatio(
+                        aspectRatio: _canvasW / _canvasH,
+                        child: Image.memory(
+                          Uint8List.fromList(_imageBytes!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: _resetState,
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('Change Photo'),
+                    ),
+                  ]
+
+                  // ── Live camera preview ──
+                  else if (isCameraActive && _viewId != null) ...[
+                    // Preview uses 475:520 aspect ratio — matches the captured output
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: AspectRatio(
+                        aspectRatio: 475 / 520,
+                        child: HtmlElementView(viewType: _viewId!),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 44,
+                            child: TextButton(
+                              onPressed: () {
+                                _stopCamera();
+                                setState(() {
+                                  _cameraState = _CameraState.idle;
+                                  _viewId = null;
+                                });
+                              },
+                              style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                  side: BorderSide(
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.dividerDark,
+                                        light: MyntColors.divider),
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Cancel',
+                                style: MyntWebTextStyles.buttonMd(context,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 44,
+                            child: TextButton.icon(
+                              onPressed: _capturePhoto,
+                              icon: const Icon(Icons.camera,
+                                  size: 18, color: Colors.white),
+                              label: Text(
+                                'Capture',
+                                style: MyntWebTextStyles.buttonMd(context,
+                                    color: Colors.white),
+                              ),
+                              style: TextButton.styleFrom(
+                                backgroundColor: resolveThemeColor(context,
+                                    dark: MyntColors.secondary,
+                                    light: MyntColors.primary),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ]
+
+                  // ── Buttons (idle / requesting / error) ──
+                  else ...[
+                    // Permission error banner
+                    if (_cameraError != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline,
+                                color: Colors.red, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _cameraError!,
+                                style: MyntWebTextStyles.bodySmall(context,
+                                    color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // Open Camera button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton.icon(
+                        onPressed: isRequesting ? null : _openCamera,
+                        icon: isRequesting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2))
+                            : Icon(Icons.camera_alt,
+                                size: 18,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.primaryDark,
+                                    light: MyntColors.primary)),
+                        label: Text(
+                          isRequesting
+                              ? 'Requesting permission...'
+                              : 'Open Camera',
+                          style: MyntWebTextStyles.buttonMd(context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary)),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary)
+                              .withValues(alpha: 0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            side: BorderSide(
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text('OR',
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary))),
+                    const SizedBox(height: 10),
+                    // Upload Photo button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton.icon(
+                        onPressed: _uploadPhoto,
+                        icon: Icon(Icons.upload,
+                            size: 18,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)),
+                        label: Text(
+                          'Upload Photo',
+                          style: MyntWebTextStyles.buttonMd(context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary)),
+                        ),
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            side: BorderSide(
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.dividerDark,
+                                  light: MyntColors.divider),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 20),
+                  // Submit button (hidden while camera is live)
+                  if (!isCameraActive)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: _imageBytes == null
+                            ? null
+                            : _submitPhoto,
+                        style: TextButton.styleFrom(
+                          backgroundColor: _imageBytes == null
+                              ? resolveThemeColor(context,
+                                      dark: MyntColors.dividerDark,
+                                      light: MyntColors.textTertiaryDark)
+                                  .withValues(alpha: 0.5)
+                              : resolveThemeColor(context,
+                                  dark: MyntColors.secondary,
+                                  light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text('Submit',
+                            style: MyntWebTextStyles.buttonMd(context,
+                                color: Colors.white)),
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

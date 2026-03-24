@@ -65,19 +65,23 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
     _leftMonth = DateTime(fyStartYear, 4);
     _rightMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
 
-    final ledgerprovider = ref.read(ledgerProvider);
-    if (ledgerprovider.selectedFilters.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(ledgerProvider).applyLedgerMultiFilter(
-            context, ref.read(ledgerProvider).selectedFilters.toList());
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final lp = ref.read(ledgerProvider);
+      if (lp.ledgerAllData == null) {
+        // Fetch ledger data if not cached
+        lp.fetchLegerData(
+            context, lp.startDate, lp.endDate, lp.includeBillMargin);
+      } else if (lp.selectedFilters.isNotEmpty) {
+        // Re-apply filters if data already exists
+        lp.applyLedgerMultiFilter(context, lp.selectedFilters.toList());
+      }
+    });
   }
 
   @override
   void dispose() {
     _removeDatePickerOverlay();
-    disposeScrollToLoad();
+    disposeScrollToLoad(); 
     _tableScrollController.dispose();
     _horizontalScrollController.dispose();
     _searchController.dispose();
@@ -174,7 +178,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
         const SizedBox(width: 8),
         Text(
           'Ledger',
-          style: MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
+          style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -779,11 +783,11 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
         final double totalWidth = constraints.maxWidth;
         final double dateWidth = totalWidth * 0.12;
         final double exchWidth = totalWidth * 0.10;
-        final double typeWidth = totalWidth * 0.18;
-        final double debitWidth = totalWidth * 0.10;
-        final double creditWidth = totalWidth * 0.10;
-        final double netWidth = totalWidth * 0.10;
-        final double detailsWidth = totalWidth * 0.30;
+        final double typeWidth = totalWidth * 0.15;
+        final double debitWidth = totalWidth * 0.12;
+        final double creditWidth = totalWidth * 0.12;
+        final double netWidth = totalWidth * 0.15;
+        final double detailsWidth = totalWidth * 0.24;
 
         final columnWidths = {
           0: shadcn.FixedTableSize(dateWidth),
@@ -1384,9 +1388,11 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
                                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                                             alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
                                             child: Text(
-                                              value != null && double.tryParse(value) != null
-                                                  ? double.parse(value).toStringAsFixed(2)
-                                                  : value ?? '-',
+                                              () {
+                                                if (value == null || value.isEmpty || value == 'null') return '-';
+                                                final parsed = double.tryParse(value);
+                                                return parsed != null ? parsed.toStringAsFixed(2) : value;
+                                              }(),
                                               style: _getTextStyle(context),
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -1643,7 +1649,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
                               dark: MyntColors.secondary,
                               light: MyntColors.primary),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4)),
+                              borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(vertical: 18),
                         ),
                         child: Text('Download',

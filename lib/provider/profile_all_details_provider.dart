@@ -448,17 +448,16 @@ class ProfileProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future mobileotpfun(
+  Future<String?> mobileotpfun(
       String newmo, String clemail, String oldmobilmo, fulldataprf) async {
     try {
       String response =
           await api.mobileotpapifun(newmo, clemail, oldmobilmo, fulldataprf);
       // _mobileotpo = response;
       notifyListeners();
-
-      print("mobileotpfun $response");
+      return response;
     } catch (e) {
-      // debugPrint("$e");
+      return null;
     } finally {
       notifyListeners();
     }

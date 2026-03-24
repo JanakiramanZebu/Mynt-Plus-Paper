@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/api/core/api_export.dart';
 import 'package:mynt_plus/locator/locator.dart';
@@ -246,10 +248,42 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
   }
 
   Future<void> _submitNominee() async {
-    if (_yesOrNo == 'yes' && !(_formKey.currentState?.validate() ?? false)) return;
-
-    // Validate percentages add up to 100
     if (_yesOrNo == 'yes') {
+      // Trigger form field validation (text fields, dropdowns)
+      if (!(_formKey.currentState?.validate() ?? false)) {
+        warningMessage(context, 'Please fill all required fields correctly');
+        return;
+      }
+
+      // Validate DOB selections (not covered by TextFormField validators)
+      if (_dob1 == null) {
+        warningMessage(context, 'Please select date of birth for nominee 1');
+        return;
+      }
+      if (_nomineeCount >= 2 && _dob2 == null) {
+        warningMessage(context, 'Please select date of birth for nominee 2');
+        return;
+      }
+      if (_nomineeCount >= 3 && _dob3 == null) {
+        warningMessage(context, 'Please select date of birth for nominee 3');
+        return;
+      }
+
+      // Validate guardian DOB for minor nominees
+      if (_isMinor(_dob1) && _guardianDob1 == null) {
+        warningMessage(context, 'Please select guardian date of birth for nominee 1');
+        return;
+      }
+      if (_nomineeCount >= 2 && _isMinor(_dob2) && _guardianDob2 == null) {
+        warningMessage(context, 'Please select guardian date of birth for nominee 2');
+        return;
+      }
+      if (_nomineeCount >= 3 && _isMinor(_dob3) && _guardianDob3 == null) {
+        warningMessage(context, 'Please select guardian date of birth for nominee 3');
+        return;
+      }
+
+      // Validate percentages add up to 100
       final p1 = int.tryParse(_percent1.text) ?? 0;
       final p2 = _nomineeCount >= 2 ? (int.tryParse(_percent2.text) ?? 0) : 0;
       final p3 = _nomineeCount >= 3 ? (int.tryParse(_percent3.text) ?? 0) : 0;
@@ -458,68 +492,103 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
   }
 
   void _showEsignDialog() {
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-    final subtitleColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    final cardBg = resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card);
-    final primaryColor = resolveThemeColor(context,
-        dark: MyntColors.primaryDark, light: MyntColors.primary);
-
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor: cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.transparent,
         child: Container(
           width: 420,
-          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('E-Sign Is Pending!',
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.semiBold, color: textColor)),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: Icon(Icons.close, size: 20, color: subtitleColor),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('Your nominee form has been submitted. Please complete the e-sign to finalize.',
-                  style: MyntWebTextStyles.bodySmall(context,
-                      fontWeight: MyntFonts.medium, color: textColor)),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _openDigioEsign();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              // Header with divider
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
                     ),
-                    elevation: 0,
                   ),
-                  child: Text('Click here E-sign',
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'E-Sign Is Pending!',
+                      style: MyntWebTextStyles.title(context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary)),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Your nominee form has been submitted. Please complete the e-sign to finalize.',
+                      textAlign: TextAlign.center,
                       style: MyntWebTextStyles.body(context,
-                          fontWeight: MyntFonts.semiBold,
-                          color: Colors.white)),
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary)),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _openDigioEsign();
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.secondary,
+                              light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Click here E-sign',
+                          style: MyntWebTextStyles.buttonMd(context,
+                              color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -725,22 +794,31 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
           // Action buttons
           Row(
             children: [
-              ElevatedButton.icon(
+              OutlinedButton.icon(
                 onPressed: () {
                   setState(() {
                     _yesOrNo = 'yes';
                     _activePanel = 0;
                   });
                 },
-                icon: const Icon(Icons.add, size: 18),
+                icon: Icon(Icons.add,
+                    size: 18,
+                    color: _yesOrNo == 'yes' ? primaryColor : subtitleColor),
                 label: Text('Add Nominee',
                     style: MyntWebTextStyles.bodySmall(context,
-                        color: Colors.white, fontWeight: MyntFonts.semiBold)
+                        color: _yesOrNo == 'yes' ? primaryColor : subtitleColor,
+                        fontWeight: _yesOrNo == 'yes'
+                            ? MyntFonts.semiBold
+                            : MyntFonts.medium)
                         .copyWith(decoration: TextDecoration.none)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: resolveThemeColor(context,
-            dark: MyntColors.secondary, light: MyntColors.primary),
-                  foregroundColor: Colors.white,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                    color: _yesOrNo == 'yes' ? primaryColor : borderColor,
+                    width: _yesOrNo == 'yes' ? 1.5 : 1,
+                  ),
+                  backgroundColor: _yesOrNo == 'yes'
+                      ? primaryColor.withValues(alpha: 0.08)
+                      : Colors.transparent,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -753,14 +831,21 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                   setState(() => _yesOrNo = 'no');
                 },
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: borderColor),
+                  side: BorderSide(
+                    color: _yesOrNo == 'no' ? primaryColor : borderColor,
+                    width: _yesOrNo == 'no' ? 1.5 : 1,
+                  ),
+                  backgroundColor: _yesOrNo == 'no'
+                      ? primaryColor.withValues(alpha: 0.08)
+                      : Colors.transparent,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4)),
                 ),
                 child: Text('Skip for now',
                     style: MyntWebTextStyles.bodySmall(context,
-                        color: subtitleColor, fontWeight: MyntFonts.medium)
+                        color: _yesOrNo == 'no' ? primaryColor : subtitleColor,
+                        fontWeight: _yesOrNo == 'no' ? MyntFonts.semiBold : MyntFonts.medium)
                         .copyWith(decoration: TextDecoration.none)),
               ),
             ],
@@ -777,7 +862,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(4)),
               ),
               child: _loading
                   ? const SizedBox(
@@ -981,57 +1066,67 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
         color: warningBg,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, color: warningIcon, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Esign Pending - Click here to complete',
-              style: MyntWebTextStyles.bodySmall(context,
-                  color: warningText, fontWeight: MyntFonts.medium)
-                  .copyWith(decoration: TextDecoration.none),
-            ),
+          Row(
+            children: [
+              Icon(Icons.info_outline, color: warningIcon, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Esign Pending - Click here to complete',
+                  style: MyntWebTextStyles.bodySmall(context,
+                      color: warningText, fontWeight: MyntFonts.medium)
+                      .copyWith(decoration: TextDecoration.none),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          _esignLoading
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: primaryColor))
-              : Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _openDigioEsign,
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      child: Text('Click here E-sign',
-                          style: MyntWebTextStyles.bodySmall(context,
-                              color: primaryColor,
-                              fontWeight: MyntFonts.semiBold)
-                              .copyWith(decoration: TextDecoration.none)),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _esignLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: primaryColor))
+                  : Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _openDigioEsign,
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          child: Text('Click here E-sign',
+                              style: MyntWebTextStyles.bodySmall(context,
+                                  color: primaryColor,
+                                  fontWeight: MyntFonts.semiBold)
+                                  .copyWith(decoration: TextDecoration.none)),
+                        ),
+                      ),
                     ),
+              const SizedBox(width: 4),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _showCancelConfirmation,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    child: Text('Cancel request',
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: errorColor,
+                            fontWeight: MyntFonts.semiBold)
+                            .copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
-          const SizedBox(width: 4),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _showCancelConfirmation,
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
-                child: Text('Cancel request',
-                    style: MyntWebTextStyles.bodySmall(context,
-                        color: errorColor,
-                        fontWeight: MyntFonts.semiBold)
-                        .copyWith(decoration: TextDecoration.none)),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -1039,63 +1134,107 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
   }
 
   void _showCancelConfirmation() {
-    final cardBg = resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card);
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-    final subtitleColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    final errorColor = resolveThemeColor(context,
-        dark: MyntColors.errorDark, light: MyntColors.error);
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text('Cancel request?',
-            style: MyntWebTextStyles.title(context,
-                fontWeight: MyntFonts.semiBold,
-                darkColor: MyntColors.textPrimaryDark,
-                lightColor: MyntColors.textPrimary)
-                .copyWith(decoration: TextDecoration.none)),
-        content: RichText(
-          text: TextSpan(
-            style: MyntWebTextStyles.body(context, color: subtitleColor)
-                .copyWith(decoration: TextDecoration.none),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 400,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const TextSpan(text: 'Are you sure you want to cancel your '),
-              TextSpan(
-                text: '"Nominee"',
-                style: TextStyle(fontWeight: MyntFonts.semiBold, color: textColor),
+              // Header with divider
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Cancel request?',
+                      style: MyntWebTextStyles.title(context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary)),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const TextSpan(text: ' request?'),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Are you sure you want to cancel your "Nominee" request?',
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.body(context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary)),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _cancelRequest();
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.errorDark,
+                              light: MyntColors.tertiary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: MyntWebTextStyles.buttonMd(context,
+                              color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('No',
-                style: TextStyle(color: subtitleColor)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _cancelRequest();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: errorColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text('Proceed',
-                style: MyntWebTextStyles.bodySmall(context,
-                    color: Colors.white, fontWeight: MyntFonts.semiBold)
-                    .copyWith(decoration: TextDecoration.none)),
-          ),
-        ],
       ),
     );
   }
@@ -1270,6 +1409,33 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     );
   }
 
+  //  PINCODE AUTO-FETCH
+  Future<void> _fetchPincodeData(
+    String pincode,
+    TextEditingController cityCtrl,
+    TextEditingController stateCtrl,
+    TextEditingController countryCtrl,
+  ) async {
+    if (pincode.length != 6) return;
+    try {
+      final uri = Uri.parse('https://api.postalpincode.in/pincode/$pincode');
+      final res = await http.get(uri);
+      if (!mounted) return;
+      final data = jsonDecode(res.body) as List;
+      if (data.isNotEmpty && data[0]['Status'] == 'Success') {
+        final postOffices = data[0]['PostOffice'] as List;
+        if (postOffices.isNotEmpty) {
+          final po = postOffices[0];
+          setState(() {
+            cityCtrl.text = po['District']?.toString() ?? '';
+            stateCtrl.text = po['State']?.toString() ?? '';
+            countryCtrl.text = po['Country']?.toString() ?? 'India';
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   //  NOMINEE FORM
   // ═══════════════════════════════════════════════════════════════════
@@ -1346,131 +1512,130 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     return Wrap(
       spacing: 8,
       children: [
-        ChoiceChip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_activePanel == 0) ...[
-                const Icon(Icons.check, size: 16, color: Colors.white),
-                const SizedBox(width: 4),
-              ],
-              Text('1st nominee'),
-            ],
-          ),
-          selected: _activePanel == 0,
-          showCheckmark: false,
-          onSelected: (_) => setState(() => _activePanel = 0),
-          selectedColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)  ,
-          labelStyle: MyntWebTextStyles.bodySmall(context,
-              color: _activePanel == 0 ? Colors.white : subtitleColor,
-              fontWeight: MyntFonts.medium)
-              .copyWith(decoration: TextDecoration.none),
-          backgroundColor: Colors.transparent,
-          shape: StadiumBorder(
-              side: BorderSide(
-                  color: _activePanel == 0 ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)   : borderColor)),
+        _buildNomineeTab(
+          label: '1st nominee',
+          index: 0,
+          primaryColor: primaryColor,
+          subtitleColor: subtitleColor,
+          borderColor: borderColor,
         ),
         if (_nomineeCount >= 2)
-          ChoiceChip(
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_activePanel == 1) ...[
-                  const Icon(Icons.check, size: 16, color: Colors.white),
-                  const SizedBox(width: 4),
-                ],
-                Text('2nd nominee'),
-                if (_nomineeCount >= 2 && _nomineeCount < 3)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: InkWell(
-                      onTap: () => setState(() {
-                        _nomineeCount = 1;
-                        _activePanel = 0;
-                        _clearNominee2();
-                      }),
-                      child: Icon(Icons.backspace_outlined,
-                          size: 14,
-                          color: _activePanel == 1
-                              ? Colors.white
-                              : subtitleColor),
-                    ),
-                  ),
-              ],
-            ),
-            selected: _activePanel == 1,
-            showCheckmark: false,
-            onSelected: (_) => setState(() => _activePanel = 1),
-            selectedColor: resolveThemeColor(context,
-            dark: MyntColors.secondary, light: MyntColors.primary),
-            labelStyle: MyntWebTextStyles.bodySmall(context,
-                color: _activePanel == 1 ? Colors.white : subtitleColor,
-                fontWeight: MyntFonts.medium)
-                .copyWith(decoration: TextDecoration.none),
-            backgroundColor: Colors.transparent,
-            shape: StadiumBorder(
-                side: BorderSide(
-                    color: _activePanel == 1 ? borderColor : borderColor)),
+          _buildNomineeTab(
+            label: '2nd nominee',
+            index: 1,
+            primaryColor: primaryColor,
+            subtitleColor: subtitleColor,
+            borderColor: borderColor,
+            onDelete: () => setState(() {
+              _clearNominee2(); // handles promotion of 3rd→2nd if needed
+              _activePanel = _nomineeCount >= 1 ? 0 : 0;
+            }),
           ),
         if (_nomineeCount >= 3)
-          ChoiceChip(
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_activePanel == 2) ...[
-                  const Icon(Icons.check, size: 16, color: Colors.white),
-                  const SizedBox(width: 4),
-                ],
-                Text('3rd nominee'),
-                Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: InkWell(
-                    onTap: () => setState(() {
-                      _nomineeCount = 2;
-                      _activePanel = 1;
-                      _clearNominee3();
-                    }),
-                    child: Icon(Icons.backspace_outlined,
-                        size: 14,
-                        color: _activePanel == 2
-                            ? Colors.white
-                            : subtitleColor),
-                  ),
-                ),
-              ],
-            ),
-            selected: _activePanel == 2,
-            showCheckmark: false,
-            onSelected: (_) => setState(() => _activePanel = 2),
-            selectedColor: resolveThemeColor(context,
-            dark: MyntColors.secondary, light: MyntColors.primary),
-            labelStyle: MyntWebTextStyles.bodySmall(context,
-                color: _activePanel == 2 ? Colors.white : subtitleColor,
-                fontWeight: MyntFonts.medium)
-                .copyWith(decoration: TextDecoration.none),
-            backgroundColor: Colors.transparent,
-            shape: StadiumBorder(
-                side: BorderSide(
-                    color: _activePanel == 2 ? primaryColor : borderColor)),
+          _buildNomineeTab(
+            label: '3rd nominee',
+            index: 2,
+            primaryColor: primaryColor,
+            subtitleColor: subtitleColor,
+            borderColor: borderColor,
+            onDelete: () => setState(() {
+              _nomineeCount = 2;
+              _activePanel = 1;
+              _clearNominee3();
+            }),
           ),
       ],
     );
   }
 
+  Widget _buildNomineeTab({
+    required String label,
+    required int index,
+    required Color primaryColor,
+    required Color subtitleColor,
+    required Color borderColor,
+    VoidCallback? onDelete,
+  }) {
+    final isSelected = _activePanel == index;
+    final bgColor = isSelected ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : Colors.transparent;
+    final labelColor = isSelected ? Colors.white : subtitleColor;
+    final border = BorderSide(
+      color: isSelected ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : borderColor,
+      width: 1.5,
+    );
+
+    return GestureDetector(
+      onTap: () => setState(() => _activePanel = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.fromBorderSide(border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: MyntWebTextStyles.bodySmall(context,
+                  color: labelColor, fontWeight: MyntFonts.medium)
+                  .copyWith(decoration: TextDecoration.none),
+            ),
+            if (onDelete != null) ...[
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: onDelete,
+                behavior: HitTestBehavior.opaque,
+                child: Icon(Icons.close, size: 14, color: labelColor),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   void _clearNominee2() {
-    _name2.clear();
-    _percent2.clear();
-    _dob2 = null;
-    _relation2 = null;
-    _address2.clear();
-    _city2.clear();
-    _state2.clear();
-    _pincode2.clear();
-    _mobile2.clear();
-    _email2.clear();
-    _proofType2 = null;
-    _proofValue2.clear();
-    _percent1.text = '100';
+    if (_nomineeCount == 3) {
+      // Promote 3rd nominee into 2nd slot, then clear 3rd
+      _name2.text = _name3.text;
+      _percent2.text = _percent3.text;
+      _dob2 = _dob3;
+      _relation2 = _relation3;
+      _sameAddress2 = _sameAddress3;
+      _address2.text = _address3.text;
+      _city2.text = _city3.text;
+      _state2.text = _state3.text;
+      _country2.text = _country3.text;
+      _pincode2.text = _pincode3.text;
+      _mobile2.text = _mobile3.text;
+      _email2.text = _email3.text;
+      _proofType2 = _proofType3;
+      _proofValue2.text = _proofValue3.text;
+      _guardianName2.text = _guardianName3.text;
+      _guardianDob2 = _guardianDob3;
+      _guardianRelation2 = _guardianRelation3;
+      _guardianMobile2.text = _guardianMobile3.text;
+      _clearNominee3();
+      _nomineeCount = 2;
+    } else {
+      _name2.clear();
+      _percent2.clear();
+      _dob2 = null;
+      _relation2 = null;
+      _address2.clear();
+      _city2.clear();
+      _state2.clear();
+      _pincode2.clear();
+      _mobile2.clear();
+      _email2.clear();
+      _proofType2 = null;
+      _proofValue2.clear();
+      _percent1.text = '100';
+      _nomineeCount = 1; // ← was missing: tab stayed visible without this
+    }
   }
 
   void _clearNominee3() {
@@ -1488,6 +1653,46 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     _proofValue3.clear();
   }
 
+  /// Returns true if the nominee at [index] (0, 1, 2) has all required fields filled.
+  bool _isNomineeFilled(int index) {
+    switch (index) {
+      case 0:
+        final baseOk = _name1.text.trim().isNotEmpty &&
+            _dob1 != null &&
+            _relation1 != null &&
+            _proofType1 != null &&
+            _proofValue1.text.trim().isNotEmpty &&
+            _mobile1.text.trim().isNotEmpty &&
+            _email1.text.trim().isNotEmpty;
+        if (!baseOk) return false;
+        if (!_sameAddress1) {
+          return _address1.text.trim().isNotEmpty &&
+              _pincode1.text.trim().isNotEmpty &&
+              _city1.text.trim().isNotEmpty &&
+              _state1.text.trim().isNotEmpty;
+        }
+        return true;
+      case 1:
+        final baseOk = _name2.text.trim().isNotEmpty &&
+            _dob2 != null &&
+            _relation2 != null &&
+            _proofType2 != null &&
+            _proofValue2.text.trim().isNotEmpty &&
+            _mobile2.text.trim().isNotEmpty &&
+            _email2.text.trim().isNotEmpty;
+        if (!baseOk) return false;
+        if (!_sameAddress2) {
+          return _address2.text.trim().isNotEmpty &&
+              _pincode2.text.trim().isNotEmpty &&
+              _city2.text.trim().isNotEmpty &&
+              _state2.text.trim().isNotEmpty;
+        }
+        return true;
+      default:
+        return false;
+    }
+  }
+
   Widget _buildActionButtons(Color primaryColor, Color subtitleColor, Color borderColor) {
     return Wrap(
       spacing: 12,
@@ -1496,12 +1701,16 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
         // + Add 2nd Nominee
         if (_nomineeCount < 2)
           OutlinedButton(
-            onPressed: () => setState(() {
-              _nomineeCount = 2;
-              _activePanel = 1;
-              _percent1.text = '50';
-              _percent2.text = '50';
-            }),
+            onPressed: _isNomineeFilled(0)
+                ? () => setState(() {
+                      _nomineeCount = 2;
+                      _activePanel = 1;
+                      _percent1.text = '50';
+                      _percent2.text = '50';
+                    })
+                : () {
+                    error(context, 'Please fill all required fields for 1st nominee to add another');
+                  },
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4)),
@@ -1517,10 +1726,14 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
         // + Add 3rd Nominee
         if (_nomineeCount == 2)
           OutlinedButton(
-            onPressed: () => setState(() {
-              _nomineeCount = 3;
-              _activePanel = 2;
-            }),
+            onPressed: _isNomineeFilled(1)
+                ? () => setState(() {
+                      _nomineeCount = 3;
+                      _activePanel = 2;
+                    })
+                : () {
+                    error(context, 'Please fill all required fields for 2nd nominee to add another');
+                  },
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4)),
@@ -1608,8 +1821,15 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                 subtitleColor,
                 borderColor,
                 primaryColor,
-                validator: _requiredValidator,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Please enter nominee name';
+                  if (v.trim().length < 2) return 'Name must be at least 2 characters';
+                  return null;
+                },
                 textCapitalization: TextCapitalization.characters,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                ],
               ),
             ),
             const SizedBox(width: 12),
@@ -1636,9 +1856,16 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                 primaryColor,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: _requiredValidator,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Please enter share percentage';
+                  final n = int.tryParse(v);
+                  if (n == null || n < 1 || n > 100) return 'Percentage must be between 1 and 100';
+                  return null;
+                },
                 suffixIcon: Icon(Icons.percent, size: 16, color: subtitleColor),
-                enabled: _nomineeCount > 1,
+                
+                // Always editable — was previously disabled when nomineeCount == 1
+                enabled: true,
               ),
             ),
           ],
@@ -1671,11 +1898,15 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                 borderColor,
                 primaryColor,
                 keyboardType: TextInputType.phone,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
+                  if (v == null || v.isEmpty) return 'Please enter mobile number';
+                  if (v.length < 10) return 'Mobile number must be 10 digits';
                   if (!RegExp(r'^[6-9]\d{9}$').hasMatch(v)) {
-                    return 'Enter valid 10-digit number';
+                    return 'Mobile number must start with 6, 7, 8 or 9';
                   }
                   return null;
                 },
@@ -1692,10 +1923,10 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                 primaryColor,
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
+                  if (v == null || v.isEmpty) return 'Please enter email address';
                   if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
                       .hasMatch(v)) {
-                    return 'Enter valid email';
+                    return 'Please enter a valid email (e.g., name@example.com)';
                   }
                   return null;
                 },
@@ -1738,14 +1969,18 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                     ? TextCapitalization.characters
                     : TextCapitalization.none,
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
+                  if (v == null || v.isEmpty) {
+                    if (proofType == 'PAN Number') return 'Please enter PAN number';
+                    if (proofType == 'Aadhaar number(last 4 digits)') return 'Please enter last 4 digits of Aadhaar';
+                    return 'Please enter identity proof number';
+                  }
                   if (proofType == 'PAN Number') {
                     if (!RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$').hasMatch(v)) {
-                      return 'Enter valid PAN (e.g., ABCDE1234F)';
+                      return 'Invalid PAN format — must be like ABCDE1234F';
                     }
                   } else if (proofType == 'Aadhaar number(last 4 digits)') {
                     if (!RegExp(r'^\d{4}$').hasMatch(v)) {
-                      return 'Enter last 4 digits';
+                      return 'Please enter exactly 4 digits of Aadhaar';
                     }
                   }
                   return null;
@@ -1778,7 +2013,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
           const SizedBox(height: 8),
           _buildTextField('Address *', addressCtrl, textColor, subtitleColor,
               borderColor, primaryColor,
-              validator: _requiredValidator),
+              validator: _requiredFieldValidator('nominee address')),
           const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1789,19 +2024,25 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                       borderColor, primaryColor,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: _requiredValidator)),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Please enter pincode';
+                        if (!RegExp(r'^\d{6}$').hasMatch(v)) return 'Pincode must be exactly 6 digits';
+                        return null;
+                      },
+                      // Auto-fetch city, state, country when 6 digits entered
+                      onChanged: (v) => _fetchPincodeData(v, cityCtrl, stateCtrl, countryCtrl))),
               const SizedBox(width: 12),
               Expanded(
                   child: _buildTextField(
                       'City *', cityCtrl, textColor, subtitleColor,
                       borderColor, primaryColor,
-                      validator: _requiredValidator)),
+                      validator: _requiredFieldValidator('city'))),
               const SizedBox(width: 12),
               Expanded(
                   child: _buildTextField(
                       'State *', stateCtrl, textColor, subtitleColor,
                       borderColor, primaryColor,
-                      validator: _requiredValidator)),
+                      validator: _requiredFieldValidator('state'))),
             ],
           ),
           const SizedBox(height: 12),
@@ -1812,7 +2053,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                   child: _buildTextField(
                       'Country *', countryCtrl, textColor, subtitleColor,
                       borderColor, primaryColor,
-                      validator: _requiredValidator)),
+                      validator: _requiredFieldValidator('country'))),
               const SizedBox(width: 12),
               const Expanded(child: SizedBox()),
               const SizedBox(width: 12),
@@ -1842,8 +2083,15 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               Expanded(
                 child: _buildTextField('Guardian name *', guardianNameCtrl,
                     textColor, subtitleColor, borderColor, primaryColor,
-                    validator: _requiredValidator,
-                    textCapitalization: TextCapitalization.characters),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Please enter guardian name';
+                      if (v.trim().length < 2) return 'Name must be at least 2 characters';
+                      return null;
+                    },
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ]),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1885,11 +2133,15 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                   borderColor,
                   primaryColor,
                   keyboardType: TextInputType.phone,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Required';
+                    if (v == null || v.isEmpty) return 'Please enter guardian mobile number';
+                    if (v.length < 10) return 'Mobile number must be 10 digits';
                     if (!RegExp(r'^[6-9]\d{9}$').hasMatch(v)) {
-                      return 'Enter valid 10-digit number';
+                      return 'Mobile number must start with 6, 7, 8 or 9';
                     }
                     return null;
                   },
@@ -1910,8 +2162,9 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
   //  FORM FIELD BUILDERS
   // ═══════════════════════════════════════════════════════════════════
 
-  String? _requiredValidator(String? v) =>
-      (v == null || v.trim().isEmpty) ? 'Required' : null;
+  String? Function(String?) _requiredFieldValidator(String fieldName) =>
+      (String? v) =>
+          (v == null || v.trim().isEmpty) ? 'Please enter $fieldName' : null;
 
   Widget _buildTextField(
     String label,
@@ -1926,6 +2179,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     TextCapitalization textCapitalization = TextCapitalization.none,
     Widget? suffixIcon,
     bool enabled = true,
+    void Function(String)? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1938,10 +2192,12 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
         TextFormField(
           controller: controller,
           validator: enabled ? validator : null,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           textCapitalization: textCapitalization,
           enabled: enabled,
+          onChanged: onChanged,
           style: MyntWebTextStyles.body(context,
               color: enabled ? textColor : textColor.withValues(alpha: 0.5))
               .copyWith(decoration: TextDecoration.none),
@@ -1977,6 +2233,315 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     );
   }
 
+  Future<DateTime?> _showCustomDatePicker({
+    required DateTime initialDate,
+    required DateTime firstDate,
+    required DateTime lastDate,
+  }) async {
+    return showDialog<DateTime>(
+      context: context,
+      builder: (dialogContext) {
+        DateTime displayMonth = DateTime(initialDate.year, initialDate.month);
+        DateTime? selectedDate;
+
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final primaryColor = resolveThemeColor(ctx,
+                dark: MyntColors.secondary, light: MyntColors.primary);
+            final textColor = resolveThemeColor(ctx,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final secondaryTextColor = resolveThemeColor(ctx,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary);
+            final cardColor = resolveThemeColor(ctx,
+                dark: MyntColors.cardDark, light: MyntColors.card);
+            final borderColor = resolveThemeColor(ctx,
+                dark: MyntColors.cardBorderDark,
+                light: MyntColors.cardBorder);
+
+            final monthName = DateFormat('MMMM yyyy').format(displayMonth);
+            final daysInMonth =
+                DateTime(displayMonth.year, displayMonth.month + 1, 0).day;
+            final firstWeekday =
+                DateTime(displayMonth.year, displayMonth.month, 1).weekday % 7;
+            final today = DateTime.now();
+            final dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+            return Dialog(
+              backgroundColor: cardColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Container(
+                width: 300,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Month header with navigation
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            setDialogState(() {
+                              displayMonth = DateTime(displayMonth.year,
+                                  displayMonth.month - 1);
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(Icons.chevron_left,
+                                size: 20, color: secondaryTextColor),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () async {
+                            // Show year picker on tapping month name
+                            final year = await showDialog<int>(
+                              context: ctx,
+                              builder: (yearCtx) {
+                                final yearCardColor = resolveThemeColor(yearCtx,
+                                    dark: MyntColors.cardDark,
+                                    light: MyntColors.card);
+                                final yearBorderColor = resolveThemeColor(
+                                    yearCtx,
+                                    dark: MyntColors.cardBorderDark,
+                                    light: MyntColors.cardBorder);
+                                return Dialog(
+                                  backgroundColor: yearCardColor,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(12)),
+                                  child: Container(
+                                    width: 280,
+                                    height: 300,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: yearBorderColor),
+                                    ),
+                                    child: GridView.builder(
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        childAspectRatio: 2,
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8,
+                                      ),
+                                      itemCount: lastDate.year -
+                                          firstDate.year +
+                                          1,
+                                      itemBuilder: (_, index) {
+                                        final y =
+                                            lastDate.year - index;
+                                        final isSelected = y ==
+                                            displayMonth.year;
+                                        return InkWell(
+                                          onTap: () => Navigator.pop(
+                                              yearCtx, y),
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                                  8),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: isSelected
+                                                  ? primaryColor
+                                                  : null,
+                                              borderRadius:
+                                                  BorderRadius
+                                                      .circular(8),
+                                              border: Border.all(
+                                                  color: isSelected
+                                                      ? primaryColor
+                                                      : yearBorderColor),
+                                            ),
+                                            alignment:
+                                                Alignment.center,
+                                            child: Text(
+                                              '$y',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight:
+                                                    FontWeight.w500,
+                                                color: isSelected
+                                                    ? Colors.white
+                                                    : textColor,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                            if (year != null) {
+                              setDialogState(() {
+                                displayMonth = DateTime(
+                                    year, displayMonth.month);
+                              });
+                            }
+                          },
+                          child: Text(
+                            monthName,
+                            style: MyntWebTextStyles.body(ctx,
+                                darkColor: MyntColors.textPrimaryDark,
+                                lightColor: MyntColors.textPrimary,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            setDialogState(() {
+                              displayMonth = DateTime(displayMonth.year,
+                                  displayMonth.month + 1);
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(Icons.chevron_right,
+                                size: 20, color: secondaryTextColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Day headers
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: dayHeaders
+                          .map((d) => SizedBox(
+                                width: 34,
+                                child: Center(
+                                  child: Text(d,
+                                      style: MyntWebTextStyles.para(ctx,
+                                          darkColor:
+                                              MyntColors.textSecondaryDark,
+                                          lightColor:
+                                              MyntColors.textSecondary,
+                                          fontWeight: FontWeight.w500)),
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 8),
+                    // Day grid
+                    ...List.generate(6, (weekIndex) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: List.generate(7, (dayIndex) {
+                          final dayNum =
+                              weekIndex * 7 + dayIndex - firstWeekday + 1;
+                          if (dayNum < 1 || dayNum > daysInMonth) {
+                            return const SizedBox(width: 34, height: 34);
+                          }
+
+                          final date = DateTime(displayMonth.year,
+                              displayMonth.month, dayNum);
+                          final isToday = date.year == today.year &&
+                              date.month == today.month &&
+                              date.day == today.day;
+                          final isBeforeFirst = date.isBefore(firstDate);
+                          final isAfterLast = date.isAfter(lastDate);
+                          final isDisabled =
+                              isBeforeFirst || isAfterLast;
+                          final isSelected = selectedDate != null &&
+                              date.year == selectedDate!.year &&
+                              date.month == selectedDate!.month &&
+                              date.day == selectedDate!.day;
+
+                          Color? bgColor;
+                          Color dayTextColor = textColor;
+
+                          if (isSelected) {
+                            bgColor = primaryColor;
+                            dayTextColor = Colors.white;
+                          }
+
+                          if (isDisabled) {
+                            dayTextColor = secondaryTextColor
+                                .withValues(alpha: 0.4);
+                          }
+
+                          return GestureDetector(
+                            onTap: isDisabled
+                                ? null
+                                : () {
+                                    setDialogState(() {
+                                      selectedDate = date;
+                                    });
+                                  },
+                            child: Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: bgColor,
+                                shape: isSelected
+                                    ? BoxShape.circle
+                                    : BoxShape.rectangle,
+                                borderRadius:
+                                    isSelected ? null : BorderRadius.zero,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                '$dayNum',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: isToday
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                  color: dayTextColor,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                    // Action buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text('Cancel',
+                              style: TextStyle(color: secondaryTextColor)),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: selectedDate != null
+                              ? () => Navigator.pop(ctx, selectedDate)
+                              : null,
+                          child: Text('OK',
+                              style: TextStyle(
+                                
+                                  color: selectedDate != null
+                                      ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
+                                      : secondaryTextColor)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildDateField(
     String label,
     DateTime? value,
@@ -1986,7 +2551,11 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     Color borderColor,
     Color primaryColor, {
     String? helperText,
+    bool required = true,
   }) {
+    final errorColor = resolveThemeColor(context,
+        dark: MyntColors.errorDark, light: MyntColors.error);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2008,39 +2577,67 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
           ),
         ),
         const SizedBox(height: 6),
-        InkWell(
-          onTap: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: value ?? DateTime(2000),
-              firstDate: DateTime(1920),
-              lastDate: DateTime.now(),
-              initialDatePickerMode: DatePickerMode.year,
-            );
-            if (picked != null) onChanged(picked);
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border.all(color: borderColor),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.calendar_today, size: 16, color: subtitleColor),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    value != null
-                        ? DateFormat('yyyy-MM-dd').format(value)
-                        : 'DOB',
-                    style: MyntWebTextStyles.body(context,
-                        color: value != null ? textColor : subtitleColor)
-                        .copyWith(decoration: TextDecoration.none),
+        FormField<DateTime>(
+          initialValue: value,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: required ? (v) => v == null ? 'Please select ${label.replaceAll(' *', '').toLowerCase()}' : null : null,
+          builder: (field) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: () async {
+                  final picked = await _showCustomDatePicker(
+                    initialDate: value ?? DateTime(2000),
+                    firstDate: DateTime(1920),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    onChanged(picked);
+                    field.didChange(picked);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: field.hasError ? errorColor : borderColor,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today,
+                          size: 16,
+                          color: field.hasError ? errorColor : subtitleColor),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          value != null
+                              ? DateFormat('yyyy-MM-dd').format(value)
+                              : 'Select date',
+                          style: MyntWebTextStyles.body(context,
+                              color: value != null
+                                  ? textColor
+                                  : (field.hasError
+                                      ? errorColor
+                                      : subtitleColor))
+                              .copyWith(decoration: TextDecoration.none),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              if (field.hasError)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, left: 12),
+                  child: Text(
+                    field.errorText!,
+                    style: TextStyle(color: errorColor, fontSize: 12),
+                  ),
+                ),
+            ],
           ),
         ),
       ],
@@ -2079,7 +2676,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                   ))
               .toList(),
           onChanged: onChanged,
-          validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: (v) => (v == null || v.isEmpty) ? 'Please select ${label.replaceAll(' *', '').toLowerCase()}' : null,
           decoration: InputDecoration(
             isDense: true,
             contentPadding:
@@ -2095,6 +2693,16 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: primaryColor),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: resolveThemeColor(context,
+                  dark: MyntColors.errorDark, light: MyntColors.error)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: resolveThemeColor(context,
+                  dark: MyntColors.errorDark, light: MyntColors.error)),
             ),
           ),
           dropdownColor: cardBg,
