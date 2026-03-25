@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart'
     hide DataTable, DataColumn, DataRow, DataCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -136,6 +137,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -181,19 +184,19 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     // Last column mirrors this - minimal left, more right
     EdgeInsets cellPadding;
     if (isSelectColumn) {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     } else if (isTimeColumn) {
       // Time column - symmetric padding
-      cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 4);
     } else if (isInstrumentColumn) {
       // Instrument column - more left, minimal right (for overlay buttons)
-      cellPadding = const EdgeInsets.fromLTRB(12, 8, 4, 8);
+      cellPadding = const EdgeInsets.fromLTRB(12, 4, 4, 4);
     } else if (isLastColumn) {
       // Last column - minimal left, more right
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 12, 8);
+      cellPadding = const EdgeInsets.fromLTRB(4, 4, 12, 4);
     } else {
       // Other columns - symmetric padding
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -589,360 +592,356 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
 
     // Return shadcn Table with proper structure
     // 9 columns: Select, Time, Type, Instrument, Product, Qty., LTP, Price, Status
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: shadcn.OutlinedContainer(
-        child: ClipRect(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Available width
-              final availableWidth = constraints.maxWidth;
-
-              // Minimum column widths to prevent overflow
-              const minSelectWidth = 50.0;
-              const minTimeWidth = 80.0;
-              const minTypeWidth = 60.0;
-              const minInstrumentWidth = 180.0;
-              const minProductWidth = 70.0;
-              const minQtyWidth = 80.0;
-              const minLtpWidth = 80.0;
-              const minPriceWidth = 80.0;
-              const minStatusWidth = 100.0;
-
-              // Total minimum width required
-              const totalMinWidth = minSelectWidth +
-                  minTimeWidth +
-                  minTypeWidth +
-                  minInstrumentWidth +
-                  minProductWidth +
-                  minQtyWidth +
-                  minLtpWidth +
-                  minPriceWidth +
-                  minStatusWidth;
-
-              // Check if we need horizontal scroll
-              final needsHorizontalScroll = availableWidth < totalMinWidth;
-              final effectiveWidth = needsHorizontalScroll ? totalMinWidth : availableWidth;
-
-              // Proportional widths for columns (total = 100%)
-              // Select: 4%, Time: 10%, Type: 6%, Instrument: 24%, Product: 8%, Qty: 10%, LTP: 12%, Price: 12%, Status: 14%
-              final selectWidth = (effectiveWidth * 0.04).clamp(minSelectWidth, double.infinity);
-              final timeWidth = (effectiveWidth * 0.10).clamp(minTimeWidth, double.infinity);
-              final typeWidth = (effectiveWidth * 0.06).clamp(minTypeWidth, double.infinity);
-              final instrumentWidth = (effectiveWidth * 0.24).clamp(minInstrumentWidth, double.infinity);
-              final productWidth = (effectiveWidth * 0.08).clamp(minProductWidth, double.infinity);
-              final qtyWidth = (effectiveWidth * 0.10).clamp(minQtyWidth, double.infinity);
-              final ltpWidth = (effectiveWidth * 0.12).clamp(minLtpWidth, double.infinity);
-              final priceWidth = (effectiveWidth * 0.12).clamp(minPriceWidth, double.infinity);
-              final statusWidth = (effectiveWidth * 0.14).clamp(minStatusWidth, double.infinity);
-
-              // Actual total width after clamping (may exceed totalMinWidth due to clamp bump-ups)
-              final actualTotalWidth = selectWidth + timeWidth + typeWidth +
-                  instrumentWidth + productWidth + qtyWidth + ltpWidth +
-                  priceWidth + statusWidth;
-
-              // Old dynamic width calculation (commented out):
-              // final minWidths = _calculateMinWidths(sortedOrders, context);
-              // final columnWidths = <int, double>{};
-              // for (int i = 0; i < 11; i++) {
-              //   columnWidths[i] = minWidths[i] ?? 100.0;
-              // }
-              // ... proportional distribution logic ...
-
-              // Build table content
-              Widget buildTableContent() {
-                return ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: 0,
-                    maxHeight: constraints.maxHeight.isFinite &&
-                            constraints.maxHeight > 0
-                        ? constraints.maxHeight
-                        : double.infinity,
-                  ),
-                  child: Column(
-                    children: [
-                      // Fixed Header - 9 columns with proportional widths
-                      shadcn.Table(
-                        columnWidths: {
-                          0: shadcn.FixedTableSize(selectWidth),
-                          1: shadcn.FixedTableSize(timeWidth),
-                          2: shadcn.FixedTableSize(typeWidth),
-                          3: shadcn.FixedTableSize(instrumentWidth),
-                          4: shadcn.FixedTableSize(productWidth),
-                          5: shadcn.FixedTableSize(qtyWidth),
-                          6: shadcn.FixedTableSize(ltpWidth),
-                          7: shadcn.FixedTableSize(priceWidth),
-                          8: shadcn.FixedTableSize(statusWidth),
-                        },
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
-                        rows: [
-                          shadcn.TableHeader(
-                            cells: [
-                              _buildSelectHeaderCell(orderBook, sortedOrders),
-                              buildHeaderCell('Time', 1),
-                              buildHeaderCell('Type', 2),
-                              buildHeaderCell('Instrument', 3),
-                              buildHeaderCell('Product', 4, true),
-                              buildHeaderCell('Qty.', 5, true),
-                              buildHeaderCell('LTP', 6, true),
-                              buildHeaderCell('Price', 7, true),
-                              buildHeaderCell('Status', 8, true),
-                            ],
-                          ),
-                        ],
-                      ),
-                      // Scrollable Body (vertical scroll) - shows loader/no data/table rows
-                      Expanded(
-                        child: sortedOrders.isEmpty
-                            ? (isLoading
-                                ? Center(child: MyntLoader.simple())
-                                : Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: NoDataFoundWeb(
-                                        title: searchQuery.isNotEmpty ? "No Orders Found" : "No Orders",
-                                        subtitle: searchQuery.isNotEmpty
-                                            ? "No orders match your search \"$searchQuery\"."
-                                            : "You don't have any open orders yet.",
-                                        primaryEnabled: false,
-                                        secondaryEnabled: false,
+    return shadcn.OutlinedContainer(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Available width
+            final availableWidth = constraints.maxWidth;
+        
+            // Minimum column widths to prevent overflow
+            const minSelectWidth = 50.0;
+            const minTimeWidth = 80.0;
+            const minTypeWidth = 60.0;
+            const minInstrumentWidth = 180.0;
+            const minProductWidth = 70.0;
+            const minQtyWidth = 80.0;
+            const minLtpWidth = 80.0;
+            const minPriceWidth = 80.0;
+            const minStatusWidth = 100.0;
+        
+            // Total minimum width required
+            const totalMinWidth = minSelectWidth +
+                minTimeWidth +
+                minTypeWidth +
+                minInstrumentWidth +
+                minProductWidth +
+                minQtyWidth +
+                minLtpWidth +
+                minPriceWidth +
+                minStatusWidth;
+        
+            // Check if we need horizontal scroll
+            final needsHorizontalScroll = availableWidth < totalMinWidth;
+            final effectiveWidth = needsHorizontalScroll ? totalMinWidth : availableWidth;
+        
+            // Proportional widths for columns (total = 100%)
+            // Select: 4%, Time: 10%, Type: 6%, Instrument: 24%, Product: 8%, Qty: 10%, LTP: 12%, Price: 12%, Status: 14%
+            final selectWidth = (effectiveWidth * 0.04).clamp(minSelectWidth, double.infinity);
+            final timeWidth = (effectiveWidth * 0.10).clamp(minTimeWidth, double.infinity);
+            final typeWidth = (effectiveWidth * 0.06).clamp(minTypeWidth, double.infinity);
+            final instrumentWidth = (effectiveWidth * 0.24).clamp(minInstrumentWidth, double.infinity);
+            final productWidth = (effectiveWidth * 0.08).clamp(minProductWidth, double.infinity);
+            final qtyWidth = (effectiveWidth * 0.10).clamp(minQtyWidth, double.infinity);
+            final ltpWidth = (effectiveWidth * 0.12).clamp(minLtpWidth, double.infinity);
+            final priceWidth = (effectiveWidth * 0.12).clamp(minPriceWidth, double.infinity);
+            final statusWidth = (effectiveWidth * 0.14).clamp(minStatusWidth, double.infinity);
+        
+            // Actual total width after clamping (may exceed totalMinWidth due to clamp bump-ups)
+            final actualTotalWidth = selectWidth + timeWidth + typeWidth +
+                instrumentWidth + productWidth + qtyWidth + ltpWidth +
+                priceWidth + statusWidth;
+        
+            // Old dynamic width calculation (commented out):
+            // final minWidths = _calculateMinWidths(sortedOrders, context);
+            // final columnWidths = <int, double>{};
+            // for (int i = 0; i < 11; i++) {
+            //   columnWidths[i] = minWidths[i] ?? 100.0;
+            // }
+            // ... proportional distribution logic ...
+        
+            // Build table content
+            Widget buildTableContent() {
+              return ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: 0,
+                  maxHeight: constraints.maxHeight.isFinite &&
+                          constraints.maxHeight > 0
+                      ? constraints.maxHeight
+                      : double.infinity,
+                ),
+                child: Column(
+                  children: [
+                    // Fixed Header - 9 columns with proportional widths
+                    shadcn.Table(
+                      columnWidths: {
+                        0: shadcn.FixedTableSize(selectWidth),
+                        1: shadcn.FixedTableSize(timeWidth),
+                        2: shadcn.FixedTableSize(typeWidth),
+                        3: shadcn.FixedTableSize(instrumentWidth),
+                        4: shadcn.FixedTableSize(productWidth),
+                        5: shadcn.FixedTableSize(qtyWidth),
+                        6: shadcn.FixedTableSize(ltpWidth),
+                        7: shadcn.FixedTableSize(priceWidth),
+                        8: shadcn.FixedTableSize(statusWidth),
+                      },
+                      defaultRowHeight: const shadcn.FixedTableSize(40),
+                      rows: [
+                        shadcn.TableHeader(
+                          cells: [
+                            _buildSelectHeaderCell(orderBook, sortedOrders),
+                            buildHeaderCell('Time', 1),
+                            buildHeaderCell('Type', 2),
+                            buildHeaderCell('Instrument', 3),
+                            buildHeaderCell('Product', 4, true),
+                            buildHeaderCell('Qty.', 5, true),
+                            buildHeaderCell('LTP', 6, true),
+                            buildHeaderCell('Price', 7, true),
+                            buildHeaderCell('Status', 8, true),
+                          ],
+                        ),
+                      ],
+                    ),
+                    // Scrollable Body (vertical scroll) - shows loader/no data/table rows
+                    Expanded(
+                      child: sortedOrders.isEmpty
+                          ? (isLoading
+                              ? Center(child: MyntLoader.simple())
+                              : Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: NoDataFoundWeb(
+                                      title: searchQuery.isNotEmpty ? "No Orders Found" : "No Orders",
+                                      subtitle: searchQuery.isNotEmpty
+                                          ? "No orders match your search \"$searchQuery\"."
+                                          : "You don't have any open orders yet.",
+                                      primaryEnabled: false,
+                                      secondaryEnabled: false,
+                                    ),
+                                  ),
+                                ))
+                          : RawScrollbar(
+                        controller: widget.verticalScrollController,
+                        thumbVisibility: true,
+                        trackVisibility: true,
+                        trackColor: resolveThemeColor(context,
+                            dark: Colors.grey.withValues(alpha: 0.1),
+                            light: Colors.grey.withValues(alpha: 0.1)),
+                        thumbColor: resolveThemeColor(context,
+                            dark: Colors.grey.withValues(alpha: 0.3),
+                            light: Colors.grey.withValues(alpha: 0.3)),
+                        thickness: 6,
+                        radius: const Radius.circular(3),
+                        interactive: true,
+                        child: ListView.builder(
+                          controller: widget.verticalScrollController,
+                          itemCount: sortedOrders.length,
+                          itemExtent: 42.0,
+                          itemBuilder: (context, i) {
+                            final order = sortedOrders[i];
+                            final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
+                            final isPending = order.status == "PENDING" || order.status == "OPEN" || order.status == "TRIGGER_PENDING";
+                            final actionHandler = OrderActionHandler(ref: ref, context: context);
+                            return shadcn.Table(
+                              columnWidths: {
+                                0: shadcn.FixedTableSize(selectWidth),
+                                1: shadcn.FixedTableSize(timeWidth),
+                                2: shadcn.FixedTableSize(typeWidth),
+                                3: shadcn.FixedTableSize(instrumentWidth),
+                                4: shadcn.FixedTableSize(productWidth),
+                                5: shadcn.FixedTableSize(qtyWidth),
+                                6: shadcn.FixedTableSize(ltpWidth),
+                                7: shadcn.FixedTableSize(priceWidth),
+                                8: shadcn.FixedTableSize(statusWidth),
+                              },
+                              defaultRowHeight: const shadcn.FixedTableSize(40),
+                              rows: [
+                                shadcn.TableRow(
+                                  cells: [
+                                    // Column 0: Select checkbox
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 0,
+                                      child: _buildCheckboxCell(order, orderBook, i, isPending),
+                                    ),
+                                    // Column 1: Time
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 1,
+                                      onTap: () => actionHandler.openOrderDetail(order),
+                                      child: Text(
+                                        _formatTime(order.norentm ?? '0.00'),
+                                        style: _getTextStyle(context),
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: false,
                                       ),
                                     ),
-                                  ))
-                            : RawScrollbar(
-                          controller: widget.verticalScrollController,
-                          thumbVisibility: true,
-                          trackVisibility: true,
-                          trackColor: resolveThemeColor(context,
-                              dark: Colors.grey.withValues(alpha: 0.1),
-                              light: Colors.grey.withValues(alpha: 0.1)),
-                          thumbColor: resolveThemeColor(context,
-                              dark: Colors.grey.withValues(alpha: 0.3),
-                              light: Colors.grey.withValues(alpha: 0.3)),
-                          thickness: 6,
-                          radius: const Radius.circular(3),
-                          interactive: true,
-                          child: ListView.builder(
-                            controller: widget.verticalScrollController,
-                            itemCount: sortedOrders.length,
-                            itemExtent: 50.0,
-                            itemBuilder: (context, i) {
-                              final order = sortedOrders[i];
-                              final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
-                              final isPending = order.status == "PENDING" || order.status == "OPEN" || order.status == "TRIGGER_PENDING";
-                              final actionHandler = OrderActionHandler(ref: ref, context: context);
-                              return shadcn.Table(
-                                columnWidths: {
-                                  0: shadcn.FixedTableSize(selectWidth),
-                                  1: shadcn.FixedTableSize(timeWidth),
-                                  2: shadcn.FixedTableSize(typeWidth),
-                                  3: shadcn.FixedTableSize(instrumentWidth),
-                                  4: shadcn.FixedTableSize(productWidth),
-                                  5: shadcn.FixedTableSize(qtyWidth),
-                                  6: shadcn.FixedTableSize(ltpWidth),
-                                  7: shadcn.FixedTableSize(priceWidth),
-                                  8: shadcn.FixedTableSize(statusWidth),
-                                },
-                                defaultRowHeight: const shadcn.FixedTableSize(50),
-                                rows: [
-                                  shadcn.TableRow(
-                                    cells: [
-                                      // Column 0: Select checkbox
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 0,
-                                        child: _buildCheckboxCell(order, orderBook, i, isPending),
-                                      ),
-                                      // Column 1: Time
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 1,
-                                        onTap: () => actionHandler.openOrderDetail(order),
-                                        child: Text(
-                                          _formatTime(order.norentm ?? '0.00'),
-                                          style: _getTextStyle(context),
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: false,
+                                    // Column 2: Type (BUY/SELL)
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 2,
+                                      onTap: () => actionHandler.openOrderDetail(order),
+                                      child: Text(
+                                        order.trantype == "S" ? "SELL" : "BUY",
+                                        style: _getTextStyle(
+                                          context,
+                                          color: order.trantype == "S"
+                                              ? resolveThemeColor(context,
+                                                  dark: MyntColors.lossDark, light: MyntColors.loss)
+                                              : resolveThemeColor(context,
+                                                  dark: MyntColors.profitDark, light: MyntColors.profit),
                                         ),
                                       ),
-                                      // Column 2: Type (BUY/SELL)
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 2,
-                                        onTap: () => actionHandler.openOrderDetail(order),
+                                    ),
+                                    // Column 3: Instrument
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 3,
+                                      child: ValueListenableBuilder<int?>(
+                                        valueListenable: _hoveredRowIndex,
+                                        builder: (context, hoveredIndex, _) {
+                                          final isHovered = hoveredIndex == i ||
+                                              (_activePopoverController != null && _popoverRowIndex == i);
+                                          return _buildInstrumentCell(
+                                            order, theme, uniqueId, actionHandler, isHovered,
+                                            rowIndex: i,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    // Column 4: Product
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 4,
+                                      alignRight: true,
+                                      onTap: () => actionHandler.openOrderDetail(order),
+                                      child: Text(
+                                        order.sPrdtAli ?? order.prd ?? '',
+                                        style: _getTextStyle(context),
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: false,
+                                      ),
+                                    ),
+                                    // Column 5: Qty.
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 5,
+                                      alignRight: true,
+                                      onTap: () => actionHandler.openOrderDetail(order),
+                                      child: Text(
+                                        _formatOrderQty(order),
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                    // Column 6: LTP
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 6,
+                                      alignRight: true,
+                                      onTap: () => actionHandler.openOrderDetail(order),
+                                      child: _OrderLTPCell(
+                                        token: order.token ?? '',
+                                        initialLtp: CellFormatters.getValidLTP(order),
+                                        trantype: order.trantype ?? 'B',
+                                        orderPrice: order.prc ?? '0',
+                                      ),
+                                    ),
+                                    // Column 7: Price
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 7,
+                                      alignRight: true,
+                                      onTap: () => actionHandler.openOrderDetail(order),
+                                      child: Text(
+                                        CellFormatters.getValidPrice(order),
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                    // Column 8: Status
+                                    buildCellWithHover(
+                                      rowIndex: i,
+                                      columnIndex: 8,
+                                      alignRight: true,
+                                      onTap: () => actionHandler.openOrderDetail(order),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _getStatusColor(CellFormatters.getStatusText(order))
+                                              .withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
                                         child: Text(
-                                          order.trantype == "S" ? "SELL" : "BUY",
-                                          style: _getTextStyle(
+                                          CellFormatters.getStatusText(order).toUpperCase(),
+                                          style: MyntWebTextStyles.para(
                                             context,
-                                            color: order.trantype == "S"
-                                                ? resolveThemeColor(context,
-                                                    dark: MyntColors.lossDark, light: MyntColors.loss)
-                                                : resolveThemeColor(context,
-                                                    dark: MyntColors.profitDark, light: MyntColors.profit),
+                                            color: _getStatusColor(CellFormatters.getStatusText(order)),
+                                            fontWeight: MyntFonts.medium,
                                           ),
                                         ),
                                       ),
-                                      // Column 3: Instrument
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 3,
-                                        child: ValueListenableBuilder<int?>(
-                                          valueListenable: _hoveredRowIndex,
-                                          builder: (context, hoveredIndex, _) {
-                                            final isHovered = hoveredIndex == i ||
-                                                (_activePopoverController != null && _popoverRowIndex == i);
-                                            return _buildInstrumentCell(
-                                              order, theme, uniqueId, actionHandler, isHovered,
-                                              rowIndex: i,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      // Column 4: Product
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 4,
-                                        alignRight: true,
-                                        onTap: () => actionHandler.openOrderDetail(order),
-                                        child: Text(
-                                          order.sPrdtAli ?? order.prd ?? '',
-                                          style: _getTextStyle(context),
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: false,
-                                        ),
-                                      ),
-                                      // Column 5: Qty.
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 5,
-                                        alignRight: true,
-                                        onTap: () => actionHandler.openOrderDetail(order),
-                                        child: Text(
-                                          _formatOrderQty(order),
-                                          style: _getTextStyle(context),
-                                        ),
-                                      ),
-                                      // Column 6: LTP
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 6,
-                                        alignRight: true,
-                                        onTap: () => actionHandler.openOrderDetail(order),
-                                        child: _OrderLTPCell(
-                                          token: order.token ?? '',
-                                          initialLtp: CellFormatters.getValidLTP(order),
-                                          trantype: order.trantype ?? 'B',
-                                          orderPrice: order.prc ?? '0',
-                                        ),
-                                      ),
-                                      // Column 7: Price
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 7,
-                                        alignRight: true,
-                                        onTap: () => actionHandler.openOrderDetail(order),
-                                        child: Text(
-                                          CellFormatters.getValidPrice(order),
-                                          style: _getTextStyle(context),
-                                        ),
-                                      ),
-                                      // Column 8: Status
-                                      buildCellWithHover(
-                                        rowIndex: i,
-                                        columnIndex: 8,
-                                        alignRight: true,
-                                        onTap: () => actionHandler.openOrderDetail(order),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: _getStatusColor(CellFormatters.getStatusText(order))
-                                                .withValues(alpha: 0.12),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            CellFormatters.getStatusText(order).toUpperCase(),
-                                            style: MyntWebTextStyles.para(
-                                              context,
-                                              color: _getStatusColor(CellFormatters.getStatusText(order)),
-                                              fontWeight: MyntFonts.medium,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                );
-              }
-
-              // Add horizontal scroll when table is wider than available space
-              if (needsHorizontalScroll) {
-                return RawScrollbar(
-                  controller: widget.horizontalScrollController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  trackColor: resolveThemeColor(context,
-                      dark: Colors.grey.withValues(alpha: 0.1),
-                      light: Colors.grey.withValues(alpha: 0.1)),
-                  thumbColor: resolveThemeColor(context,
-                      dark: Colors.grey.withValues(alpha: 0.3),
-                      light: Colors.grey.withValues(alpha: 0.3)),
-                  thickness: 6,
-                  radius: const Radius.circular(3),
-                  interactive: true,
-                  child: SingleChildScrollView(
-                    controller: widget.horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: actualTotalWidth,
-                      child: buildTableContent(),
                     ),
+                  ],
+                ),
+              );
+            }
+        
+            // Add horizontal scroll when table is wider than available space
+            if (needsHorizontalScroll) {
+              return RawScrollbar(
+                controller: widget.horizontalScrollController,
+                thumbVisibility: true,
+                trackVisibility: true,
+                trackColor: resolveThemeColor(context,
+                    dark: Colors.grey.withValues(alpha: 0.1),
+                    light: Colors.grey.withValues(alpha: 0.1)),
+                thumbColor: resolveThemeColor(context,
+                    dark: Colors.grey.withValues(alpha: 0.3),
+                    light: Colors.grey.withValues(alpha: 0.3)),
+                thickness: 6,
+                radius: const Radius.circular(3),
+                interactive: true,
+                child: SingleChildScrollView(
+                  controller: widget.horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: actualTotalWidth,
+                    child: buildTableContent(),
                   ),
-                );
-              }
-
-              return buildTableContent();
-
-              // Old horizontal scroll wrapper (commented out):
-              // final totalRequiredWidth = columnWidths.values
-              //     .fold<double>(0.0, (sum, width) => sum + width);
-              // final needsHorizontalScroll = totalRequiredWidth > availableWidth;
-              // if (needsHorizontalScroll) {
-              //   return RawScrollbar(
-              //     controller: widget.horizontalScrollController,
-              //     thumbVisibility: true,
-              //     trackVisibility: true,
-              //     trackColor: resolveThemeColor(context,
-              //         dark: Colors.grey.withValues(alpha: 0.1),
-              //         light: Colors.grey.withValues(alpha: 0.1)),
-              //     thumbColor: resolveThemeColor(context,
-              //         dark: Colors.grey.withValues(alpha: 0.3),
-              //         light: Colors.grey.withValues(alpha: 0.3)),
-              //     thickness: 6,
-              //     radius: const Radius.circular(3),
-              //     interactive: true,
-              //     child: SingleChildScrollView(
-              //       controller: widget.horizontalScrollController,
-              //       scrollDirection: Axis.horizontal,
-              //       child: SizedBox(
-              //         width: totalRequiredWidth,
-              //         child: buildTableContent(),
-              //       ),
-              //     ),
-              //   );
-              // }
-            },
-          ),
+                ),
+              );
+            }
+        
+            return buildTableContent();
+        
+            // Old horizontal scroll wrapper (commented out):
+            // final totalRequiredWidth = columnWidths.values
+            //     .fold<double>(0.0, (sum, width) => sum + width);
+            // final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+            // if (needsHorizontalScroll) {
+            //   return RawScrollbar(
+            //     controller: widget.horizontalScrollController,
+            //     thumbVisibility: true,
+            //     trackVisibility: true,
+            //     trackColor: resolveThemeColor(context,
+            //         dark: Colors.grey.withValues(alpha: 0.1),
+            //         light: Colors.grey.withValues(alpha: 0.1)),
+            //     thumbColor: resolveThemeColor(context,
+            //         dark: Colors.grey.withValues(alpha: 0.3),
+            //         light: Colors.grey.withValues(alpha: 0.3)),
+            //     thickness: 6,
+            //     radius: const Radius.circular(3),
+            //     interactive: true,
+            //     child: SingleChildScrollView(
+            //       controller: widget.horizontalScrollController,
+            //       scrollDirection: Axis.horizontal,
+            //       child: SizedBox(
+            //         width: totalRequiredWidth,
+            //         child: buildTableContent(),
+            //       ),
+            //     ),
+            //   );
+            // }
+          },
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildInstrumentCell(
@@ -1088,7 +1087,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               }
             },
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               dark: MyntColors.textWhite,
@@ -1106,7 +1105,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         ),
         child: Icon(
           Icons.close,
-          size: 18,
+          size: 16,
            fontWeight: FontWeight.bold,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
@@ -1148,7 +1147,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               );
             },
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               dark: MyntColors.textWhite,
@@ -1166,7 +1165,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         ),
         child: Icon(
           Icons.edit_outlined,
-          size: 18,
+          size: 16,
           color: resolveThemeColor(context,
               dark: MyntColors.primaryDark, light: MyntColors.primary),
         ),
@@ -1319,7 +1318,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   dark: MyntColors.textWhite,
@@ -1337,7 +1336,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
@@ -1385,24 +1384,35 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                   light: MyntColors.listItemBg,
                 ),
               ),
-              child: shadcn.Checkbox(
-                state: isExitAllOrder
-                    ? shadcn.CheckboxState.checked
-                    : shadcn.CheckboxState.unchecked,
-                onChanged: hasPendingOrders
-                    ? (state) {
-                        orderBook.selectExitAllOrders(
-                            state == shadcn.CheckboxState.checked);
-                      }
-                    : null,
-                enabled: hasPendingOrders,
-                activeColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.secondary,
-                  light: MyntColors.primary,
+              child: shadcn.Theme(
+                data: shadcn.Theme.of(context).copyWith(
+                  colorScheme: () {
+                    return shadcn.Theme.of(context).colorScheme.copyWith(
+                      border: () => resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark.withValues(alpha: 0.3),
+                          light: MyntColors.textSecondary.withValues(alpha: 0.3)),
+                    );
+                  },
                 ),
-                borderRadius: BorderRadius.circular(4),
-                size: 18,
+                child: shadcn.Checkbox(
+                  state: isExitAllOrder
+                      ? shadcn.CheckboxState.checked
+                      : shadcn.CheckboxState.unchecked,
+                  onChanged: hasPendingOrders
+                      ? (state) {
+                          orderBook.selectExitAllOrders(
+                              state == shadcn.CheckboxState.checked);
+                        }
+                      : null,
+                  enabled: hasPendingOrders,
+                  activeColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.secondary,
+                    light: MyntColors.primary,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                  size: 18,
+                ),
               ),
             );
           },
@@ -1430,25 +1440,36 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
 
         return Align(
           alignment: Alignment.centerLeft,
-          child: shadcn.Checkbox(
-            state: isSelected
-                ? shadcn.CheckboxState.checked
-                : shadcn.CheckboxState.unchecked,
-            onChanged: !isPending
-                ? null
-                : (state) {
-                    if (orderIndex >= 0) {
-                      orderBook.selectExitOrder(orderIndex);
-                    }
-                  },
-            enabled: isPending,
-            activeColor: resolveThemeColor(
-              context,
-              dark: MyntColors.secondary,
-              light: MyntColors.primary,
+          child: shadcn.Theme(
+            data: shadcn.Theme.of(context).copyWith(
+              colorScheme: () {
+                return shadcn.Theme.of(context).colorScheme.copyWith(
+                  border: () => resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark.withValues(alpha: 0.3),
+                      light: MyntColors.textSecondary.withValues(alpha: 0.3)),
+                );
+              },
             ),
-            borderRadius: BorderRadius.circular(4),
-            size: 18,
+            child: shadcn.Checkbox(
+              state: isSelected
+                  ? shadcn.CheckboxState.checked
+                  : shadcn.CheckboxState.unchecked,
+              onChanged: !isPending
+                  ? null
+                  : (state) {
+                      if (orderIndex >= 0) {
+                        orderBook.selectExitOrder(orderIndex);
+                      }
+                    },
+              enabled: isPending,
+              activeColor: resolveThemeColor(
+                context,
+                dark: MyntColors.secondary,
+                light: MyntColors.primary,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              size: 18,
+            ),
           ),
         );
       },

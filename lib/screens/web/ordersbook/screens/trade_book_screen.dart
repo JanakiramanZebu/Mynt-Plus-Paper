@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart'
     hide DataTable, DataColumn, DataRow, DataCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -141,6 +142,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -232,7 +235,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                           6: shadcn.FixedTableSize(ltpWidth),
                           7: shadcn.FixedTableSize(avgPriceWidth),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
+                        defaultRowHeight: const shadcn.FixedTableSize(40),
                         rows: [
                           shadcn.TableHeader(
                             cells: [
@@ -241,9 +244,9 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                               buildHeaderCell('Type', 2),
                               buildHeaderCell('Instrument', 3),
                               buildHeaderCell('Product', 4),
-                              buildHeaderCell('Qty.', 5, true),
+                              buildHeaderCell('Qty', 5, true),
                               buildHeaderCell('LTP', 6, true),
-                              buildHeaderCell('Avg. Price', 7, true),
+                              buildHeaderCell('Avg Prc', 7, true),
                             ],
                           ),
                         ],
@@ -282,7 +285,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                           child: ListView.builder(
                             controller: _verticalScrollController,
                             itemCount: sortedTrades.length,
-                            itemExtent: 50.0,
+                            itemExtent: 42.0,
                             itemBuilder: (context, index) {
                               final trade = sortedTrades[index];
                               return shadcn.Table(
@@ -296,7 +299,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                   6: shadcn.FixedTableSize(ltpWidth),
                                   7: shadcn.FixedTableSize(avgPriceWidth),
                                 },
-                                defaultRowHeight: const shadcn.FixedTableSize(50),
+                                defaultRowHeight: const shadcn.FixedTableSize(40),
                                 rows: [
                                   shadcn.TableRow(
                                     cells: [
@@ -375,10 +378,13 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                         columnIndex: 5,
                                         alignRight: true,
                                         onTap: () => _showTradeDetail(trade),
-                                        child: Text(
-                                          _formatTradeQty(trade),
-                                          style: _getTextStyle(context),
-                                        ),
+                                        child: Builder(builder: (context) {
+                                          final value = _formatTradeQty(trade);
+                                          return Tooltip(
+                                            message: value,
+                                            child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                          );
+                                        }),
                                       ),
                                       // Column 6: LTP
                                       buildCellWithHover(
@@ -397,10 +403,13 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                         columnIndex: 7,
                                         alignRight: true,
                                         onTap: () => _showTradeDetail(trade),
-                                        child: Text(
-                                          trade.avgprc?.toString() ?? 'N/A',
-                                          style: _getTextStyle(context),
-                                        ),
+                                        child: Builder(builder: (context) {
+                                          final value = trade.avgprc?.toString() ?? 'N/A';
+                                          return Tooltip(
+                                            message: value,
+                                            child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                          );
+                                        }),
                                       ),
                                     ],
                                   ),
@@ -511,7 +520,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     //                 7: shadcn.FixedTableSize(columnWidths[7]!),
     //                 8: shadcn.FixedTableSize(columnWidths[8]!),
     //               },
-    //               defaultRowHeight: const shadcn.FixedTableSize(50),
+    //               defaultRowHeight: const shadcn.FixedTableSize(40),
     //               rows: [
     //                 shadcn.TableHeader(
     //                   cells: [
@@ -560,7 +569,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     //                       7: shadcn.FixedTableSize(columnWidths[7]!),
     //                       8: shadcn.FixedTableSize(columnWidths[8]!),
     //                     },
-    //                     defaultRowHeight: const shadcn.FixedTableSize(50),
+    //                     defaultRowHeight: const shadcn.FixedTableSize(40),
     //                     rows: sortedTrades.asMap().entries.map((entry) {
     //                       final index = entry.key;
     //                       final trade = entry.value;
@@ -718,16 +727,16 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     EdgeInsets cellPadding;
     if (isFirstColumn) {
       // First column - symmetric padding
-      cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 4);
     } else if (isInstrumentColumn) {
       // Instrument column - more left, minimal right (for overlay buttons)
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+      cellPadding = const EdgeInsets.fromLTRB(16, 4, 4, 4);
     } else if (isLastColumn) {
       // Last column - minimal left, more right
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+      cellPadding = const EdgeInsets.fromLTRB(4, 4, 16, 4);
     } else {
       // Other columns - symmetric padding
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -1301,7 +1310,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -1321,7 +1330,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               fontWeight: FontWeight.bold,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
@@ -1479,13 +1488,20 @@ class _TradeLTPCellState extends ConsumerState<_TradeLTPCell> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      ltp,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        darkColor: MyntColors.textPrimaryDark,
-        lightColor: MyntColors.textPrimary,
-        fontWeight: MyntFonts.medium,
+    return Tooltip(
+      message: ltp,
+      child: Text(
+        ltp,
+        style: MyntWebTextStyles.tableCell(
+          context,
+          darkColor: MyntColors.textPrimaryDark,
+          lightColor: MyntColors.textPrimary,
+          fontWeight: MyntFonts.medium,
+        ).copyWith(
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

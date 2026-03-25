@@ -22,6 +22,7 @@ import 'package:flutter/material.dart'
         TextDirection,
         TextPainter,
         TextSpan,
+        FontFeature,
         FontWeight,
         Color,
         EdgeInsets,
@@ -637,7 +638,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                       4: shadcn.FixedTableSize(columnWidths[4]!),
                       5: shadcn.FixedTableSize(columnWidths[5]!),
                     },
-                    defaultRowHeight: const shadcn.FixedTableSize(50),
+                    defaultRowHeight: const shadcn.FixedTableSize(40),
                     rows: [
                       shadcn.TableHeader(
                         cells: [
@@ -692,7 +693,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                             4: shadcn.FixedTableSize(columnWidths[4]!),
                             5: shadcn.FixedTableSize(columnWidths[5]!),
                           },
-                          defaultRowHeight: const shadcn.FixedTableSize(50),
+                          defaultRowHeight: const shadcn.FixedTableSize(40),
                           rows: sortedAlerts.asMap().entries.map((entry) {
                             final index = entry.key;
                             final alert = entry.value;
@@ -839,7 +840,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                 width: double.infinity,
                 height: double.infinity,
                 padding: EdgeInsets.symmetric(
-                    horizontal: horizontalPadding, vertical: 8),
+                    horizontal: horizontalPadding, vertical: 4),
                 alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
                 decoration: BoxDecoration(
                   color: hoveredToken == '$rowIndex'
@@ -1209,7 +1210,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
               }
             },
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               // dark: MyntColors.loss.withValues(alpha: 0.15),
@@ -1229,7 +1230,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         ),
         child: Icon(
           Icons.close,
-          size: 18,
+          size: 16,
           fontWeight: FontWeight.bold,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
@@ -1360,7 +1361,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -1380,7 +1381,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
@@ -1497,16 +1498,21 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       }
     }
 
-    return Text(
-      target,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        darkColor: MyntColors.textPrimaryDark,
-        lightColor: MyntColors.textPrimary,
-        fontWeight: MyntFonts.medium,
+    return Tooltip(
+      message: target,
+      child: Text(
+        target,
+        style: MyntWebTextStyles.tableCell(
+          context,
+          darkColor: MyntColors.textPrimaryDark,
+          lightColor: MyntColors.textPrimary,
+          fontWeight: MyntFonts.medium,
+        ).copyWith(
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -1519,16 +1525,21 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       ltp = "${alert.ltp ?? alert.close ?? '0.00'}";
     }
 
-    return Text(
-      ltp,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        darkColor: MyntColors.textPrimaryDark,
-        lightColor: MyntColors.textPrimary,
-        fontWeight: MyntFonts.medium,
+    return Tooltip(
+      message: ltp,
+      child: Text(
+        ltp,
+        style: MyntWebTextStyles.tableCell(
+          context,
+          darkColor: MyntColors.textPrimaryDark,
+          lightColor: MyntColors.textPrimary,
+          fontWeight: MyntFonts.medium,
+        ).copyWith(
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -1556,7 +1567,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       ),
       child: Text(
         status.toUpperCase(),
-        style: MyntWebTextStyles.bodySmall(
+        style: MyntWebTextStyles.para(
           context,
           color: statusColor,
           fontWeight: MyntFonts.medium,
