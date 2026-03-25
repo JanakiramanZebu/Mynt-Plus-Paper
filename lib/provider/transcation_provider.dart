@@ -1,19 +1,24 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 //import 'dart:developer';
-import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:http/http.dart' as http;
 import 'package:mynt_plus/provider/iop_provider.dart';
+import 'package:mynt_plus/screens/web/profile/fund_screen/upi_apps_screens/cancel_request_alert_box.dart';
+import 'package:mynt_plus/screens/web/profile/fund_screen/upi_apps_screens/no_upi_apps_alert.dart';
+import 'package:mynt_plus/screens/web/profile/fund_screen/upi_apps_screens/upi_apps_payment_failed.dart';
+import 'package:mynt_plus/screens/web/profile/fund_screen/upi_id_screens/upi_id_payment_fail_or_success.dart';
 import 'package:number_to_words/number_to_words.dart';
 import 'package:public_ip_address/public_ip_address.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../models/fund_model_testing_copy/indent_upi_request_model.dart';
+import '../models/fund_model_testing_copy/wrapper_check_status_model.dart';
+import '../models/fund_model_testing_copy/mtf_limits_model.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
-import '../locator/preference.dart';
 import '../models/fund_model_testing_copy/fund_direct_payment_model.dart';
 import '../models/fund_model_testing_copy/fund_pay.model.dart';
 import '../models/fund_model_testing_copy/fund_payment_status_model.dart';
@@ -29,14 +34,10 @@ import '../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../models/fund_model_testing_copy/secured_client_data_model.dart';
 import '../models/fund_model_testing_copy/view_upi_id.dart';
 import '../res/res.dart';
-import '../screens/Mobile/profile_screen/fund_screen/upi_apps_screens/cancel_request_alert_box.dart';
-import '../screens/Mobile/profile_screen/fund_screen/upi_apps_screens/no_upi_apps_alert.dart';
-import '../screens/Mobile/profile_screen/fund_screen/upi_apps_screens/upi_apps_payment_failed.dart';
-import '../screens/Mobile/profile_screen/fund_screen/upi_id_screens/upi_id_payment_fail_or_success.dart';
+
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/fund_function.dart';
 import '../sharedWidget/snack_bar.dart';
-import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -61,7 +62,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   int _intValue = 0;
   int get intValue => _intValue;
 
-  final int _indexss = 0;
+  int _indexss = 0;
   int get indexss => _indexss;
 
   String _ifsc = '';
@@ -102,10 +103,10 @@ class TranctionProvider extends DefaultChangeNotifier {
   bool _upiIdbutton = true;
   bool get upiIdbutton => _upiIdbutton;
 
-  final List<String> _urls = [];
+  List<String>? _urls = [];
   List<String>? get url => _urls;
 
-  final Map<String, dynamic> _dsds = {};
+  Map<String, dynamic>? _dsds = {};
   Map<String, dynamic>? get dsds => _dsds;
 
   upiAppsAccnoFormat(String accono) {
@@ -174,13 +175,13 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  final FocusNode _focusNode = FocusNode();
+  FocusNode _focusNode = FocusNode();
   FocusNode get focusNode => _focusNode;
 
   List<String> _companycode = [];
   List<String> get companycodes => _companycode;
 
-  final RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
+  RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
   RegExp get upiPattern => _upiPattern;
 
   // Replace single bottom sheet flag with two separate flags
@@ -191,7 +192,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   bool get isUpiIdBottomSheetShown => _isUpiIdBottomSheetShown;
 
   final List _defaultUpiapps = [
-    {'name': 'UPI APPS', 'image': assets.upiIcon1, 'limit': '1,00,000'},
+    {'name': 'Scan QR', 'image': assets.upiIcon1, 'limit': '1,00,000'},
     {'name': 'UPI ID', 'image': assets.upiIcon1, 'limit': '1,00,000'},
     {
       'name': 'NET BANKING',
@@ -219,47 +220,12 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  bool _isValidIp(String ip) {
-    return ip.isNotEmpty && 
-           !ip.contains(RegExp(r'Exception|error|ClientException', caseSensitive: false)) &&
-           RegExp(r'^\d+\.\d+\.\d+\.\d+$').hasMatch(ip);
-  }
-
-  Future<String?> _fetchIpFromService(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200) {
-        final ip = response.body.trim();
-        return _isValidIp(ip) ? ip : null;
-      }
-    } catch (_) {}
-    return null;
-  }
-
   ip() async {
     try {
       toggleLoadingOn(true);
-      
-      // Mobile: Simple method
-      if (!kIsWeb) {
-        try {
-          final ip = (await IpAddress().getIp()).trim();
-          return _ipAddress = ip;
-        } catch (e) {
-          return _ipAddress = "";
-        }
-      }
-      
-      // Web: Use only CORS-friendly services (ipify)
-      // Note: public_ip_address package uses seeip.org which doesn't support CORS
-      final services = ['https://api.ipify.org?format=text',
-                       'https://api64.ipify.org?format=text'];
-      for (final url in services) {
-        final ip = await _fetchIpFromService(url);
-        if (ip != null) return _ipAddress = ip;
-      }
-      
-      return _ipAddress = "";
+      String ip = await IpAddress().getIp();
+      _ipAddress = ip;
+      return _ipAddress;
     } finally {
       toggleLoadingOn(false);
     }
@@ -282,14 +248,6 @@ class TranctionProvider extends DefaultChangeNotifier {
     // Reset bottom sheet state
     _isUpiAppsBottomSheetShown = false;
     _isUpiIdBottomSheetShown = false;
-
-    // Guard clause - return early if required data is not available
-    if (bankdetails == null || bankdetails!.dATA == null || bankdetails!.dATA!.isEmpty) {
-      return;
-    }
-    if (decryptclientcheck == null || decryptclientcheck!.companyCode == null || decryptclientcheck!.companyCode!.isEmpty) {
-      return;
-    }
 
     // Initialize bank and account data
     _multipleAccno = _accno = bankdetails!.dATA![index][2];
@@ -389,6 +347,9 @@ class TranctionProvider extends DefaultChangeNotifier {
 
   Razorpays? _razorpay;
   Razorpays? get razorpay => _razorpay;
+
+  Map<String, dynamic>? _razorpayOptions;
+  Map<String, dynamic>? get razorpayOptions => _razorpayOptions;
 
   RazorpayTranstationRes? _razorpayTranstationRes;
   RazorpayTranstationRes? get razorpayTranstationRes => _razorpayTranstationRes;
@@ -676,6 +637,211 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
   }
 
+  // --- QR Payment (Scan QR) ---
+  IndentUpiResponse? _indentUpiResponse;
+  IndentUpiResponse? get indentUpiResponse => _indentUpiResponse;
+
+  WrapperCheckStatusResponse? _qrCheckStatusResponse;
+  WrapperCheckStatusResponse? get qrCheckStatusResponse => _qrCheckStatusResponse;
+
+  String? _qrCodeUrl;
+  String? get qrCodeUrl => _qrCodeUrl;
+
+  bool _qrPaymentLoading = false;
+  bool get qrPaymentLoading => _qrPaymentLoading;
+
+  bool _qrPolling = false;
+  bool get qrPolling => _qrPolling;
+
+  Timer? _qrPollTimer;
+
+  Future<bool> fetchIndentUpiRequest(BuildContext context) async {
+    try {
+      _qrPaymentLoading = true;
+      notifyListeners();
+
+      final clientData = _decryptclientcheck!.clientCheck!.dATA![_indexss];
+      final clientCode = clientData[0];
+      final clientName = clientData[2];
+      final clientEmail = clientData[4];
+      final clientMobile = clientData[5];
+
+      _indentUpiResponse = await api.indentUpiRequest(
+        name: clientName,
+        email: clientEmail,
+        mobile: clientMobile,
+        bankName: _bankname,
+        seg: _textValue,
+        code: clientCode,
+        custAcc: _accno,
+        bankIfsc: _ifsc,
+        amt: "${amount.text}.00",
+      );
+
+      if (_indentUpiResponse?.data?.status == "INITIATED" &&
+          _indentUpiResponse?.data?.upilink != null) {
+        _qrCodeUrl = api.buildQrCodeUrl(
+          orderNumber: _indentUpiResponse!.data!.upiTransactionNo!,
+          paidToVPA: _indentUpiResponse!.data!.paidToVPA!,
+          amount: _indentUpiResponse!.data!.amount!,
+          code: clientCode,
+          gateway: _indentUpiResponse!.gateway ?? 'HDFC',
+        );
+        notifyListeners();
+        return true;
+      } else {
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "fetchIndentUpiRequest", "Error": "$e"});
+      notifyListeners();
+      return false;
+    } finally {
+      _qrPaymentLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void startQrStatusPolling(BuildContext context, {Function(String status)? onStatusUpdate}) {
+    _qrPolling = true;
+    notifyListeners();
+
+    _qrPollTimer?.cancel();
+    _qrPollTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (!_qrPolling) {
+        timer.cancel();
+        return;
+      }
+      try {
+        _qrCheckStatusResponse = await api.wrapperCheckStatus(
+          orderNo: _indentUpiResponse!.data!.orderNumber!,
+          upiTranID: _indentUpiResponse!.data!.upiTransactionNo!,
+          clientID: _decryptclientcheck!.clientCheck!.dATA![_indexss][0],
+          gateway: _indentUpiResponse!.gateway ?? 'HDFC',
+        );
+
+        final status = _qrCheckStatusResponse?.data?.status ?? '';
+
+        if (status == "SUCCESS" || status == "FAILED" || status == "REJECTED" || status == "EXPIRED") {
+          stopQrStatusPolling();
+          onStatusUpdate?.call(status);
+        }
+        notifyListeners();
+      } catch (e) {
+        // Keep polling on error
+      }
+    });
+  }
+
+  void stopQrStatusPolling() {
+    _qrPolling = false;
+    _qrPollTimer?.cancel();
+    _qrPollTimer = null;
+    notifyListeners();
+  }
+
+  Future<WrapperCheckStatusResponse?> checkQrStatusOnce() async {
+    try {
+      _qrCheckStatusResponse = await api.wrapperCheckStatus(
+        orderNo: _indentUpiResponse!.data!.orderNumber!,
+        upiTranID: _indentUpiResponse!.data!.upiTransactionNo!,
+        clientID: _decryptclientcheck!.clientCheck!.dATA![_indexss][0],
+        gateway: _indentUpiResponse!.gateway ?? 'HDFC',
+      );
+      notifyListeners();
+      return _qrCheckStatusResponse;
+    } catch (e) {
+      return null;
+    }
+  }
+  // --- End QR Payment ---
+
+  // --- MTF Transfer ---
+  MtfLimitsResponse? _mtfLimits;
+  MtfLimitsResponse? get mtfLimits => _mtfLimits;
+
+  MtfLimitsMTFResponse? _mtfLimitsMTF;
+  MtfLimitsMTFResponse? get mtfLimitsMTF => _mtfLimitsMTF;
+
+  bool _mtfLoading = false;
+  bool get mtfLoading => _mtfLoading;
+
+  bool _mtfTransferLoading = false;
+  bool get mtfTransferLoading => _mtfTransferLoading;
+
+  bool? _mtfActive;
+  bool? get mtfActive => _mtfActive;
+
+  Future<void> fetchMtfLimits() async {
+    try {
+      _mtfLoading = true;
+      notifyListeners();
+
+      final clientId = _decryptclientcheck!.clientCheck!.dATA![_indexss][0];
+      _mtfLimits = await api.getAllLimits(clientId);
+
+      if (_mtfLimits?.stat == 'Ok') {
+        _mtfLimitsMTF = await api.getAllLimitsMTF(clientId);
+      }
+    } catch (e) {
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "fetchMtfLimits", "Error": "$e"});
+    } finally {
+      _mtfLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<MtfFundTransferResponse?> submitMtfTransfer(String amount) async {
+    try {
+      _mtfTransferLoading = true;
+      notifyListeners();
+
+      final actId = _mtfLimits?.actid ??
+          _decryptclientcheck!.clientCheck!.dATA![_indexss][0];
+      final result = await api.fundTransferMTF(actId, amount);
+      if (result.pymtStatus == 'OK') {
+        // Refresh limits after successful transfer
+        await fetchMtfLimits();
+      }
+      return result;
+    } catch (e) {
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "submitMtfTransfer", "Error": "$e"});
+      return null;
+    } finally {
+      _mtfTransferLoading = false;
+      notifyListeners();
+    }
+  }
+
+  double get mtfTotalAmount {
+    if (_mtfLimits == null) return 0.0;
+    final cash = double.tryParse(_mtfLimits!.cash ?? '0') ?? 0;
+    final payin = double.tryParse(_mtfLimits!.payin ?? '0') ?? 0;
+    final payout = double.tryParse(_mtfLimits!.payout ?? '0') ?? 0;
+    final marginused = double.tryParse(_mtfLimits!.marginused ?? '0') ?? 0;
+    return cash + payin - (payout - marginused);
+  }
+
+  double get mtfAmount {
+    return double.tryParse(_mtfLimitsMTF?.cash ?? '0') ?? 0;
+  }
+
+  void checkMtfStatus() {
+    _mtfActive = _decryptclientcheck?.mtfStatus == true;
+    notifyListeners();
+  }
+  // --- End MTF Transfer ---
+
   setAccountslist(String accno) {
     List<AccountItem> items = [];
     for (var i = 0; i < _bankdetails!.dATA!.length; i++) {
@@ -775,34 +941,31 @@ class TranctionProvider extends DefaultChangeNotifier {
           hdfcpaymentstatus?.upiId?.status == "REJECTED" ||
           hdfcpaymentstatus?.upiId?.status == "SUCCESS" ||
           hdfcpaymentstatus?.upiId?.status == "FAILED") {
-        // Only show mobile bottom sheet on mobile, web handles it differently
-        if (!kIsWeb) {
-          if (!_isUpiIdBottomSheetShown) {
-            _isUpiIdBottomSheetShown = true;
-            if (context.mounted) {
-              showModalBottomSheet(
-                  shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16))),
-                  backgroundColor: Colors.transparent,
-                  isDismissible: false,
-                  enableDrag: false,
-                  showDragHandle: false,
-                  useSafeArea: false,
-                  isScrollControlled: true,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return PopScope(
-                        canPop: false,
-                        onPopInvokedWithResult: (didPop, result) async {
-                          if (didPop) return;
-                        },
-                        child:
-                            Container(child: const UpiIdSucessorFaliureScreen()));
-                  }).whenComplete(() {
-                _isUpiIdBottomSheetShown = false;
-              });
-            }
+        if (!_isUpiIdBottomSheetShown) {
+          _isUpiIdBottomSheetShown = true;
+          if (context.mounted) {
+            showModalBottomSheet(
+                shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16))),
+                backgroundColor: Colors.transparent,
+                isDismissible: false,
+                enableDrag: false,
+                showDragHandle: false,
+                useSafeArea: false,
+                isScrollControlled: true,
+                context: context,
+                builder: (BuildContext context) {
+                  return PopScope(
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, result) async {
+                        if (didPop) return;
+                      },
+                      child:
+                          Container(child: const UpiIdSucessorFaliureScreen()));
+                }).whenComplete(() {
+              _isUpiIdBottomSheetShown = false;
+            });
           }
         }
         return false;
@@ -832,11 +995,12 @@ class TranctionProvider extends DefaultChangeNotifier {
   ) async {
     try {
       togglefundLoading(true);
+      _razorpayOptions = null;
       print(
           "Net Banking Payment Initiation: amt=$amt, accno=$accno, name=$name, ifsc=$ifsc, segment=$_textValue");
       _razorpay = await api.getrazorpay(amt, accno, name, ifsc);
-      if (_razorpay!.status == "created") {
-        var options = {
+      if (_razorpay?.status == "created") {
+        _razorpayOptions = {
           'key': 'rzp_live_M3tazzVCcFf8Iq',
           'amount': int.parse("${_razorpay!.amount}").toString(),
           'name': 'Zebu Fund',
@@ -869,18 +1033,9 @@ class TranctionProvider extends DefaultChangeNotifier {
             'max_count': 0,
           },
         };
-
-        // On web, don't call razorpay.open() - let the web screen handle it
-        if (!kIsWeb && razorpay != null) {
-          // On mobile, use Razorpay Flutter plugin
-          try {
-            razorpay.open(options);
-          } catch (e) {
-            print("Razorpay open error: $e");
-            rethrow;
-          }
-        }
-        // On web, the web screen will handle opening checkout via JavaScript
+        notifyListeners();
+      } else {
+        notifyListeners();
       }
     } catch (e) {
       //  log("Failed to fetch bank Data:: ${e.toString()}");
@@ -942,45 +1097,18 @@ class TranctionProvider extends DefaultChangeNotifier {
       String ip, String amount, String segment, BuildContext context) async {
     try {
       togglefundLoading(true);
-      
-      // Get valid IP (retry if invalid)
-      String validIp = _isValidIp(ip) ? ip : (await this.ip() ?? "");
-      
-      // Use textValue as fallback if segment is empty
-      String validSegment = segment.isNotEmpty ? segment : _textValue;
-      
-      // Construct and print payload/response
-      final prefs = locator<Preferences>();
-      final payload = {
-        "accountcode": "${prefs.clientId}",
-        "ip": validIp,
-        "amount": amount,
-        "company_code": validSegment,
-      };
-      
-      _paymentWithdraw = await api.getpayemntwithdraw(validIp, amount, validSegment);
-      print("WITHDRAW - Payload: ${jsonEncode(payload)} | Response: ${jsonEncode(_paymentWithdraw?.toJson() ?? {})}");
-      
+      _paymentWithdraw = await api.getpayemntwithdraw(ip, amount, segment);
       if (_paymentWithdraw!.msg == "Sucess") {
-        if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(context, 'Withdrawal request sent successfully');
-        } else {
-          successMessage(context, 'Withdrawal request sent successfully');
-        }
+            successMessage(context, 'Withdrawal request sent successfully');
         withdrawamount.clear();
         fetchPaymentWithDrawStatus(context);
       } else {
         print("Withdrawal failed with message: ${_paymentWithdraw!.msg}");
-        if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
-        } else {
-          warningMessage(context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
-        }
+        warningMessage(
+            context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
       }
     } catch (e) {
-      print("========== WITHDRAW ERROR ==========");
       print("Withdrawal error: ${e.toString()}");
-      print("===================================");
       ref
           .read(indexListProvider)
           .logError

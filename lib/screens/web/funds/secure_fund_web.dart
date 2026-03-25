@@ -18,6 +18,9 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import '../profile/fund_screen/fund_screen.dart';
+import '../profile/fund_screen/withdraw/withdraw_screen.dart';
+import '../profile/fund_screen/mtf/mtf_transfer_screen.dart';
 
 class SecureFundWeb extends ConsumerStatefulWidget {
   final String? initialAction;
@@ -28,18 +31,63 @@ class SecureFundWeb extends ConsumerStatefulWidget {
 }
 
 class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
+  bool _showAddMoney = false;
+  bool _showWithdraw = false;
+  bool _showMtf = false;
+
   @override
   void initState() {
     super.initState();
     if (widget.initialAction != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.initialAction == 'addMoney') {
-          openFunds('fund', context);
+          _openAddMoney();
         } else if (widget.initialAction == 'withdraw') {
-          openFunds('withdraw', context);
+          _openWithdraw();
         }
       });
     }
+  }
+
+  void _openAddMoney() {
+    final trancation = ref.read(transcationProvider);
+    // Ensure bank details and client data are fetched
+    if (trancation.bankdetails == null) {
+      trancation.fetchfundbank(context);
+    }
+    if (trancation.decryptclientcheck == null) {
+      trancation.fetchc(context);
+    }
+    setState(() {
+      _showAddMoney = true;
+    });
+  }
+
+  void _openWithdraw() async {
+    final trancation = ref.read(transcationProvider);
+    // Ensure bank details and client data are fetched
+    if (trancation.bankdetails == null) {
+      trancation.fetchfundbank(context);
+    }
+    if (trancation.decryptclientcheck == null) {
+      trancation.fetchc(context);
+    }
+    await trancation.fetchValidateToken(context);
+    Future.delayed(
+      const Duration(milliseconds: 100),
+      () async {
+        await trancation.ip();
+        await trancation.fetchupiIdView(
+          trancation.bankdetails!.dATA![trancation.indexss][1],
+          trancation.bankdetails!.dATA![trancation.indexss][2],
+        );
+        await trancation.fetchcwithdraw(context);
+      },
+    );
+    trancation.changebool(false);
+    setState(() {
+      _showWithdraw = true;
+    });
   }
 
   /// Opens the fund management page in a new window
@@ -68,6 +116,8 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
       String url;
       if (pageis == 'fund') {
         url = 'https://fund.zebuetrade.com?uid=$uid&token=$stoken';
+      } else if (pageis == 'mtf') {
+        url = 'https://fund.zebuetrade.com/mtf?uid=$uid&token=$stoken';
       } else {
         url = 'https://fund.zebuetrade.com/withdrawal?uid=$uid&token=$stoken';
       }
@@ -84,6 +134,41 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     final funds = ref.watch(fundProvider);
     final theme = ref.watch(themeProvider);
     final trancation = ref.watch(transcationProvider);
+
+    if (_showAddMoney) {
+      return FundScreen(
+        dd: trancation,
+        onBack: () {
+          setState(() {
+            _showAddMoney = false;
+          });
+        },
+      );
+    }
+
+    if (_showWithdraw) {
+      return WithdrawScreen(
+        withdarw: trancation,
+        foucs: trancation.focusNode,
+        theme: theme,
+        segment: trancation.textValue,
+        onBack: () {
+          setState(() {
+            _showWithdraw = false;
+          });
+        },
+      );
+    }
+
+    if (_showMtf) {
+      return MtfTransferScreen(
+        onBack: () {
+          setState(() {
+            _showMtf = false;
+          });
+        },
+      );
+    }
 
     return Scaffold(
       backgroundColor: resolveThemeColor(
@@ -217,7 +302,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     onPressed: () {
-                      openFunds('fund', context);
+                      _openAddMoney();
                     },
                   ),
                   const SizedBox(width: 12),
@@ -227,7 +312,19 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     onPressed: () {
-                      openFunds('withdraw', context);
+                      _openWithdraw();
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  MyntOutlinedButton(
+                    label: "Transfer to MTF",
+                    isFullWidth: false,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    onPressed: () {
+                      setState(() {
+                        _showMtf = true;
+                      });
                     },
                   ),
                 ],

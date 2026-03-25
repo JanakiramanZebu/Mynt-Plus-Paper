@@ -2,11 +2,13 @@ class DecryptClientCheck {
   String? emsg;
   ClientCheck? clientCheck;
   List<String>? companyCode;
+  bool? mtfStatus;
 
   DecryptClientCheck({
     this.emsg,
     this.clientCheck,
     this.companyCode,
+    this.mtfStatus,
   });
 
   DecryptClientCheck.fromJson(Map<String, dynamic> json) {
@@ -15,6 +17,7 @@ class DecryptClientCheck {
         ? ClientCheck.fromJson(json['client_check'])
         : null;
     companyCode = json['company_code']?.cast<String>();
+    mtfStatus = json['mtf_status'];
   }
 
   Map<String, dynamic> toJson() {
@@ -27,6 +30,9 @@ class DecryptClientCheck {
     }
     if (companyCode != null) {
       data['company_code'] = companyCode;
+    }
+    if (mtfStatus != null) {
+      data['mtf_status'] = mtfStatus;
     }
     return data;
   }

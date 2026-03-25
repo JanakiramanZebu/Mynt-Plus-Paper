@@ -15,6 +15,9 @@ import '../models/fund_model_testing_copy/fund_withdraw_status_model.dart';
 import '../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../models/fund_model_testing_copy/secured_client_data_model.dart';
 import '../models/fund_model_testing_copy/view_upi_id.dart';
+import '../models/fund_model_testing_copy/indent_upi_request_model.dart';
+import '../models/fund_model_testing_copy/wrapper_check_status_model.dart';
+import '../models/fund_model_testing_copy/mtf_limits_model.dart';
 import '../sharedWidget/fund_function.dart';
 import 'core/api_core.dart';
 
@@ -370,6 +373,127 @@ mixin TranscationApi on ApiCore {
         print(e.toString());
       }
       return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Initiate UPI QR payment via wrapper API
+  Future<IndentUpiResponse> indentUpiRequest({
+    required String name,
+    required String email,
+    required String mobile,
+    required String bankName,
+    required String seg,
+    required String code,
+    required String custAcc,
+    required String bankIfsc,
+    required String amt,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.indentUpiRequest);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "name": name,
+            "email": email,
+            "mobile": mobile,
+            "bankname": bankName,
+            "seg": seg,
+            "code": code,
+            "custacc": custAcc,
+            "bankifsc": bankIfsc,
+            "amt": amt,
+          }));
+      final json = jsonDecode(res.body);
+      log("indentUpiRequest => ${res.body}");
+      return IndentUpiResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Check UPI QR payment status via wrapper API
+  Future<WrapperCheckStatusResponse> wrapperCheckStatus({
+    required String orderNo,
+    required String upiTranID,
+    required String clientID,
+    required String gateway,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.wrapperCheckStatus);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            "OrderNo": orderNo,
+            "upiTranID": upiTranID,
+            "clientID": clientID,
+            "gateway": gateway,
+          }));
+      final json = jsonDecode(res.body);
+      log("wrapperCheckStatus => ${res.body}");
+      return WrapperCheckStatusResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Build QR code image URL
+  String buildQrCodeUrl({
+    required String orderNumber,
+    required String paidToVPA,
+    required String amount,
+    required String code,
+    required String gateway,
+  }) {
+    return '${apiLinks.qrCodeUrl}?orderNumber=$orderNumber&paid_to_VPA=$paidToVPA&amount=$amount&code=$code&gateway=$gateway';
+  }
+
+  /// Fetch all limits (cash, payin, payout, marginused)
+  Future<MtfLimitsResponse> getAllLimits(String clientId) async {
+    try {
+      final uri = Uri.parse(apiLinks.allLimits);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({"clientid": clientId}));
+      final json = jsonDecode(res.body);
+      log("getAllLimits => ${res.body}");
+      return MtfLimitsResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Fetch MTF limits
+  Future<MtfLimitsMTFResponse> getAllLimitsMTF(String clientId) async {
+    try {
+      final uri = Uri.parse(apiLinks.allLimitsMTF);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({"clientid": clientId}));
+      final json = jsonDecode(res.body);
+      log("getAllLimitsMTF => ${res.body}");
+      return MtfLimitsMTFResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Transfer fund to MTF
+  Future<MtfFundTransferResponse> fundTransferMTF(
+      String clientId, String amount) async {
+    try {
+      final uri = Uri.parse(apiLinks.fundTransfer);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            "clientid": clientId,
+            "tranfer_amount": amount,
+            "move": "MTF",
+          }));
+      final json = jsonDecode(res.body);
+      log("fundTransferMTF => ${res.body}");
+      return MtfFundTransferResponse.fromJson(json);
     } catch (e) {
       rethrow;
     }

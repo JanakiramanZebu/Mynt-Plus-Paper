@@ -6,9 +6,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
+import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+import 'package:mynt_plus/utils/no_emoji_inputformatter.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/thems.dart';
@@ -17,25 +24,27 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/fund_function.dart';
-import 'package:mynt_plus/provider/fund_provider.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/list_divider.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
-import '../../../../utils/no_emoji_inputformatter.dart';
-import '../../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
-import '../../../../models/fund_model_testing_copy/secured_client_data_model.dart';
+import '../../../../../provider/fund_provider.dart';
+import '../../../../../res/global_state_text.dart';
+import '../../../../../sharedWidget/custom_back_btn.dart';
+import '../../../../../sharedWidget/list_divider.dart';
+import '../../../../../sharedWidget/loader_ui.dart';
+import '../../../../../sharedWidget/splash_loader.dart';
+import '../../../../../utils/no_emoji_inputformatter.dart';
+import '../../../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
+import '../../../../../models/fund_model_testing_copy/secured_client_data_model.dart';
 import 'ios_fund_screen/ios_no_upi_apps_ui.dart';
 import 'ios_fund_screen/ios_upi_apps_bottomsheet.dart';
 import 'razorpay/razorpay_failed_ui.dart';
 import 'razorpay/razorpay_success_ui.dart';
 import 'upi_id_screens/upi_id_cancel_alert.dart';
+import 'qr_payment_dialog.dart';
 import 'withdraw/withdraw_screen.dart';
 
 class FundScreen extends ConsumerStatefulWidget {
   final TranctionProvider dd;
-  const FundScreen({super.key, required this.dd});
+  final VoidCallback? onBack;
+  const FundScreen({super.key, required this.dd, this.onBack});
 
   @override
   ConsumerState<FundScreen> createState() => _FundScreenState();
@@ -406,7 +415,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             context: context,
             builder: (BuildContext context) {
               return PopScope(
-                  canPop: true,
+                  canPop: false,
                   onPopInvokedWithResult: (didPop, result) {
                     if (didPop) return;
                   },
@@ -427,11 +436,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
 
   Future<void> _handleRazorpayPayment(
       BuildContext context, TranctionProvider fund) async {
-    // Reset bottom sheet state when starting a new payment process
     fund.resetBottomSheetState();
-
-    // Razorpay razorpay = Razorpay();
-    Razorpay razorpay = Razorpay();
 
     await fund.fetchrazorpay(
       context,
@@ -439,10 +444,89 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       fund.accno,
       fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
       fund.ifsc,
-      razorpay,
+      Razorpay()
     );
-    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
-    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+
+    // if (fund.razorpayOptions != null && mounted) {
+    //   final result = await Navigator.push<Map<String, dynamic>?>(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (_) => RazorpayWebCheckout(
+    //         options: fund.razorpayOptions!,
+    //       ),
+    //     ),
+    //   );
+
+    //   if (result != null && mounted) {
+    //     if (result['status'] == 'success') {
+    //       _handleWebPaymentSuccess(result['paymentId'] as String);
+    //     } else {
+    //       _handleWebPaymentError();
+    //     }
+    //   }
+    // }
+  }
+
+  Future<void> _handleScanQrPayment(
+      BuildContext context, TranctionProvider fund) async {
+    fund.resetBottomSheetState();
+    fund.focusNode.unfocus();
+
+    await fund.fetchValidateToken(context);
+
+    final success = await fund.fetchIndentUpiRequest(context);
+    if (!success) {
+      if (mounted) {
+        warningMessage(context,
+            fund.indentUpiResponse?.emsg ?? "Failed to initiate QR payment");
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    final status = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const QrPaymentDialog(),
+    );
+
+    if (!mounted) return;
+
+    if (status == "SUCCESS") {
+      showModalBottomSheet(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        backgroundColor:
+            ref.read(themeProvider).isDarkMode ? colors.colorBlack : colors.colorWhite,
+        isDismissible: true,
+        enableDrag: true,
+        useSafeArea: true,
+        isScrollControlled: true,
+        context: context,
+        builder: (context) => RazorpaySuccessUi(amount: fund.amount.text),
+      ).then((_) {
+        fund.amount.clear();
+      });
+    } else if (status != null && status != 'CANCELLED') {
+      showModalBottomSheet(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        backgroundColor:
+            ref.read(themeProvider).isDarkMode ? colors.colorBlack : colors.colorWhite,
+        isDismissible: false,
+        enableDrag: false,
+        useSafeArea: true,
+        isScrollControlled: true,
+        context: context,
+        builder: (context) => RazorpayFailedUi(
+          acco: fund.accno,
+          ifsc: fund.ifsc,
+          amount: fund.amount.text,
+          bankname: fund.bankname,
+        ),
+      );
+    }
   }
 
   @override
@@ -465,7 +549,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
           centerTitle: false,
           leadingWidth: 48,
           titleSpacing: 6,
-          leading: CustomBackBtn(),
+          leading: CustomBackBtn(onBack: widget.onBack),
           elevation: .2,
           title: TextWidget.titleText(
             text: 'Add Money',
@@ -490,7 +574,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             centerTitle: false,
             leadingWidth: 48,
             titleSpacing: 6,
-            leading: CustomBackBtn(),
+            leading: CustomBackBtn(onBack: widget.onBack),
             elevation: .2,
             title: TextWidget.titleText(
               text: 'Add Money',
@@ -946,13 +1030,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 
                                     // Proceed with payment based on method
                                     if (index == 0) {
-                                      if (defaultTargetPlatform ==
-                                          TargetPlatform.android) {
-                                        _handleAndroidUpiPayment(context, fund);
-                                      } else {
-                                        _handleIosUpiPayment(context, fund,
-                                            availableApps, theme);
-                                      }
+                                      _handleScanQrPayment(context, fund);
                                     } else if (index == 1) {
                                       _showUpiIdForm(
                                           context, fund, theme, colors);
@@ -1375,17 +1453,17 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     );
   }
 
-  handlePaymentErrorResponse(
-    PaymentFailureResponse response,
-  ) {
+  void _handleWebPaymentError() {
     showModalBottomSheet(
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        backgroundColor: const Color(0xffffffff),
+        backgroundColor: ref.read(themeProvider).isDarkMode
+            ? colors.colorBlack
+            : colors.colorWhite,
         isDismissible: false,
         enableDrag: false,
         showDragHandle: false,
-        useSafeArea: false,
+        useSafeArea: true,
         isScrollControlled: true,
         context: context,
         builder: (BuildContext context) {
@@ -1402,17 +1480,22 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         });
   }
 
-  handlePaymentSuccessResponse(PaymentSuccessResponse response) {
-    ref.read(transcationProvider).fetchrazorpayStatus("${response.paymentId}");
-    print("sent payment id razor pay: ${response.paymentId}");
+  void _handleWebPaymentSuccess(String paymentId) {
+    final capturedAmount = ref.read(transcationProvider).amount.text;
+    if (paymentId.isNotEmpty) {
+      ref.read(transcationProvider).fetchrazorpayStatus(paymentId);
+      print("sent payment id razor pay: $paymentId");
+    }
     showModalBottomSheet(
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        backgroundColor: const Color(0xffffffff),
+        backgroundColor: ref.read(themeProvider).isDarkMode
+            ? colors.colorBlack
+            : colors.colorWhite,
         isDismissible: true,
         enableDrag: true,
         showDragHandle: false,
-        useSafeArea: false,
+        useSafeArea: true,
         isScrollControlled: true,
         context: context,
         builder: (BuildContext context) {
@@ -1422,9 +1505,10 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 if (didPop) return;
               },
               child: RazorpaySuccessUi(
-                amount: ref.read(transcationProvider).amount.text,
+                amount: capturedAmount,
               ));
-        });
-    ref.read(transcationProvider).amount.clear();
+        }).then((_) {
+      ref.read(transcationProvider).amount.clear();
+    });
   }
 }

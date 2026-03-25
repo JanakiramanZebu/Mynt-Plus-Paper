@@ -277,6 +277,12 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get fundpayment => "$upimainfund/hdfc/upi/UPItransactionRequest";
   String get fundUpiStatus => "$upimainfund/hdfc/upi/MobileUPIstatus";
 
+  // QR/Wrapper UPI APIs
+  String get wrapperUrl => 'https://fundapi.mynt.in/wrapper';
+  String get indentUpiRequest => '$wrapperUrl/IndentUPIRequest';
+  String get wrapperCheckStatus => '$wrapperUrl/check_status';
+  String get qrCodeUrl => 'https://copy.mynt.in/get_qr1';
+
   //hdfc mainurl//
   String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
   String get verifyUPI => '$hdfcmainurl/checkClientVPA';
@@ -334,6 +340,9 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
 
   // MTF
   String get mtfURL => '$profileDetailsURL/mtf';
+  String get allLimits => '$ledgerBaseURL/all_limits';
+  String get allLimitsMTF => '$ledgerBaseURL/all_limits_MTF';
+  String get fundTransfer => '$ledgerBaseURL/FundTransfer';
   // String get freezeAccount => '$profileDetailsURL/FreezeAccount';
   // String get blockAcct => '$profileDetailsURL/BlockAcct';
 
