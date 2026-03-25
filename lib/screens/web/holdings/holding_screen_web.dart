@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -224,54 +225,84 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 800 ? 4 : 2;
+        final isWide = constraints.maxWidth >= 800;
 
-        return GridView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            mainAxisExtent: 115, // Fixed height - allows space for wrapped percentage
+        final cards = [
+          _buildStatCard(
+            label: 'Invested',
+            value: invested.toIndianRupee(),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
           ),
-          children: [
-            _buildStatCard(
-              label: 'Invested',
-              value: invested.toIndianRupee(),
-              valueColor: resolveThemeColor(
-                context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary,
+          _buildStatCard(
+            label: 'Current Value',
+            value: currentValue.toIndianRupee(),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Profit/Loss',
+            value: totalPnL.toIndianRupee(),
+            percentage: totalPnLPercent,
+            valueColor: getValueColor(context, totalPnL),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Day Change',
+            value: dayChange.toIndianRupee(),
+            percentage: dayChangePercent,
+            valueColor: getValueColor(context, dayChange),
+            theme: theme,
+          ),
+        ];
+
+        if (isWide) {
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (int i = 0; i < cards.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 12),
+                  Expanded(child: cards[i]),
+                ],
+              ],
+            ),
+          );
+        } else {
+          return Column(
+            children: [
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: cards[0]),
+                    const SizedBox(width: 12),
+                    Expanded(child: cards[1]),
+                  ],
+                ),
               ),
-              theme: theme,
-            ),
-            _buildStatCard(
-              label: 'Current Value',
-              value: currentValue.toIndianRupee(),
-              valueColor: resolveThemeColor(
-                context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary,
+              const SizedBox(height: 12),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: cards[2]),
+                    const SizedBox(width: 12),
+                    Expanded(child: cards[3]),
+                  ],
+                ),
               ),
-              theme: theme,
-            ),
-            _buildStatCard(
-              label: 'Profit/Loss',
-              value: totalPnL.toIndianRupee(),
-              percentage: totalPnLPercent,
-              valueColor: getValueColor(context, totalPnL),
-              theme: theme,
-            ),
-            _buildStatCard(
-              label: 'Day Change',
-              value: dayChange.toIndianRupee(),
-              percentage: dayChangePercent,
-              valueColor: getValueColor(context, dayChange),
-              theme: theme,
-            ),
-          ],
-        );
+            ],
+          );
+        }
       },
     );
   }
@@ -287,9 +318,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     return shadcn.Theme(
         data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
         child: shadcn.Card(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-            child: Row(
+          padding: EdgeInsets.all(10),
+          child: Row(
               children: [
                 // Icon in circle
                 // if (icon != null)
@@ -335,7 +365,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                           fontWeight: MyntFonts.medium,
                         ),
                       ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 2),
                       // Use Wrap to move percentage to next line when space is limited
                       Wrap(
                         spacing: 6,
@@ -348,6 +378,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                               context,
                               color: valueColor,
                               fontWeight: MyntFonts.medium,
+                            ).copyWith(
+                              fontFeatures: [FontFeature.tabularFigures()],
                             ),
                           ),
                           if (percentage != null)
@@ -357,6 +389,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                                 context,
                                 color: valueColor,
                                 fontWeight: MyntFonts.medium,
+                              ).copyWith(
+                                fontFeatures: [FontFeature.tabularFigures()],
                               ),
                             ),
                         ],
@@ -367,8 +401,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               ],
             ),
           ),
-        ));
+        );
   }
+
 
   Widget _buildMutualFundsSummaryCards(ThemesProvider theme) {
     return Consumer(
@@ -381,50 +416,46 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         final absReturnPercent =
             _formatValue(summary?.absReturnPercent?.toString());
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 800 ? 3 : 2;
+        final cards = [
+          _buildStatCard(
+            label: 'Invested',
+            value: investedValue.toIndianRupee(),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Current Value',
+            value: currentValue.toIndianRupee(),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Returns',
+            value: absReturnValue.toIndianRupee(),
+            percentage: absReturnPercent,
+            valueColor: getValueColor(context, absReturnValue),
+            theme: theme,
+          ),
+        ];
 
-            return GridView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                mainAxisExtent: 115, // Fixed height - matches equity stats
-              ),
-              children: [
-                _buildStatCard(
-                  label: 'Invested',
-                  value: investedValue.toIndianRupee(),
-                  valueColor: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                  theme: theme,
-                ),
-                _buildStatCard(
-                  label: 'Current Value',
-                  value: currentValue.toIndianRupee(),
-                  valueColor: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                  theme: theme,
-                ),
-                _buildStatCard(
-                  label: 'Returns',
-                  value: absReturnValue.toIndianRupee(),
-                  percentage: absReturnPercent,
-                  valueColor: getValueColor(context, absReturnValue),
-                  theme: theme,
-                ),
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (int i = 0; i < cards.length; i++) ...[
+                if (i > 0) const SizedBox(width: 12),
+                Expanded(child: cards[i]),
               ],
-            );
-          },
+            ],
+          ),
         );
       },
     );
@@ -774,52 +805,49 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         }
 
         // Default layout: All in one row
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-          child: Row(
-            children: [
-              buildTabs(),
-              const Spacer(),
-              // Insights button (only for Equity tab)
-              if (_selectedTabIndex == 0) ...[
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      if (WebNavigationHelper.isAvailable) {
-                        WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(4),
-                    hoverColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark.withValues(alpha: 0.1),
-                      light: MyntColors.primary.withValues(alpha: 0.1),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      child: Text(
-                        'Insights',
-                        style: MyntWebTextStyles.symbol(
+        return Row(
+          children: [
+            buildTabs(),
+            const Spacer(),
+            // Insights button (only for Equity tab)
+            if (_selectedTabIndex == 0) ...[
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    if (WebNavigationHelper.isAvailable) {
+                      WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  hoverColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark.withValues(alpha: 0.1),
+                    light: MyntColors.primary.withValues(alpha: 0.1),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text(
+                      'Insights',
+                      style: MyntWebTextStyles.symbol(
+                        context,
+                        fontWeight: MyntFonts.bold,
+                        color: resolveThemeColor(
                           context,
-                          fontWeight: MyntFonts.bold,
-                          color: resolveThemeColor(
-                            context,
-                            dark: MyntColors.primaryDark,
-                            light: MyntColors.primary,
-                          ),
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-              ],
-              buildSearch(),
+              ),
               const SizedBox(width: 12),
-              buildActionButtons(),
             ],
-          ),
+            buildSearch(),
+            const SizedBox(width: 12),
+            buildActionButtons(),
+          ],
         );
       },
     );

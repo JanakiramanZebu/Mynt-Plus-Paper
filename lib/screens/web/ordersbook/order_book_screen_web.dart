@@ -370,7 +370,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook, List<Tab> orderTabName) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Only update scroll arrows when constraints actually change

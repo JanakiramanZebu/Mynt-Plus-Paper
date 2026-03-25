@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
@@ -134,6 +135,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -271,7 +274,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                           6: shadcn.FixedTableSize(avgPriceWidth),
                           7: shadcn.FixedTableSize(statusWidth),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
+                        defaultRowHeight: const shadcn.FixedTableSize(40),
                         rows: [
                           shadcn.TableHeader(
                             cells: [
@@ -321,7 +324,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                           child: ListView.builder(
                             controller: widget.verticalScrollController,
                             itemCount: sortedOrders.length,
-                            itemExtent: 50.0,
+                            itemExtent: 42.0,
                             itemBuilder: (context, index) {
                               final order = sortedOrders[index];
                               final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
@@ -337,7 +340,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                   6: shadcn.FixedTableSize(avgPriceWidth),
                                   7: shadcn.FixedTableSize(statusWidth),
                                 },
-                                defaultRowHeight: const shadcn.FixedTableSize(50),
+                                defaultRowHeight: const shadcn.FixedTableSize(40),
                                 rows: [
                                   shadcn.TableRow(
                                     cells: [
@@ -456,7 +459,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                             ),
                                             child: Text(
                                               _getStatusText(order).toUpperCase(),
-                                              style: MyntWebTextStyles.bodySmall(
+                                              style: MyntWebTextStyles.para(
                                                 context,
                                                 color: _getStatusColor(_getStatusText(order), context),
                                                 fontWeight: MyntFonts.medium,
@@ -529,13 +532,13 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     // Match the cell padding logic
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 4);
     } else if (isInstrumentColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+      cellPadding = const EdgeInsets.fromLTRB(16, 4, 4, 4);
     } else if (isLastColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+      cellPadding = const EdgeInsets.fromLTRB(4, 4, 16, 4);
     } else {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -803,7 +806,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
               );
             },
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               dark: MyntColors.loss.withValues(alpha: 0.15),
@@ -812,7 +815,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         ),
         child: Icon(
           Icons.close,
-          size: 18,
+          size: 16,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
         ),
@@ -965,7 +968,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -985,7 +988,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),

@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/locator/locator.dart';
+import 'package:mynt_plus/locator/preference.dart';
+import 'package:mynt_plus/screens/web/position/position_download_helper.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/screens/web/position/exit_all_positions_dialog_web.dart';
 import 'package:mynt_plus/screens/web/position/position_detail_screen_web.dart';
@@ -11,9 +14,6 @@ import 'package:mynt_plus/screens/web/position/group/position_group_screen_web.d
 import 'package:mynt_plus/screens/web/position/group/create_group_web.dart';
 
 import '../../../../models/portfolio_model/position_book_model.dart';
-import '../../../../locator/locator.dart';
-import '../../../../locator/preference.dart';
-import '../position/position_download_helper.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
@@ -605,8 +605,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             ),
 
             SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
-            // Download Button - PDF/Excel export
-            _buildDownloadButton(theme, positionBook),
+              _buildDownloadButton(theme, positionBook),
             SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
             // Refresh Button - triggers manual refresh
             _buildIconButton(
@@ -727,8 +726,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     );
   }
 
-  // Download button with PDF/Excel dropdown
-  Widget _buildDownloadButton(ThemesProvider theme, PortfolioProvider positionBook) {
+   Widget _buildDownloadButton(ThemesProvider theme, PortfolioProvider positionBook) {
     final buttonSize = context.responsive<double>(
       mobile: 32,
       tablet: 36,
@@ -827,6 +825,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       ),
     );
   }
+
 
   // Filter dropdown button matching Holdings
   Widget _buildFilterButton(ThemesProvider theme) {
@@ -1357,7 +1356,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     }
 
     // Apply product filter
-    if (_selectedFilter.value != 'All') {
+     if (_selectedFilter.value != 'All') {
       filtered = filtered.where((position) {
         return position.sPrdtAli == _selectedFilter.value;
       }).toList();
