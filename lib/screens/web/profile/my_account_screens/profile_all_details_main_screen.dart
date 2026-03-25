@@ -206,7 +206,7 @@ class _ProfileDetailsMainScreenState extends ConsumerState<ProfileDetailsMainScr
                 : tab == activeTab
                     ? const Color(0xff000000)
                     : const Color(0xffffffff),
-            shape: const StadiumBorder(),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             side: BorderSide(
                               width: 1,
                               color: ref.read(themeProvider).isDarkMode

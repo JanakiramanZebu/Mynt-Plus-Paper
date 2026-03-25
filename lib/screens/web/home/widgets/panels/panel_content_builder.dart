@@ -14,15 +14,28 @@ import 'package:mynt_plus/screens/web/market_watch/watchlist_screen_web.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/position/position_screen_web.dart';
 import 'package:mynt_plus/screens/web/profile/Reports/reports_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/tradebook_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/calenderPnl_screen.dart';
 // import 'package:mynt_plus/screens/web/profile/settings_web.dart';
 import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
 import 'package:mynt_plus/screens/web/portfolio_analysis_web.dart';
 import 'package:mynt_plus/screens/web/webhook/webhook_tradingview_screen.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_main_screen.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/ca_action/ca_action_buyback.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/ca_events_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/client_master_screen_web.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/pledge_unpledge_screen.dart';
 import 'package:mynt_plus/screens/web/mutual_fund/mf_main_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/pdf_download_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/position_screen.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/tax_pnl_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/notional_pnl_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
+import 'package:mynt_plus/screens/web/profile/trading_preferences_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_details_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/nominee_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/form_download_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_section_screen_web.dart';
 
 import '../../../../../models/marketwatch_model/get_quotes.dart';
 
@@ -31,12 +44,14 @@ class PanelContentBuilder {
   final DepthInputArgs? currentDepthArgs;
   final int? tradeActionTabIndex;
   final Map<ScreenType, bool> screenLoadingStates;
+  final VoidCallback? onBack;
 
   PanelContentBuilder({
     this.optionChainArgs,
     this.currentDepthArgs,
     this.tradeActionTabIndex,
     required this.screenLoadingStates,
+    this.onBack,
   });
 
   Widget getScreenForType(ScreenType type) {
@@ -124,9 +139,13 @@ class PanelContentBuilder {
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return const CABuyback();
+        return CAEventsScreenWeb(onBack: onBack);
+      case ScreenType.clientMaster:
+        return ClientMasterScreenWeb(onBack: onBack);
       case ScreenType.reports:
-        return const ReportsScreenWeb();
+        return  ReportsScreenWeb();
+      case ScreenType.contractNote:
+        return const SizedBox.shrink();
       case ScreenType.settings:
         // return const SettingsScreenWeb();
       case ScreenType.tradeAction:
@@ -151,8 +170,48 @@ class PanelContentBuilder {
         return const SizedBox.shrink();
       case ScreenType.portfolioAnalysis:
         return const PortfolioDashboardScreen();
-        case ScreenType.tradingViewWebHook:
-          return const WebHookTradingViewScreen();
+      case ScreenType.strategyBuilder:
+        return const SizedBox.shrink();
+      case ScreenType.scalper:
+        return const SizedBox.shrink();
+      case ScreenType.tradingViewWebHook:
+        return const WebHookTradingViewScreen();
+      case ScreenType.refer:
+        return const SizedBox.shrink();
+      case ScreenType.helpSupport:
+        return const SizedBox.shrink();
+      case ScreenType.ledger:
+        return const SizedBox.shrink();
+      case ScreenType.tradebook:
+        return const TradebookScreenWeb();
+      case ScreenType.calendarPnl:
+        return const CalenderpnlScreen();
+      case ScreenType.reportPositions:
+        return PositionScreen(ddd: "DDDDD", onBack: onBack);
+      case ScreenType.pdfDownload:
+        return PdfDownloadScreenWeb(onBack: onBack);
+      case ScreenType.taxPnl:
+        return TaxPnlScreenWeb(onBack: onBack);
+      case ScreenType.notionalPnl:
+        return NotionalPnlScreenWeb(onBack: onBack);
+      case ScreenType.myAccount:
+        return const ProfileMainScreen(initialIndex: 0);
+      case ScreenType.tradingPreferences:
+        return TradingPreferencesScreenWeb(onBack: onBack);
+      case ScreenType.profileDetails:
+        return ProfileDetailsScreenWeb(onBack: onBack);
+      case ScreenType.bankDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Bank', onBack: onBack);
+      case ScreenType.depositoryDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Depository', onBack: onBack);
+      case ScreenType.mtfDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Margin Trading Facility (MTF)', onBack: onBack);
+      case ScreenType.nomineeDetails:
+        return NomineeScreenWeb(onBack: onBack);
+      case ScreenType.formDownload:
+        return FormDownloadScreenWeb(onBack: onBack);
+      case ScreenType.closureDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Closure', onBack: onBack);
     }
   }
 }

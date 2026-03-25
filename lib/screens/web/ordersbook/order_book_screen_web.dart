@@ -4,16 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/notification_provider.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/responsive_extensions.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/splash_loader.dart';
+import 'orders_download_helper.dart';
 // import 'mf/mf_order_book_screen_web.dart';
 // import 'mf/mf_sip_screen_web.dart';
 import 'pending_alert_card_web.dart';
@@ -605,7 +610,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     );
                   },
                 ),
-              // Gap between search/cancel and refresh
+              // Gap between search/cancel and download/refresh
+              SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+              // Download Button
+              _buildDownloadButton(theme, orderBook),
               SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
               // Refresh Button - Matching positions page style
               _buildIconButton(
@@ -736,6 +744,110 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           ),
         ),
       ),
+    );
+  }
+
+  // Download button for orders (PDF & Excel)
+  Widget _buildDownloadButton(ThemesProvider theme, OrderProvider orderBook) {
+    final currentTab = _tabController?.index ?? 0;
+    // Only show download for Open Orders (0), Executed Orders (1), Trade Book (2)
+    if (currentTab > 2) return const SizedBox.shrink();
+
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.download,
+        size: context.responsive<double>(mobile: 22, tablet: 25, desktop: 28),
+        color: resolveThemeColor(context,
+            dark: MyntColors.iconDark, light: MyntColors.icon),
+      ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      tooltip: 'Download',
+      color: resolveThemeColor(context,
+          dark: MyntColors.cardDark, light: MyntColors.card),
+      onSelected: (value) {
+        final pref = locator<Preferences>();
+        final clientId = pref.clientId ?? '';
+        final clientName = pref.clientName ?? '';
+        final socketData = ref.read(websocketProvider).socketDatas;
+
+        switch (currentTab) {
+          case 0: // Open Orders
+            final orders = orderBook.openOrder ?? [];
+            if (orders.isEmpty) {
+              warningMessage(context, 'No open orders to download');
+              return;
+            }
+            if (value == 'pdf') {
+              OrdersDownloadHelper.downloadOpenOrdersPdf(
+                  orders: orders, clientId: clientId, clientName: clientName, socketData: socketData);
+            } else {
+              OrdersDownloadHelper.downloadOpenOrdersExcel(
+                  orders: orders, clientId: clientId, clientName: clientName, socketData: socketData);
+            }
+            break;
+          case 1: // Executed Orders
+            final orders = orderBook.executedOrder ?? [];
+            if (orders.isEmpty) {
+              warningMessage(context, 'No executed orders to download');
+              return;
+            }
+            if (value == 'pdf') {
+              OrdersDownloadHelper.downloadExecutedOrdersPdf(
+                  orders: orders, clientId: clientId, clientName: clientName, socketData: socketData);
+            } else {
+              OrdersDownloadHelper.downloadExecutedOrdersExcel(
+                  orders: orders, clientId: clientId, clientName: clientName, socketData: socketData);
+            }
+            break;
+          case 2: // Trade Book
+            final trades = orderBook.tradeBook ?? [];
+            if (trades.isEmpty) {
+              warningMessage(context, 'No trades to download');
+              return;
+            }
+            if (value == 'pdf') {
+              OrdersDownloadHelper.downloadTradeBookPdf(
+                  trades: trades, clientId: clientId, clientName: clientName, socketData: socketData);
+            } else {
+              OrdersDownloadHelper.downloadTradeBookExcel(
+                  trades: trades, clientId: clientId, clientName: clientName, socketData: socketData);
+            }
+            break;
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'pdf',
+          child: Row(
+            children: [
+              Icon(Icons.picture_as_pdf, size: 18, color: Colors.red[700]),
+              const SizedBox(width: 8),
+              Text('Download PDF',
+                  style: TextStyle(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                  )),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'excel',
+          child: Row(
+            children: [
+              Icon(Icons.table_chart, size: 18, color: Colors.green[700]),
+              const SizedBox(width: 8),
+              Text('Download Excel',
+                  style: TextStyle(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                  )),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
