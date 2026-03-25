@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -198,26 +199,30 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           desktop: 12.0,
         );
 
-        return Row(children: [
-          SizedBox(width: cardSpacing),
-          Expanded(
-            child: _buildStatCard(
-              label: 'Total P&L',
-              value: totPnL.toIndianFormat(),
-              valueColor: _getValueColor(totPnL, theme),
-              theme: theme,
-            ),
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  label: 'Total P&L',
+                  value: totPnL.toIndianFormat(),
+                  valueColor: _getValueColor(totPnL, theme),
+                  theme: theme,
+                ),
+              ),
+              SizedBox(width: cardSpacing),
+              Expanded(
+                child: _buildStatCard(
+                  label: 'Total MTM',
+                  value: totMtM.toIndianFormat(),
+                  valueColor: _getValueColor(totMtM, theme),
+                  theme: theme,
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: cardSpacing),
-          Expanded(
-            child: _buildStatCard(
-              label: 'Total MTM',
-              value: totMtM.toIndianFormat(),
-              valueColor: _getValueColor(totMtM, theme),
-              theme: theme,
-            ),
-          ),
-        ]);
+        );
       },
     );
   }
@@ -229,29 +234,12 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     required Color valueColor,
     required ThemesProvider theme,
   }) {
-    final horizontalPadding = context.responsive<double>(
-      mobile: 8.0,
-      tablet: 10.0,
-      desktop: 12.0,
-    );
-    final verticalPadding = context.responsive<double>(
-      mobile: 6.0,
-      tablet: 7.0,
-      desktop: 8.0,
-    );
-
     return shadcn.Theme(
       data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
       child: shadcn.Card(
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: horizontalPadding,
-            vertical: verticalPadding,
-          ),
-          child: Row(
+        padding: EdgeInsets.all(10),
+        child: Row(
             children: [
-              const SizedBox(width: 1),
-              // Label and value
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,68 +247,53 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   children: [
                     Text(
                       label,
-                      style: context.isMobile
-                          ? MyntWebTextStyles.para(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            )
-                          : MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            ),
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                        fontWeight: MyntFonts.medium,
+                      ),
                     ),
-                    const SizedBox(height: 1),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    const SizedBox(height: 2),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 2,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Flexible(
-                          child: Text(
-                            value,
-                            style: context.isMobile
-                                ? MyntWebTextStyles.title(
-                                    context,
-                                    color: valueColor,
-                                    fontWeight: MyntFonts.medium,
-                                  )
-                                : MyntWebTextStyles.head(
-                                    context,
-                                    color: valueColor,
-                                    fontWeight: MyntFonts.medium,
-                                  ),
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          value,
+                          style: MyntWebTextStyles.head(
+                            context,
+                            color: valueColor,
+                            fontWeight: MyntFonts.medium,
+                          ).copyWith(
+                            fontFeatures: [FontFeature.tabularFigures()],
                           ),
                         ),
-                        if (percentage != null) ...[
-                          const SizedBox(width: 6),
+                        if (percentage != null)
                           Text(
                             '($percentage%)',
                             style: MyntWebTextStyles.bodySmall(
                               context,
                               color: valueColor,
                               fontWeight: MyntFonts.medium,
+                            ).copyWith(
+                              fontFeatures: [FontFeature.tabularFigures()],
                             ),
                           ),
-                        ],
                       ],
-                    ),
+                    ), // Wrap
                   ],
-                ),
-              ),
+                ), // Column
+              ), // Expanded
             ],
-          ),
-        ),
-      ),
-    );
+          ), // Row
+        ), // Card
+      ); 
+    
   }
 
   Color _getStatValueColor(String value, ThemesProvider theme) {
@@ -365,151 +338,221 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       desktop: 16.0,
     );
 
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 0, horizontal: horizontalPadding),
-      child: Row(
-        children: [
-          // Custom chip-style tabs matching the design
-          Row(
+    return Row(
+      children: [
+        // Custom chip-style tabs matching the design
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Positions tab
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  if (mounted && _selectedTabIndex != 0) {
+                    setState(() {
+                      _selectedTabIndex = 0;
+                    });
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+                    color: _selectedTabIndex == 0
+                        ? (theme.isDarkMode
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.05))
+                        : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+                    border: null, // ✅ no border
+          ),
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Positions tab
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () {
-                    if (mounted && _selectedTabIndex != 0) {
-                      setState(() {
-                        _selectedTabIndex = 0;
-                      });
-                    }
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-                      color: _selectedTabIndex == 0
-                          ? (theme.isDarkMode
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.05))
-                          : Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-                      border: null, // ✅ no border
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Positions',
-                  style: MyntWebTextStyles.body(
-                    context,
-                            fontWeight: _selectedTabIndex == 0
-                                ? MyntFonts.semiBold
-                                : MyntFonts.medium,
-                  ).copyWith(
-                            color: _selectedTabIndex == 0
-                                ? shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .foreground
-                                : shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .mutedForeground,
-                  ),
+              Text(
+                'Positions',
+                style: MyntWebTextStyles.body(
+                  context,
+                          fontWeight: _selectedTabIndex == 0
+                              ? MyntFonts.semiBold
+                              : MyntFonts.medium,
+                ).copyWith(
+                          color: _selectedTabIndex == 0
+                              ? shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .foreground
+                              : shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .mutedForeground,
                 ),
-                if (openPositionsCount > 0) ...[
-                  const SizedBox(width: 4),
-                  Transform.translate(
-                    offset: const Offset(0, -6),
-                    child: Text(
-                      '$openPositionsCount',
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                                fontWeight: _selectedTabIndex == 0
-                                    ? MyntFonts.semiBold
-                                    : MyntFonts.medium,
-                      ).copyWith(
-                        fontSize: context.responsive<double>(
-                          mobile: 10,
-                          tablet: 11,
-                          desktop: 12,
-                        ),
-                                color: _selectedTabIndex == 0
-                                    ? shadcn.Theme.of(context)
-                                        .colorScheme
-                                        .foreground
-                                    : shadcn.Theme.of(context)
-                                        .colorScheme
-                                        .mutedForeground,
+              ),
+              if (openPositionsCount > 0) ...[
+                const SizedBox(width: 4),
+                Transform.translate(
+                  offset: const Offset(0, -6),
+                  child: Text(
+                    '$openPositionsCount',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                              fontWeight: _selectedTabIndex == 0
+                                  ? MyntFonts.semiBold
+                                  : MyntFonts.medium,
+                    ).copyWith(
+                      fontSize: context.responsive<double>(
+                        mobile: 10,
+                        tablet: 11,
+                        desktop: 12,
                       ),
+                              color: _selectedTabIndex == 0
+                                  ? shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .foreground
+                                  : shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .mutedForeground,
                     ),
                   ),
-                ],
-              ],
-            ),
-                  ),
                 ),
-              ),
+              ],
             ],
           ),
-          // Spacer to push action items to the right
-          const Spacer(),
-          // Only show search, filter, exit all, refresh when Positions view is shown
-          if (!_showGroupsView) ...[
-            // Search Bar - Use shadcn.TextField to match Holdings exactly
-            SizedBox(
-              width: context.responsiveValue<double>(
-                mobile: 140,
-                smallTablet: 180,
-                tablet: 220,
-                desktop: 300,
-                largeDesktop: 350,
-                widescreen: 400,
-              ),
-              child: MyntSearchTextField.withSmartClear(
-                controller: _searchController,
-                placeholder: context.isMobile ? 'Search' : 'Search positions',
-                leadingIcon: assets.searchIcon,
-                onClear: () => _searchController.clear(),
+                ),
               ),
             ),
-
-            // Filter dropdown button
-            SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
-            _buildFilterButton(theme),
-
-            // Exit All Button - only show if there are open positions
-            // Use Consumer to watch exitPositionQty which changes when selections change
-            Consumer(
-              builder: (context, ref, _) {
-                // Watch exitPositionQty - this primitive value changes when selections change
-                // (watching openPosition list doesn't work because list reference stays same)
-                final selectedCount =
-                    ref.watch(portfolioProvider.select((p) => p.exitPositionQty));
-                final openPositions =
-                    ref.read(portfolioProvider).openPosition ?? [];
-                final nonZeroPositions =
-                    openPositions.where((p) => p.qty != "0").toList();
-
-                // Hide button if no open positions
-                if (nonZeroPositions.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-
-                final buttonHeight = context.responsive<double>(
-                  mobile: 30,
-                  tablet: 32,
-                  desktop: 35,
-                );
-                final buttonPadding = context.responsive<double>(
-                  mobile: 12,
-                  tablet: 16,
-                  desktop: 20,
-                );
-
-                return SizedBox(
+          ],
+        ),
+        // Spacer to push action items to the right
+        const Spacer(),
+        // Only show search, filter, exit all, refresh when Positions view is shown
+        if (!_showGroupsView) ...[
+          // Search Bar - Use shadcn.TextField to match Holdings exactly
+          SizedBox(
+            width: context.responsiveValue<double>(
+              mobile: 140,
+              smallTablet: 180,
+              tablet: 220,
+              desktop: 300,
+              largeDesktop: 350,
+              widescreen: 400,
+            ),
+            child: MyntSearchTextField.withSmartClear(
+              controller: _searchController,
+              placeholder: context.isMobile ? 'Search' : 'Search positions',
+              leadingIcon: assets.searchIcon,
+              onClear: () => _searchController.clear(),
+            ),
+          ),
+    
+          // Filter dropdown button
+          SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+          _buildFilterButton(theme),
+    
+          // Exit All Button - only show if there are open positions
+          // Use Consumer to watch exitPositionQty which changes when selections change
+          Consumer(
+            builder: (context, ref, _) {
+              // Watch exitPositionQty - this primitive value changes when selections change
+              // (watching openPosition list doesn't work because list reference stays same)
+              final selectedCount =
+                  ref.watch(portfolioProvider.select((p) => p.exitPositionQty));
+              final openPositions =
+                  ref.read(portfolioProvider).openPosition ?? [];
+              final nonZeroPositions =
+                  openPositions.where((p) => p.qty != "0").toList();
+    
+              // Hide button if no open positions
+              if (nonZeroPositions.isEmpty) {
+                return const SizedBox.shrink();
+              }
+    
+              final buttonHeight = context.responsive<double>(
+                mobile: 30,
+                tablet: 32,
+                desktop: 35,
+              );
+              final buttonPadding = context.responsive<double>(
+                mobile: 12,
+                tablet: 16,
+                desktop: 20,
+              );
+    
+              return SizedBox(
+                height: buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => _exitAllPositions(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.secondary,
+                      light: MyntColors.primary,
+                    ),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    selectedCount == 0
+                        ? (context.isMobile ? 'Exit' : 'Exit All')
+                        : 'Exit ($selectedCount)',
+                    style: context.isMobile
+                        ? MyntWebTextStyles.para(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.semiBold,
+                          )
+                        : MyntWebTextStyles.body(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.semiBold,
+                          ),
+                  ),
+                ),
+              );
+            },
+          ),
+    
+          // Analyze Button - only show when F&O options are selected
+          Consumer(
+            builder: (context, ref, _) {
+              final selectedFnO = ref.watch(portfolioProvider.select((p) => p.selectedFnOPositions));
+              if (selectedFnO.isEmpty) return const SizedBox.shrink();
+    
+              final buttonHeight = context.responsive<double>(
+                mobile: 30,
+                tablet: 32,
+                desktop: 35,
+              );
+              final buttonPadding = context.responsive<double>(
+                mobile: 12,
+                tablet: 16,
+                desktop: 20,
+              );
+    
+              return Padding(
+                padding: EdgeInsets.only(left: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+                child: SizedBox(
                   height: buttonHeight,
-                  child: ElevatedButton(
-                    onPressed: () => _exitAllPositions(),
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showAnalyzeDialog(selectedFnO),
+                    icon: const Icon(Icons.analytics_outlined, size: 16),
+                    label: Text(
+                      'Analyze (${selectedFnO.length})',
+                      style: context.isMobile
+                          ? MyntWebTextStyles.para(
+                              context,
+                              color: Colors.white,
+                              fontWeight: MyntFonts.semiBold,
+                            )
+                          : MyntWebTextStyles.body(
+                              context,
+                              color: Colors.white,
+                              fontWeight: MyntFonts.semiBold,
+                            ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: resolveThemeColor(
                         context,
@@ -523,112 +566,39 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
-                      selectedCount == 0
-                          ? (context.isMobile ? 'Exit' : 'Exit All')
-                          : 'Exit ($selectedCount)',
-                      style: context.isMobile
-                          ? MyntWebTextStyles.para(
-                              context,
-                              color: Colors.white,
-                              fontWeight: MyntFonts.semiBold,
-                            )
-                          : MyntWebTextStyles.body(
-                              context,
-                              color: Colors.white,
-                              fontWeight: MyntFonts.semiBold,
-                            ),
-                    ),
                   ),
-                );
-              },
-            ),
-
-            // Analyze Button - only show when F&O options are selected
-            Consumer(
-              builder: (context, ref, _) {
-                final selectedFnO = ref.watch(portfolioProvider.select((p) => p.selectedFnOPositions));
-                if (selectedFnO.isEmpty) return const SizedBox.shrink();
-
-                final buttonHeight = context.responsive<double>(
-                  mobile: 30,
-                  tablet: 32,
-                  desktop: 35,
-                );
-                final buttonPadding = context.responsive<double>(
-                  mobile: 12,
-                  tablet: 16,
-                  desktop: 20,
-                );
-
-                return Padding(
-                  padding: EdgeInsets.only(left: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
-                  child: SizedBox(
-                    height: buttonHeight,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showAnalyzeDialog(selectedFnO),
-                      icon: const Icon(Icons.analytics_outlined, size: 16),
-                      label: Text(
-                        'Analyze (${selectedFnO.length})',
-                        style: context.isMobile
-                            ? MyntWebTextStyles.para(
-                                context,
-                                color: Colors.white,
-                                fontWeight: MyntFonts.semiBold,
-                              )
-                            : MyntWebTextStyles.body(
-                                context,
-                                color: Colors.white,
-                                fontWeight: MyntFonts.semiBold,
-                              ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: resolveThemeColor(
-                          context,
-                          dark: MyntColors.secondary,
-                          light: MyntColors.primary,
-                        ),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
-            // Refresh Button - triggers manual refresh
-            _buildIconButton(
-              icon: Icons.refresh,
-              onPressed: () {
-                _handleManualRefresh();
-              },
-              theme: theme,
-            ),
-            SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
-            // Groups toggle icon - show posgrp icon to navigate to groups
-            _buildGroupsToggleIcon(theme),
-          ],
-          // Show Create Group button and close icon when Position Groups view is shown
-          if (_showGroupsView) ...[
-            MyntIconTextButton(
-              label: 'New Group',
-              // iconAsset: assets.addCircleIcon,
-              onPressed: () {
-                _showCreateGroupDialog(context, positionBook);
-              },
-            ),
-            SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
-            // Close icon - to go back to positions
-            _buildCloseGroupsIcon(theme),
-          ],
+                ),
+              );
+            },
+          ),
+    
+          SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+          // Refresh Button - triggers manual refresh
+          _buildIconButton(
+            icon: Icons.refresh,
+            onPressed: () {
+              _handleManualRefresh();
+            },
+            theme: theme,
+          ),
+          SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
+          // Groups toggle icon - show posgrp icon to navigate to groups
+          _buildGroupsToggleIcon(theme),
         ],
-      ),
+        // Show Create Group button and close icon when Position Groups view is shown
+        if (_showGroupsView) ...[
+          MyntIconTextButton(
+            label: 'New Group',
+            // iconAsset: assets.addCircleIcon,
+            onPressed: () {
+              _showCreateGroupDialog(context, positionBook);
+            },
+          ),
+          SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
+          // Close icon - to go back to positions
+          _buildCloseGroupsIcon(theme),
+        ],
+      ],
     );
   }
 
