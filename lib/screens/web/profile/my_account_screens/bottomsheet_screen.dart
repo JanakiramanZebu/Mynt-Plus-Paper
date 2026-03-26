@@ -358,7 +358,7 @@ class _BottomSheetScreenState extends State<BottomSheetScreen> {
 
                         //     },
                         style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(145, 37),
+                          minimumSize: const Size(145, 35),
                           backgroundColor: !theme.isDarkMode
                               ? true
                                   ? true
@@ -371,7 +371,7 @@ class _BottomSheetScreenState extends State<BottomSheetScreen> {
                                       : colors.colorBlack
                                   : const Color(0xfff5f5f5),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: true

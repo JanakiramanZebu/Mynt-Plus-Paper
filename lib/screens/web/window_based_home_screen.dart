@@ -31,14 +31,28 @@ import '../../../provider/iop_provider.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
-import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
+import 'profile/Reports/ca_events_screen_web.dart';
+import 'profile/Reports/client_master_screen_web.dart';
 import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
+import 'profile/Reports/ledger/ledger_screen_web.dart';
+import 'profile/Reports/contract_note_screen_web.dart';
+import 'profile/Reports/tradebook_screen_web.dart';
+import 'profile/Reports/calenderPnl_screen.dart';
+import 'profile/Reports/pdf_download_screen_web.dart';
+import 'profile/Reports/position_screen.dart';
+import 'profile/Reports/tax_pnl_screen_web.dart';
+import 'profile/Reports/notional_pnl_screen_web.dart';
 import 'profile/profile_main_screen.dart';
+import 'profile/trading_preferences_screen_web.dart';
+import 'profile/profile_details_screen_web.dart';
+import 'profile/nominee_screen_web.dart';
+import 'profile/form_download_screen_web.dart';
+import 'profile/profile_section_screen_web.dart';
 // import 'profile/settings_web.dart';
 import 'market_watch/watchlist_screen_web.dart';
 import 'holdings/holding_screen_web.dart';
@@ -59,6 +73,8 @@ import '../../../routes/route_names.dart';
 import 'scalper/scalper_screen_web.dart';
 import 'collection_basket/basketlist_dashboard_web.dart';
 import 'webhook/webhook_tradingview_screen.dart';
+import 'profile/refer/refer_screen_web.dart';
+import 'profile/help_support/help_support_screen_web.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
 import 'package:mynt_plus/screens/web/mutual_fund/sip_calculator_screen_web.dart';
@@ -422,9 +438,15 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return const CABuyback();
+        return CAEventsScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
+      case ScreenType.clientMaster:
+        return ClientMasterScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
       case ScreenType.reports:
-        return const ReportsScreenWeb();
+        return ReportsScreenWeb();
+      case ScreenType.ledger:
+        return const LedgerScreenWeb();
+      case ScreenType.contractNote:
+        return const ContractNoteScreenWeb();
       case ScreenType.settings:
         // return const SettingsScreenWeb();
       case ScreenType.tradeAction:
@@ -457,6 +479,43 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       case ScreenType.benchmarkBacktest:
       case ScreenType.saveBasketStrategy:
         return const SizedBox.shrink();
+      case ScreenType.refer:
+        return const ReferScreenWeb();
+      case ScreenType.helpSupport:
+        return const HelpSupportScreenWeb();
+      case ScreenType.tradebook:
+        return const TradebookScreenWeb();
+      case ScreenType.calendarPnl:
+        return const CalenderpnlScreen();
+      case ScreenType.reportPositions:
+        return PositionScreen(ddd: "DDDDD", onBack: () => _showScreenInWindow(ScreenType.reports));
+      case ScreenType.pdfDownload:
+        return PdfDownloadScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
+      case ScreenType.taxPnl:
+        return TaxPnlScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
+      case ScreenType.notionalPnl:
+        return NotionalPnlScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
+      case ScreenType.myAccount:
+        return ProfileMainScreen(
+          initialIndex: 0,
+          onNavigateToScreen: (screenType) => _handleScreenTypeChange(screenType),
+        );
+      case ScreenType.tradingPreferences:
+        return TradingPreferencesScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.profileDetails:
+        return ProfileDetailsScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.bankDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Bank', onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.depositoryDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Depository', onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.mtfDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Margin Trading Facility (MTF)', onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.nomineeDetails:
+        return NomineeScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.formDownload:
+        return FormDownloadScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.closureDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Closure', onBack: () => _showScreenInWindow(ScreenType.myAccount));
     }
   }
 
@@ -490,8 +549,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Pledge/Unpledge';
       case ScreenType.corporateActions:
         return 'Corporate Actions';
+      case ScreenType.clientMaster:
+        return 'Client Master';
       case ScreenType.reports:
         return 'Reports';
+      case ScreenType.ledger:
+        return 'Ledger';
+      case ScreenType.contractNote:
+        return 'Contract Note';
       case ScreenType.settings:
         return 'Settings';
       case ScreenType.tradeAction:
@@ -524,6 +589,40 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Backtest Analysis';
       case ScreenType.saveBasketStrategy:
         return 'Save Strategy';
+      case ScreenType.refer:
+        return 'Refer & Earn';
+      case ScreenType.helpSupport:
+        return 'Help & Support';
+      case ScreenType.tradebook:
+        return 'Tradebook';
+      case ScreenType.calendarPnl:
+        return 'P&L Summary';
+      case ScreenType.reportPositions:
+        return 'Positions';
+      case ScreenType.pdfDownload:
+        return 'PDF Download';
+      case ScreenType.taxPnl:
+        return 'Tax P&L';
+      case ScreenType.notionalPnl:
+        return 'Notional P&L';
+      case ScreenType.myAccount:
+        return 'My Account';
+      case ScreenType.tradingPreferences:
+        return 'Trading Preferences';
+      case ScreenType.profileDetails:
+        return 'Profile Details';
+      case ScreenType.bankDetails:
+        return 'Bank';
+      case ScreenType.depositoryDetails:
+        return 'Depository';
+      case ScreenType.mtfDetails:
+        return 'Margin Trading Facility (MTF)';
+      case ScreenType.nomineeDetails:
+        return 'Nominee';
+      case ScreenType.formDownload:
+        return 'Form Download';
+      case ScreenType.closureDetails:
+        return 'Closure';
     }
   }
 

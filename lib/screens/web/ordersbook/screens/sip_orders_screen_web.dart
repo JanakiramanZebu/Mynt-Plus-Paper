@@ -117,6 +117,8 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -234,7 +236,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
                     4: shadcn.FixedTableSize(columnWidths[4]!),
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
@@ -295,7 +297,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
                                 4: shadcn.FixedTableSize(columnWidths[4]!),
                                 5: shadcn.FixedTableSize(columnWidths[5]!),
                               },
-                              defaultRowHeight: const shadcn.FixedTableSize(50),
+                              defaultRowHeight: const shadcn.FixedTableSize(40),
                               rows: sortedOrders.asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final sipOrder = entry.value;
@@ -324,44 +326,54 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
                                       rowIndex: index,
                                       columnIndex: 1,
                                       onTap: () => _showSipOrderDetail(sipOrder),
-                                      child: Text(
-                                        sipOrder.scrips?.isNotEmpty == true
+                                      child: Builder(builder: (context) {
+                                        final value = sipOrder.scrips?.isNotEmpty == true
                                             ? (sipOrder.scrips![0].exch ?? 'N/A')
-                                            : 'N/A',
-                                        style: _getTextStyle(context),
-                                      ),
+                                            : 'N/A';
+                                        return Tooltip(
+                                          message: value,
+                                          child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      }),
                                     ),
                                     // Frequency
                                     buildCellWithHover(
                                       rowIndex: index,
                                       columnIndex: 2,
                                       onTap: () => _showSipOrderDetail(sipOrder),
-                                      child: Text(
-                                        _getFrequencyText(sipOrder.frequency),
-                                        style: _getTextStyle(context),
-                                      ),
+                                      child: Builder(builder: (context) {
+                                        final value = _getFrequencyText(sipOrder.frequency);
+                                        return Tooltip(
+                                          message: value,
+                                          child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      }),
                                     ),
                                     // Start Date
                                     buildCellWithHover(
                                       rowIndex: index,
                                       columnIndex: 3,
                                       onTap: () => _showSipOrderDetail(sipOrder),
-                                      child: Text(
-                                        duedateformate(
-                                            value: sipOrder.startDate ?? ''),
-                                        style: _getTextStyle(context),
-                                      ),
+                                      child: Builder(builder: (context) {
+                                        final value = duedateformate(value: sipOrder.startDate ?? '');
+                                        return Tooltip(
+                                          message: value,
+                                          child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      }),
                                     ),
                                     // Due Date
                                     buildCellWithHover(
                                       rowIndex: index,
                                       columnIndex: 4,
                                       onTap: () => _showSipOrderDetail(sipOrder),
-                                      child: Text(
-                                        duedateformate(
-                                            value: sipOrder.internal?.dueDate ?? ''),
-                                        style: _getTextStyle(context),
-                                      ),
+                                      child: Builder(builder: (context) {
+                                        final value = duedateformate(value: sipOrder.internal?.dueDate ?? '');
+                                        return Tooltip(
+                                          message: value,
+                                          child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      }),
                                     ),
                                     // Pending Period
                                     buildCellWithHover(
@@ -369,10 +381,13 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
                                       columnIndex: 5,
                                       alignRight: true,
                                       onTap: () => _showSipOrderDetail(sipOrder),
-                                      child: Text(
-                                        sipOrder.endPeriod ?? 'N/A',
-                                        style: _getTextStyle(context),
-                                      ),
+                                      child: Builder(builder: (context) {
+                                        final value = sipOrder.endPeriod ?? 'N/A';
+                                        return Tooltip(
+                                          message: value,
+                                          child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      }),
                                     ),
                                   ],
                                 );
@@ -425,44 +440,41 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
     return Column(
       children: [
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? MyntColors.secondary
-                      : web.WebColors.primary,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: theme.isDarkMode
+                    ? MyntColors.secondary
+                    : web.WebColors.primary,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(5),
-                    splashColor: Colors.white.withOpacity(0.2),
-                    highlightColor: Colors.white.withOpacity(0.1),
-                    onTap: () => _openCreateSipDialog(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      child: Text(
-                        "Create SIP",
-                        style: MyntWebTextStyles.buttonMd(
-                          context,
-                          color: Colors.white,
-                        ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(5),
+                  splashColor: Colors.white.withOpacity(0.2),
+                  highlightColor: Colors.white.withOpacity(0.1),
+                  onTap: () => _openCreateSipDialog(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    child: Text(
+                      "Create SIP",
+                      style: MyntWebTextStyles.buttonMd(
+                        context,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
       ],
@@ -504,11 +516,11 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
 
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 8, 8);
+      cellPadding = const EdgeInsets.fromLTRB(16, 4, 8, 4);
     } else if (isLastColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(8, 8, 16, 8);
+      cellPadding = const EdgeInsets.fromLTRB(8, 4, 16, 4);
     } else {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -690,7 +702,9 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
 
       if (headers[col] == 'Name') {
         const minNameWidth = 150.0;
+        const maxNameWidth = 200.0;
         maxWidth = maxWidth < minNameWidth ? minNameWidth : maxWidth;
+        if (maxWidth > maxNameWidth) maxWidth = maxNameWidth;
       }
 
       minWidths[col] = maxWidth + padding;
@@ -827,7 +841,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
     return GestureDetector(
       onTap: () => _handleModifySipOrder(sipOrder),
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               dark: MyntColors.textWhite, light: MyntColors.textWhite),
@@ -843,7 +857,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
         ),
         child: Icon(
           Icons.edit_outlined,
-          size: 18,
+          size: 16,
           color: resolveThemeColor(context,
               dark: MyntColors.primaryDark, light: MyntColors.primary),
         ),
@@ -894,7 +908,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
               }
             },
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               dark: MyntColors.textWhite, light: MyntColors.textWhite),
@@ -910,7 +924,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
         ),
         child: Icon(
           Icons.close,
-          size: 18,
+          size: 16,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
         ),
@@ -983,7 +997,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   dark: MyntColors.textWhite, light: MyntColors.textWhite),
@@ -999,7 +1013,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary, light: MyntColors.textPrimary),
             ),

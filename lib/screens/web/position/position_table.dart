@@ -199,6 +199,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -261,16 +263,16 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     EdgeInsets cellPadding;
     if (isFirstColumn) {
       // Select column - symmetric padding for checkbox
-      cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 4);
     } else if (isInstrumentColumn) {
       // Instrument column - more left, minimal right (for 3-dot menu)
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+      cellPadding = const EdgeInsets.fromLTRB(16, 4, 4, 4);
     } else if (isLastColumn) {
       // Last column - minimal left, more right
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+      cellPadding = const EdgeInsets.fromLTRB(4, 4, 16, 4);
     } else {
       // Other columns - symmetric padding
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -689,7 +691,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             cellText = position.lp ?? '0.00';
             break;
           case 'P&L':
-            cellText = position.profitNloss ?? '0.00';
+            cellText = (position.profitNloss ?? '0.00').toIndianFormat();
             break;
           // Commented out columns - data available in Position Details sheet
           // case 'MTM':
@@ -794,42 +796,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
           // Step 3: Handle width adjustment based on available space
           if (totalMinWidth < availableWidth) {
-            // Extra space available - distribute it proportionally
+            // Extra space available - distribute equally across all columns
+            // Equal distribution ensures uniform gaps between columns
             final extraSpace = availableWidth - totalMinWidth;
-
-            // Define which columns can grow and their growth priorities
-            // Instrument gets more growth, numeric columns get less
-            const instrumentGrowthFactor =
-                2.0; // Instrument can grow 2x more than numeric
-            const numericGrowthFactor = 1.0;
-
-            // Calculate growth factors for each column
-            final growthFactors = <int, double>{};
-            double totalGrowthFactor = 0.0;
+            final extraPerColumn = extraSpace / headers.length;
 
             for (int i = 0; i < headers.length; i++) {
-              final header = headers[i];
-              if (header == 'Select' || header == 'Product') {
-                // Select and Product columns don't grow much
-                growthFactors[i] = 0.0;
-              } else if (header == 'Instrument') {
-                growthFactors[i] = instrumentGrowthFactor;
-                totalGrowthFactor += instrumentGrowthFactor;
-              } else {
-                growthFactors[i] = numericGrowthFactor;
-                totalGrowthFactor += numericGrowthFactor;
-              }
-            }
-
-            // Distribute extra space proportionally
-            if (totalGrowthFactor > 0) {
-              for (int i = 0; i < headers.length; i++) {
-                if (growthFactors[i]! > 0) {
-                  final extraForThisColumn =
-                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
-                }
-              }
+              columnWidths[i] = columnWidths[i]! + extraPerColumn;
             }
           } else if (totalMinWidth > availableWidth) {
             // Not enough space - shrink columns proportionally to eliminate scroll
@@ -842,7 +815,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               2: 120.0, // Instrument (needs space for 3-dot menu)
               3: 45.0,  // Qty
               4: 65.0,  // Act Avg Price
-              5: 50.0,  // LTP
+              5: 80.0,  // LTP
               6: 55.0,  // P&L
             };
 
@@ -900,7 +873,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   columnWidths: columnWidths.map((index, width) {
                     return MapEntry(index, shadcn.FixedTableSize(width));
                   }),
-                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
                   rows: [
                     shadcn.TableHeader(
                       cells: headers.map((header) {
@@ -937,7 +910,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     child: ListView.builder(
                       controller: _verticalScrollController,
                       itemCount: filteredPositions.length,
-                      itemExtent: 50.0,
+                      itemExtent: 42.0,
                       itemBuilder: (context, index) {
                         final position = filteredPositions[index];
                         final isClosed = _isPositionClosed(position);
@@ -948,7 +921,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                           columnWidths: columnWidths.map((idx, width) {
                             return MapEntry(idx, shadcn.FixedTableSize(width));
                           }),
-                          defaultRowHeight: const shadcn.FixedTableSize(50),
+                          defaultRowHeight: const shadcn.FixedTableSize(40),
                           rows: [
                             shadcn.TableRow(
                               cells: headers.map((header) {
@@ -1141,40 +1114,63 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         final formattedQty = _formatPositionQty(position);
         return Align(
           alignment: alignment,
-          child: Text(
-            formattedQty,
-            style: _getTextStyle(context,
-                color: isClosed
-                    ? textColor
-                    : _getQtyColor(formattedQty, context)),
+          child: Tooltip(
+            message: formattedQty,
+            child: Text(
+              formattedQty,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _getTextStyle(context,
+                  color: isClosed
+                      ? textColor
+                      : _getQtyColor(formattedQty, context)),
+            ),
           ),
         );
       case 'Act Avg':
+        final avgValue = position.avgPrc ?? '0.00';
         return Align(
           alignment: alignment,
-          child: Text(
-            position.avgPrc ?? '0.00',
-            style: _getTextStyle(context, color: textColor),
+          child: Tooltip(
+            message: avgValue,
+            child: Text(
+              avgValue,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _getTextStyle(context, color: textColor),
+            ),
           ),
         );
       case 'LTP':
         // Just display provider value - provider already updates from WebSocket
+        final ltpValue = position.lp ?? '0.00';
         return Align(
           alignment: alignment,
-          child: Text(
-            position.lp ?? '0.00',
-            style: _getTextStyle(context, color: textColor),
+          child: Tooltip(
+            message: ltpValue,
+            child: Text(
+              ltpValue,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _getTextStyle(context, color: textColor),
+            ),
           ),
         );
       case 'P&L':
         // Just display provider value - positionCal() already calculates correctly
         final pnlValue = position.profitNloss ?? '0.00';
+        final displayPnl = pnlValue.toIndianFormat();
         return Align(
           alignment: alignment,
-          child: Text(
-            pnlValue.toIndianFormat(),
-            style: _getTextStyle(context,
-                color: _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
+          child: Tooltip(
+            message: displayPnl,
+            child: Text(
+              displayPnl,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _getTextStyle(context,
+                  color: _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
+            ),
           ),
         );
       // Commented out columns - data available in Position Details sheet
@@ -1256,7 +1252,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         columnWidths: columnWidths.map((index, width) {
           return MapEntry(index, shadcn.FixedTableSize(width));
         }),
-        defaultRowHeight: const shadcn.FixedTableSize(50),
+        defaultRowHeight: const shadcn.FixedTableSize(40),
         rows: [
           shadcn.TableRow(
             cells: headers.map((header) {
@@ -1267,13 +1263,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               // Cell padding matching other cells
               EdgeInsets cellPadding;
               if (columnIndex == 0) {
-                cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+                cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 4);
               } else if (columnIndex == 2) {
-                cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+                cellPadding = const EdgeInsets.fromLTRB(16, 4, 4, 4);
               } else if (isLastColumn) {
-                cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+                cellPadding = const EdgeInsets.fromLTRB(4, 4, 16, 4);
               } else {
-                cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+                cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
               }
 
               Widget cellContent;
@@ -1290,13 +1286,19 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 );
               } else if (isLastColumn) {
                 // Show total P&L value
+                final displayTotal = totalPnl.toIndianFormat();
                 cellContent = Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    totalPnl.toIndianFormat(),
-                    style: _getTextStyle(context,
-                        color: _getCellColor(totalPnl, context)).copyWith(
-                      fontWeight: MyntFonts.semiBold,
+                  child: Tooltip(
+                    message: displayTotal,
+                    child: Text(
+                      displayTotal,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _getTextStyle(context,
+                          color: _getCellColor(totalPnl, context)).copyWith(
+                        fontWeight: MyntFonts.semiBold,
+                      ),
                     ),
                   ),
                 );
@@ -1351,25 +1353,36 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
         return Align(
           alignment: Alignment.centerLeft,
-          child: shadcn.Checkbox(
-            state: isSelected
-                ? shadcn.CheckboxState.checked
-                : shadcn.CheckboxState.unchecked,
-            onChanged: isClosed
-                ? null
-                : (state) {
-                    if (positionIndex >= 0) {
-                      positionBook.selectExitPosition(positionIndex);
-                    }
-                  },
-            enabled: !isClosed,
-            activeColor: resolveThemeColor(
-              context,
-              dark: MyntColors.secondary,
-              light: MyntColors.primary,
+          child: shadcn.Theme(
+            data: shadcn.Theme.of(context).copyWith(
+              colorScheme: () {
+                return shadcn.Theme.of(context).colorScheme.copyWith(
+                  border: () => resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark.withValues(alpha: 0.3),
+                      light: MyntColors.textSecondary.withValues(alpha: 0.3)),
+                );
+              },
             ),
-            borderRadius: BorderRadius.circular(4),
-            size: 18,
+            child: shadcn.Checkbox(
+              state: isSelected
+                  ? shadcn.CheckboxState.checked
+                  : shadcn.CheckboxState.unchecked,
+              onChanged: isClosed
+                  ? null
+                  : (state) {
+                      if (positionIndex >= 0) {
+                        positionBook.selectExitPosition(positionIndex);
+                      }
+                    },
+              enabled: !isClosed,
+              activeColor: resolveThemeColor(
+                context,
+                dark: MyntColors.secondary,
+                light: MyntColors.primary,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              size: 18,
+            ),
           ),
         );
       },
@@ -1498,7 +1511,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           _handleExitPosition(position);
         },
         child: Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: resolveThemeColor(context,
                 dark: MyntColors.textWhite,
@@ -1516,7 +1529,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           ),
           child: Icon(
             Icons.output,
-            size: 18,
+            size: 16,
             color: resolveThemeColor(context,
                 dark: MyntColors.lossDark,
                 light: MyntColors.tertiary),
@@ -1687,7 +1700,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -1707,7 +1720,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
