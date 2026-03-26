@@ -450,6 +450,8 @@ class _CustomizableSplitHomeScreenState
             _replaceScreenInPanel(ScreenType.saveBasketStrategy);
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
+          } else if (routeName == "mtfDetails") {
+            _replaceScreenInPanel(ScreenType.mtfDetails);
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -530,6 +532,8 @@ class _CustomizableSplitHomeScreenState
             _replaceScreenInPanel(ScreenType.saveBasketStrategy);
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
+          } else if (routeName == "mtfDetails") {
+            _replaceScreenInPanel(ScreenType.mtfDetails);
           } else {
             debugPrint("Unknown route: $routeName");
           }
