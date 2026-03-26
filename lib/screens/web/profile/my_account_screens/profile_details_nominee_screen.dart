@@ -171,7 +171,7 @@ void _submit() {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 10,horizontal: 10),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
                                     ),
                                     child: Text("Edit your Nominee",
@@ -187,7 +187,7 @@ void _submit() {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 10,horizontal: 10),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
                                 child: Text("No,I will do later",
@@ -308,7 +308,7 @@ void _submit() {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: Text(
@@ -349,7 +349,7 @@ void _submit() {
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: Text('Submit'),
@@ -379,7 +379,7 @@ void _submit() {
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: Text('Submit otp'),
@@ -479,7 +479,7 @@ void _submit() {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: Text(
@@ -515,7 +515,7 @@ void _submit() {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: Text('Submit'),
@@ -543,7 +543,7 @@ void _submit() {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: const Text('Submit otp'),
@@ -795,7 +795,7 @@ void _submit() {
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ),
@@ -817,7 +817,7 @@ void _submit() {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: Text(
@@ -884,7 +884,7 @@ void _submit() {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: const Text('Submit'),

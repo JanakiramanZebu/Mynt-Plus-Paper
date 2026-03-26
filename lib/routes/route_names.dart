@@ -230,6 +230,7 @@ class Routes {
 
   static const String profile = 'Profile';
   static const String bank = 'Bank';
+  static const String pledgeapprovelistscreen = 'PledgeApproveListScreen';
 
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/screens/web/profile/pledge/pledge_unpledge_screen.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,11 @@ import 'package:mynt_plus/screens/web/option_flash/option_flash_panel.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
+import 'package:mynt_plus/screens/web/profile/trading_preferences_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/nominee_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/form_download_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_details_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_section_screen_web.dart';
 import 'package:mynt_plus/screens/web/strategy_builder/strategy_builder_screen.dart';
 import 'package:mynt_plus/screens/web/webhook/webhook_tradingview_screen.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
@@ -51,7 +57,8 @@ import '../../../provider/stocks_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../../../provider/dashboard_provider.dart';
-import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
+import 'profile/Reports/ca_events_screen_web.dart';
+import 'profile/Reports/client_master_screen_web.dart';
 import '../../../res/res.dart';
 import '../../../provider/sidebar_provider.dart';
 import '../../../res/mynt_web_color_styles.dart';
@@ -63,6 +70,14 @@ import '../../../utils/responsive_snackbar.dart';
 import '../../../utils/rupee_convert_format.dart';
 // import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
+import 'profile/Reports/ledger/ledger_screen_web.dart';
+import 'profile/Reports/contract_note_screen_web.dart';
+import 'profile/Reports/tradebook_screen_web.dart';
+import 'profile/Reports/calenderPnl_screen.dart';
+import 'profile/Reports/pdf_download_screen_web.dart';
+import 'profile/Reports/position_screen.dart';
+import 'profile/Reports/tax_pnl_screen_web.dart';
+import 'profile/Reports/notional_pnl_screen_web.dart';
 import 'profile/notification_screens/notification_screen_web.dart';
 
 // import 'profile/settings_web.dart';
@@ -76,7 +91,7 @@ import 'trade_action_screen_web.dart';
 import 'portfolio_analysis_web.dart';
 // import '../Mobile/order_book/order_book_screen.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
-import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
+// import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
 
 import 'mutual_fund/mf_nfo_screen_web.dart';
@@ -101,6 +116,8 @@ import 'collection_basket/create_baskerscreen_web.dart' as basket_create;
 import 'collection_basket/collection_basket_builder.dart';
 import 'collection_basket/benchmark_backtest_web.dart';
 import 'collection_basket/save_strategy_screen_web.dart';
+import 'profile/refer/refer_screen_web.dart';
+import 'profile/help_support/help_support_screen_web.dart';
 import 'market_watch/tv_chart/chart_iframe_guard.dart';
 import '../../../sharedWidget/dynamic_banner_widget.dart';
 import '../../../models/banner_model/banner_model.dart';
@@ -148,6 +165,7 @@ enum ScreenTypeParam {
   createBasketStrategy,
   benchmarkBacktest,
   saveBasketStrategy,
+  profileDetails,
 }
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
@@ -155,9 +173,15 @@ class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   /// Used by GoRouter for URL-based navigation
   final ScreenTypeParam? initialRightPanel;
 
+  /// Digilocker callback params (from /profile?code=xxx&state=yyy redirect)
+  final String? digilockerCode;
+  final String? digilockerState;
+
   const CustomizableSplitHomeScreen({
     super.key,
     this.initialRightPanel,
+    this.digilockerCode,
+    this.digilockerState,
   });
 
   @override
@@ -424,6 +448,8 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == Routes.saveStrategyScreen ||
               routeName == "saveBasketStrategy") {
             _replaceScreenInPanel(ScreenType.saveBasketStrategy);
+          } else if (routeName == "refer") {
+            _replaceScreenInPanel(ScreenType.refer);
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -502,6 +528,8 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == Routes.saveStrategyScreen ||
               routeName == "saveBasketStrategy") {
             _replaceScreenInPanel(ScreenType.saveBasketStrategy);
+          } else if (routeName == "refer") {
+            _replaceScreenInPanel(ScreenType.refer);
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -671,6 +699,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenTypeParam.saveBasketStrategy:
         _replaceScreenInPanel(ScreenType.saveBasketStrategy);
+        break;
+      case ScreenTypeParam.profileDetails:
+        _replaceScreenInPanel(ScreenType.profileDetails);
         break;
       case ScreenTypeParam.dashboard:
       case ScreenTypeParam.watchlist:
@@ -2469,6 +2500,13 @@ class _CustomizableSplitHomeScreenState
       }
     }
 
+    // Save current screen for back navigation
+    final currentScreen = _panels[targetPanelIndex].screenType;
+    if (currentScreen != null) {
+      _panelScreenHistory[targetPanelIndex] ??= [];
+      _panelScreenHistory[targetPanelIndex]!.add(currentScreen);
+    }
+
     setState(() {
       _panels[targetPanelIndex].screenType = screenType;
       _panels[targetPanelIndex].screens = [screenType];
@@ -2670,9 +2708,22 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return const CABuyback();
+        return CAEventsScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.clientMaster:
+        return ClientMasterScreenWeb(onBack: _goBackInRightPanel);
       case ScreenType.reports:
-        return const ReportsScreenWeb();
+        return ReportsScreenWeb(
+          onNavigateToScreen: (screenType) {
+            if (screenType is ScreenType) {
+              _showScreenInRightPanel(screenType);
+              _handleScreenTypeChange(screenType);
+            }
+          },
+        );
+      case ScreenType.ledger:
+        return LedgerScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.contractNote:
+        return ContractNoteScreenWeb(onBack: _goBackInRightPanel);
       case ScreenType.settings:
         return const ProfileMainScreen(initialIndex: 3);
       case ScreenType.tradeAction:
@@ -2756,6 +2807,47 @@ class _CustomizableSplitHomeScreenState
             _showScreenInRightPanel(ScreenType.benchmarkBacktest);
           },
         );
+      case ScreenType.refer:
+        return const ReferScreenWeb();
+      case ScreenType.helpSupport:
+        return const HelpSupportScreenWeb();
+      case ScreenType.tradebook:
+        return TradebookScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.calendarPnl:
+        return CalenderpnlScreen(onBack: _goBackInRightPanel);
+      case ScreenType.reportPositions:
+        return PositionScreen(ddd: "DDDDD", onBack: _goBackInRightPanel);
+      case ScreenType.pdfDownload:
+        return PdfDownloadScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.taxPnl:
+        return TaxPnlScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.notionalPnl:
+        return NotionalPnlScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.myAccount:
+        return ProfileMainScreen(
+          initialIndex: 0,
+          onNavigateToScreen: (screenType) => _navigateToScreen(screenType),
+        );
+      case ScreenType.tradingPreferences:
+        return TradingPreferencesScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.profileDetails:
+        return ProfileDetailsScreenWeb(
+          onBack: _goBackInRightPanel,
+          digilockerCode: widget.digilockerCode,
+          digilockerState: widget.digilockerState,
+        );
+      case ScreenType.bankDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Bank', onBack: _goBackInRightPanel);
+      case ScreenType.depositoryDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Depository', onBack: _goBackInRightPanel);
+      case ScreenType.mtfDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Margin Trading Facility (MTF)', onBack: _goBackInRightPanel);
+      case ScreenType.nomineeDetails:
+        return NomineeScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.formDownload:
+        return FormDownloadScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.closureDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Closure', onBack: _goBackInRightPanel);
       // caEvent and cpAction removed
     }
   }
@@ -2790,8 +2882,14 @@ class _CustomizableSplitHomeScreenState
         return 'Pledge/Unpledge';
       case ScreenType.corporateActions:
         return 'Corporate Actions';
+      case ScreenType.clientMaster:
+        return 'Client Master';
       case ScreenType.reports:
         return 'Reports';
+      case ScreenType.ledger:
+        return 'Ledger';
+      case ScreenType.contractNote:
+        return 'Contract Note';
       case ScreenType.settings:
         return 'Settings';
       case ScreenType.tradeAction:
@@ -2825,6 +2923,40 @@ class _CustomizableSplitHomeScreenState
         return 'Backtest Analysis';
       case ScreenType.saveBasketStrategy:
         return 'Save Strategy';
+      case ScreenType.refer:
+        return 'Refer & Earn';
+      case ScreenType.helpSupport:
+        return 'Help & Support';
+      case ScreenType.tradebook:
+        return 'Tradebook';
+      case ScreenType.calendarPnl:
+        return 'P&L Summary';
+      case ScreenType.reportPositions:
+        return 'Positions';
+      case ScreenType.pdfDownload:
+        return 'PDF Download';
+      case ScreenType.taxPnl:
+        return 'Tax P&L';
+      case ScreenType.notionalPnl:
+        return 'Notional P&L';
+      case ScreenType.myAccount:
+        return 'My Account';
+      case ScreenType.tradingPreferences:
+        return 'Trading Preferences';
+      case ScreenType.profileDetails:
+        return 'Profile Details';
+      case ScreenType.bankDetails:
+        return 'Bank';
+      case ScreenType.depositoryDetails:
+        return 'Depository';
+      case ScreenType.mtfDetails:
+        return 'Margin Trading Facility (MTF)';
+      case ScreenType.nomineeDetails:
+        return 'Nominee';
+      case ScreenType.formDownload:
+        return 'Form Download';
+      case ScreenType.closureDetails:
+        return 'Closure';
       // caEvent and cpAction removed
     }
   }
@@ -2859,8 +2991,14 @@ class _CustomizableSplitHomeScreenState
         return Icons.security;
       case ScreenType.corporateActions:
         return Icons.business;
+      case ScreenType.clientMaster:
+        return Icons.description;
       case ScreenType.reports:
         return Icons.assessment;
+      case ScreenType.ledger:
+        return Icons.account_balance_wallet;
+      case ScreenType.contractNote:
+        return Icons.description;
       case ScreenType.settings:
         return Icons.settings;
       case ScreenType.tradeAction:
@@ -2894,6 +3032,40 @@ class _CustomizableSplitHomeScreenState
         return Icons.analytics;
       case ScreenType.saveBasketStrategy:
         return Icons.save;
+      case ScreenType.refer:
+        return Icons.card_giftcard;
+      case ScreenType.helpSupport:
+        return Icons.headset_mic_outlined;
+      case ScreenType.tradebook:
+        return Icons.receipt_long;
+      case ScreenType.calendarPnl:
+        return Icons.calendar_month;
+      case ScreenType.reportPositions:
+        return Icons.trending_up;
+      case ScreenType.pdfDownload:
+        return Icons.picture_as_pdf;
+      case ScreenType.taxPnl:
+        return Icons.receipt_long;
+      case ScreenType.notionalPnl:
+        return Icons.bar_chart;
+      case ScreenType.myAccount:
+        return Icons.person_outline;
+      case ScreenType.tradingPreferences:
+        return Icons.tune;
+      case ScreenType.profileDetails:
+        return Icons.person;
+      case ScreenType.bankDetails:
+        return Icons.account_balance;
+      case ScreenType.depositoryDetails:
+        return Icons.inventory;
+      case ScreenType.mtfDetails:
+        return Icons.trending_up;
+      case ScreenType.nomineeDetails:
+        return Icons.people;
+      case ScreenType.formDownload:
+        return Icons.download;
+      case ScreenType.closureDetails:
+        return Icons.cancel;
       // caEvent and cpAction removed
     }
   }
@@ -3209,6 +3381,11 @@ class _CustomizableSplitHomeScreenState
     // Update subscription manager with active screen
     _updateSubscriptionManagerForPanels();
 
+    // Cancel position polling timer when navigating away from reportPositions
+    if (screenType != ScreenType.reportPositions) {
+      ref.read(ledgerProvider).ccancelalltimes();
+    }
+
     // Only call handlers if this is not the initial load
     if (_isInitialLoad) {
       return;
@@ -3257,8 +3434,16 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.corporateActions:
         _handleCorporateActionsTap();
         break;
+      case ScreenType.clientMaster:
+        _addScreenAsPanelTab(ScreenType.clientMaster);
+        break;
       case ScreenType.reports:
         _handleReportsTap();
+        break;
+      case ScreenType.ledger:
+        _handleLedgerTap();
+        break;
+      case ScreenType.contractNote:
         break;
       case ScreenType.settings:
         _handleSettingsTap();
@@ -3286,6 +3471,41 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenType.scalper:
         setState(() => _isScalperMode = true);
+        break;
+      case ScreenType.refer:
+        break;
+      case ScreenType.helpSupport:
+        break;
+      case ScreenType.tradebook:
+        break;
+      case ScreenType.calendarPnl:
+        break;
+      case ScreenType.reportPositions:
+        ref.read(ledgerProvider).fetchposition(context);
+        break;
+      case ScreenType.pdfDownload:
+        break;
+      case ScreenType.taxPnl:
+        break;
+      case ScreenType.notionalPnl:
+        break;
+      case ScreenType.myAccount:
+        break;
+      case ScreenType.tradingPreferences:
+        break;
+      case ScreenType.profileDetails:
+        break;
+      case ScreenType.bankDetails:
+        break;
+      case ScreenType.depositoryDetails:
+        break;
+      case ScreenType.mtfDetails:
+        break;
+      case ScreenType.nomineeDetails:
+        break;
+      case ScreenType.formDownload:
+        break;
+      case ScreenType.closureDetails:
         break;
       // caEvent and cpAction removed
     }
@@ -4120,6 +4340,12 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.reports:
         urlPath = WebRoutes.reports;
         break;
+      case ScreenType.ledger:
+        urlPath = '/ledger';
+        break;
+      case ScreenType.contractNote:
+        urlPath = '/contract-note';
+        break;
       case ScreenType.strategyBuilder:
         urlPath = WebRoutes.strategyBuilder;
         break;
@@ -4610,42 +4836,21 @@ class _CustomizableSplitHomeScreenState
         .read(orderProvider)
         .requestWSOrderBook(context: context, isSubscribe: false);
 
-    // Fetch reports data
-    if (reportsprovider.ledgerAllData == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchLegerData(context, reportsprovider.startDate,
-          reportsprovider.endDate, reportsprovider.includeBillMargin);
-    }
-    if (reportsprovider.holdingsAllData == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchholdingsData(reportsprovider.today, context);
-    }
-    if (reportsprovider.pnlAllData == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchpnldata(
-          context, reportsprovider.startDate, reportsprovider.today, true);
-    }
-    if (reportsprovider.calenderpnlAllData == null) {
+    // No API pre-fetching here — each report screen fetches its own data
+    // when opened, with cache guards to prevent duplicates.
+
+     if (reportsprovider.calenderpnlAllData == null) {
       await reportsprovider.getCurrentDate('else');
       reportsprovider.calendarProvider();
       reportsprovider.fetchcalenderpnldata(
           context, reportsprovider.startDate, reportsprovider.today, 'Equity');
     }
-    if (reportsprovider.taxpnldercomcur == null &&
-        reportsprovider.taxpnleq == null) {
-      await reportsprovider.getYearlistTaxpnl();
-      await reportsprovider.getCurrentDate('');
-    }
-    if (reportsprovider.tradebookdata == null) {
-      await reportsprovider.getCurrentDate('tradebook');
-      reportsprovider.fetchtradebookdata(
-          context, reportsprovider.startDate, reportsprovider.today);
-    }
-    if (reportsprovider.pdfdownload == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchpdfdownload(
-          context, reportsprovider.startDate, reportsprovider.today);
-    }
+  }
+
+  // Handle ledger tap — date context only, LedgerScreenWeb handles its own fetch
+  void _handleLedgerTap() async {
+    final reportsprovider = ref.read(ledgerProvider);
+    await reportsprovider.getCurrentDate('else');
   }
 
   // Handle settings tap
@@ -4830,6 +5035,10 @@ class _CustomizableSplitHomeScreenState
     // Get the previous screen type from stack
     final historyStack = _panelScreenHistory[targetPanelIndex];
     if (historyStack != null && historyStack.isNotEmpty) {
+      // Cancel position polling timer when leaving reportPositions via back button
+      if (_panels[targetPanelIndex].screenType == ScreenType.reportPositions) {
+        ref.read(ledgerProvider).ccancelalltimes();
+      }
       final previousScreen = historyStack.removeLast(); // Pop from stack
       setState(() {
         _panels[targetPanelIndex].screenType = previousScreen;
@@ -5262,6 +5471,26 @@ enum ScreenType {
   createBasketStrategy,
   benchmarkBacktest,
   saveBasketStrategy,
+  refer,
+  helpSupport,
+  ledger,
+  contractNote,
+  tradebook,
+  calendarPnl,
+  clientMaster,
+  reportPositions,
+  pdfDownload,
+  taxPnl,
+  notionalPnl,
+  myAccount,
+  tradingPreferences,
+  profileDetails,
+  bankDetails,
+  depositoryDetails,
+  mtfDetails,
+  nomineeDetails,
+  formDownload,
+  closureDetails,
 }
 
 // Hoverable navigation item widget
