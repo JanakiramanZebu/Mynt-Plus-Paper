@@ -1430,8 +1430,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   ) {
     return Consumer(
       builder: (context, ref, child) {
-        final openOrders =
-            ref.watch(orderProvider.select((p) => p.openOrder ?? []));
+        final orderBook = ref.watch(orderProvider);
+        final openOrders = orderBook.openOrder ?? [];
         final orderIndex = openOrders.indexWhere(
             (o) => o.norenordno == order.norenordno);
         final isSelected = orderIndex >= 0

@@ -195,32 +195,51 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         final totPnL = portfolio.totPnL;
         final totMtM = portfolio.totMtM;
 
-        final cardSpacing = context.responsive<double>(
-          mobile: 8.0,
-          tablet: 10.0,
-          desktop: 12.0,
-        );
+        final cards = [
+          _buildStatCard(
+            label: 'Total P&L',
+            value: totPnL.toIndianFormat(),
+            valueColor: _getValueColor(totPnL, theme),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Total MTM',
+            value: totMtM.toIndianFormat(),
+            valueColor: _getValueColor(totMtM, theme),
+            theme: theme,
+          ),
+        ];
 
-        return Row(children: [
-          SizedBox(width: cardSpacing),
-          Expanded(
-            child: _buildStatCard(
-              label: 'Total P&L',
-              value: totPnL.toIndianFormat(),
-              valueColor: _getValueColor(totPnL, theme),
-              theme: theme,
-            ),
-          ),
-          SizedBox(width: cardSpacing),
-          Expanded(
-            child: _buildStatCard(
-              label: 'Total MTM',
-              value: totMtM.toIndianFormat(),
-              valueColor: _getValueColor(totMtM, theme),
-              theme: theme,
-            ),
-          ),
-        ]);
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 800;
+
+            if (isWide) {
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (int i = 0; i < cards.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 12),
+                      Expanded(child: cards[i]),
+                    ],
+                  ],
+                ),
+              );
+            } else {
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: cards[0]),
+                    const SizedBox(width: 12),
+                    Expanded(child: cards[1]),
+                  ],
+                ),
+              );
+            }
+          },
+        );
       },
     );
   }
@@ -244,86 +263,64 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     );
 
     return shadcn.Theme(
-      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
-      child: shadcn.Card(
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: horizontalPadding,
-            vertical: verticalPadding,
-          ),
+        data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+        child: shadcn.Card(
+          padding: EdgeInsets.all(10),
           child: Row(
-            children: [
-              const SizedBox(width: 1),
-              // Label and value
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: context.isMobile
-                          ? MyntWebTextStyles.para(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            )
-                          : MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            ),
-                    ),
-                    const SizedBox(height: 1),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            value,
-                            style: context.isMobile
-                                ? MyntWebTextStyles.title(
-                                    context,
-                                    color: valueColor,
-                                    fontWeight: MyntFonts.medium,
-                                  )
-                                : MyntWebTextStyles.head(
-                                    context,
-                                    color: valueColor,
-                                    fontWeight: MyntFonts.medium,
-                                  ),
-                            overflow: TextOverflow.ellipsis,
+              children: [
+               
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
                           ),
+                          fontWeight: MyntFonts.medium,
                         ),
-                        if (percentage != null) ...[
-                          const SizedBox(width: 6),
+                      ),
+                      const SizedBox(height: 2),
+                      // Use Wrap to move percentage to next line when space is limited
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 2,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
                           Text(
-                            '($percentage%)',
-                            style: MyntWebTextStyles.bodySmall(
+                            value,
+                            style: MyntWebTextStyles.head(
                               context,
                               color: valueColor,
                               fontWeight: MyntFonts.medium,
                             ),
                           ),
+                          if (percentage != null)
+                            Text(
+                              '($percentage%)',
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                color: valueColor,
+                                fontWeight: MyntFonts.medium,
+                              ).copyWith(
+                                fontFeatures: [FontFeature.tabularFigures()],
+                              ),
+                            ),
                         ],
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Color _getStatValueColor(String value, ThemesProvider theme) {
