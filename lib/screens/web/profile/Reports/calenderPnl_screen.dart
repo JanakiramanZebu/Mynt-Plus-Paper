@@ -332,7 +332,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _WebCalendarTabs(
-              heatmapData: ledgerprovider.heatmapData,
+              heatmapData: isCommodity
+                  ? _buildHeatmapForCommodity(ledgerprovider)
+                  : ledgerprovider.heatmapData,
               monthlyPnL: isCommodity
                   ? _buildMonthlyPnLForCommodity(ledgerprovider)
                   : ledgerprovider.monthlyPnL,
@@ -859,7 +861,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           }
 
           final dateString =
-              '${dateKey.day.toString().padLeft(2, '0')} ${_monthName(dateKey.month)} ${dateKey.year}';
+              '${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}';
           final isExpanded = _expandedDates.contains(dateKey);
 
           return _DateRowData(
@@ -1972,13 +1974,23 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     }
   }
 
-  String _monthName(int month) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return months[month - 1];
+}
+
+// --- Commodity daily heatmap builder ---
+Map<DateTime, double> _buildHeatmapForCommodity(LDProvider provider) {
+  final Map<DateTime, double> heatmap = {};
+  if (provider.calenderpnlAllData?.dateWise != null) {
+    (provider.calenderpnlAllData!.dateWise as Map).forEach((dateStr, dateData) {
+      try {
+        final date = DateTime.parse(dateStr);
+        final pnl = dateData['realised_pnl']?.toDouble() ?? 0.0;
+        heatmap[DateTime(date.year, date.month, date.day)] = pnl;
+      } catch (e) {
+        // Skip invalid dates
+      }
+    });
   }
+  return heatmap;
 }
 
 // --- Commodity monthly PnL builder ---
