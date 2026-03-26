@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/locator/locator.dart';
+import 'package:mynt_plus/locator/preference.dart';
+import 'package:mynt_plus/screens/web/position/position_download_helper.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/screens/web/position/exit_all_positions_dialog_web.dart';
 import 'package:mynt_plus/screens/web/position/position_detail_screen_web.dart';
@@ -192,32 +195,51 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         final totPnL = portfolio.totPnL;
         final totMtM = portfolio.totMtM;
 
-        final cardSpacing = context.responsive<double>(
-          mobile: 8.0,
-          tablet: 10.0,
-          desktop: 12.0,
-        );
+        final cards = [
+          _buildStatCard(
+            label: 'Total P&L',
+            value: totPnL.toIndianFormat(),
+            valueColor: _getValueColor(totPnL, theme),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Total MTM',
+            value: totMtM.toIndianFormat(),
+            valueColor: _getValueColor(totMtM, theme),
+            theme: theme,
+          ),
+        ];
 
-        return Row(children: [
-          SizedBox(width: cardSpacing),
-          Expanded(
-            child: _buildStatCard(
-              label: 'Total P&L',
-              value: totPnL.toIndianFormat(),
-              valueColor: _getValueColor(totPnL, theme),
-              theme: theme,
-            ),
-          ),
-          SizedBox(width: cardSpacing),
-          Expanded(
-            child: _buildStatCard(
-              label: 'Total MTM',
-              value: totMtM.toIndianFormat(),
-              valueColor: _getValueColor(totMtM, theme),
-              theme: theme,
-            ),
-          ),
-        ]);
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 800;
+
+            if (isWide) {
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (int i = 0; i < cards.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 12),
+                      Expanded(child: cards[i]),
+                    ],
+                  ],
+                ),
+              );
+            } else {
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: cards[0]),
+                    const SizedBox(width: 12),
+                    Expanded(child: cards[1]),
+                  ],
+                ),
+              );
+            }
+          },
+        );
       },
     );
   }
@@ -241,86 +263,64 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     );
 
     return shadcn.Theme(
-      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
-      child: shadcn.Card(
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: horizontalPadding,
-            vertical: verticalPadding,
-          ),
+        data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+        child: shadcn.Card(
+          padding: EdgeInsets.all(10),
           child: Row(
-            children: [
-              const SizedBox(width: 1),
-              // Label and value
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: context.isMobile
-                          ? MyntWebTextStyles.para(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            )
-                          : MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            ),
-                    ),
-                    const SizedBox(height: 1),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            value,
-                            style: context.isMobile
-                                ? MyntWebTextStyles.title(
-                                    context,
-                                    color: valueColor,
-                                    fontWeight: MyntFonts.medium,
-                                  )
-                                : MyntWebTextStyles.head(
-                                    context,
-                                    color: valueColor,
-                                    fontWeight: MyntFonts.medium,
-                                  ),
-                            overflow: TextOverflow.ellipsis,
+              children: [
+               
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
                           ),
+                          fontWeight: MyntFonts.medium,
                         ),
-                        if (percentage != null) ...[
-                          const SizedBox(width: 6),
+                      ),
+                      const SizedBox(height: 2),
+                      // Use Wrap to move percentage to next line when space is limited
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 2,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
                           Text(
-                            '($percentage%)',
-                            style: MyntWebTextStyles.bodySmall(
+                            value,
+                            style: MyntWebTextStyles.head(
                               context,
                               color: valueColor,
                               fontWeight: MyntFonts.medium,
                             ),
                           ),
+                          if (percentage != null)
+                            Text(
+                              '($percentage%)',
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                color: valueColor,
+                                fontWeight: MyntFonts.medium,
+                              ).copyWith(
+                                fontFeatures: [FontFeature.tabularFigures()],
+                              ),
+                            ),
                         ],
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Color _getStatValueColor(String value, ThemesProvider theme) {
@@ -602,6 +602,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             ),
 
             SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+              _buildDownloadButton(theme, positionBook),
+            SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
             // Refresh Button - triggers manual refresh
             _buildIconButton(
               icon: Icons.refresh,
@@ -720,6 +722,107 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       ),
     );
   }
+
+   Widget _buildDownloadButton(ThemesProvider theme, PortfolioProvider positionBook) {
+    final buttonSize = context.responsive<double>(
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+    );
+    final iconSize = context.responsive<double>(
+      mobile: 22,
+      tablet: 25,
+      desktop: 28,
+    );
+
+    return PopupMenuButton<String>(
+      tooltip: 'Download',
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: theme.isDarkMode ? MyntColors.cardDark : Colors.white,
+      onSelected: (value) {
+        final positions = positionBook.allPostionList.isNotEmpty
+            ? positionBook.allPostionList
+            : positionBook.openPosition ?? [];
+
+        final filteredPositions = _getFilteredPositionsFromList(positions);
+
+        if (filteredPositions.isEmpty) {
+          warningMessage(context, 'No positions to download');
+          return;
+        }
+
+        final pref = locator<Preferences>();
+        final clientId = pref.clientId ?? '';
+        final clientName = pref.clientName ?? '';
+
+        if (value == 'pdf') {
+          PositionDownloadHelper.downloadPdf(
+            positions: filteredPositions,
+            clientId: clientId,
+            clientName: clientName,
+          );
+        } else if (value == 'excel') {
+          PositionDownloadHelper.downloadExcel(
+            positions: filteredPositions,
+            clientId: clientId,
+            clientName: clientName,
+          );
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'pdf',
+          child: Row(
+            children: [
+              Icon(Icons.picture_as_pdf, size: 18, color: Colors.red[700]),
+              const SizedBox(width: 8),
+              Text('Download PDF',
+                  style: TextStyle(
+                    color: theme.isDarkMode
+                        ? MyntColors.textPrimaryDark
+                        : MyntColors.textPrimary,
+                  )),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'excel',
+          child: Row(
+            children: [
+              Icon(Icons.table_chart, size: 18, color: Colors.green[700]),
+              const SizedBox(width: 8),
+              Text('Download Excel',
+                  style: TextStyle(
+                    color: theme.isDarkMode
+                        ? MyntColors.textPrimaryDark
+                        : MyntColors.textPrimary,
+                  )),
+            ],
+          ),
+        ),
+      ],
+      child: Container(
+        width: buttonSize,
+        height: buttonSize,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.download,
+            size: iconSize,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.iconDark,
+              light: MyntColors.icon,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
 
   // Filter dropdown button matching Holdings
   Widget _buildFilterButton(ThemesProvider theme) {
@@ -1250,9 +1353,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     }
 
     // Apply product filter
-    if (_selectedFilter != 'All') {
+     if (_selectedFilter.value != 'All') {
       filtered = filtered.where((position) {
-        return position.sPrdtAli == _selectedFilter;
+        return position.sPrdtAli == _selectedFilter.value;
       }).toList();
     }
 

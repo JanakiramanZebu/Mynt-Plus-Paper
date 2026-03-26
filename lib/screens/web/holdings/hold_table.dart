@@ -198,6 +198,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -245,7 +247,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   }) {
     // Add extra horizontal padding for first and last columns
     final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 7;
+    final isLastColumn = columnIndex == 9;
 
     // For first column (Instrument), use more left padding, minimal right padding
     // For last column, use minimal left padding, more right padding (mirror of first)
@@ -253,12 +255,12 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     EdgeInsets cellPadding;
     if (isFirstColumn) {
       cellPadding =
-          const EdgeInsets.fromLTRB(16, 8, 4, 8); // More left, minimal right
+          const EdgeInsets.fromLTRB(16, 4, 4, 4); // More left, minimal right
     } else if (isLastColumn) {
       cellPadding =
-          const EdgeInsets.fromLTRB(4, 8, 16, 8); // Minimal left, more right
+          const EdgeInsets.fromLTRB(4, 4, 16, 4); // Minimal left, more right
     } else {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -345,7 +347,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
       [bool alignRight = false]) {
     // Add extra horizontal padding for first and last columns
     final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 7;
+    final isLastColumn = columnIndex == 9;
 
     // Match the cell padding logic - first column has more left, minimal right
     // Last column mirrors this - minimal left, more right
@@ -454,13 +456,15 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     // Header texts
     final headers = [
       'Instrument',
-      'Net Qty',
-      'Avg Price',
+      'Qty',
+      'Avg Prc',
       'LTP',
-      'Invested',
-      'Current Value',
+      'Inv',
+      'Cur Val',
       'Day P&L',
-      'Overall P&L',
+      'Day Chg',
+      'P&L',
+      'Net Chg',
     ];
 
     final minWidths = <int, double>{};
@@ -517,23 +521,24 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             cellText = ltpValue.toStringAsFixed(2);
             break;
           case 4: // Invested
-            final invested = double.tryParse(holding.invested ?? '0') ?? 0.0;
-            cellText = invested.toStringAsFixed(2);
+            cellText = ((holding.invested ?? '0.00') as String).toIndianFormat();
             break;
           case 5: // Current Value
-            final currentValue =
-                double.tryParse(holding.currentValue ?? '0') ?? 0.0;
-            cellText = currentValue.toStringAsFixed(2);
+            cellText = ((holding.currentValue ?? '0.00') as String).toIndianFormat();
             break;
-          case 6: // Day P&L (with percentage)
-            final dayPnl = exchTsym?.oneDayChg ?? '0.00';
+          case 6: // Day P&L
+            cellText = ((exchTsym?.oneDayChg ?? '0.00') as String).toIndianFormat();
+            break;
+          case 7: // Day Chg
             final dayPct = exchTsym?.perChange ?? '0.00';
-            cellText = '$dayPnl\u00A0($dayPct%)';
-
-          case 7: // Overall P&L (with percentage)
-            final pnl = exchTsym?.profitNloss ?? '0.00';
+            cellText = '+$dayPct%';
+            break;
+          case 8: // P&L (overall profit/loss value)
+            cellText = ((exchTsym?.profitNloss ?? '0.00') as String).toIndianFormat();
+            break;
+          case 9: // Net Chg (overall change %)
             final pct = exchTsym?.pNlChng ?? '0.00';
-            cellText = '$pnl\u00A0($pct%)';
+            cellText = '+$pct%';
         }
 
         final cellWidth = _measureTextWidth(cellText, textStyle);
@@ -654,10 +659,20 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             final dayPnlB = double.tryParse(exchTsymB?.oneDayChg ?? '0') ?? 0.0;
             comparison = dayPnlA.compareTo(dayPnlB);
             break;
-          case 7: // Overall P&L
+          case 7: // Day Chg
+            final dayPctA = double.tryParse(exchTsymA?.perChange ?? '0') ?? 0.0;
+            final dayPctB = double.tryParse(exchTsymB?.perChange ?? '0') ?? 0.0;
+            comparison = dayPctA.compareTo(dayPctB);
+            break;
+          case 8: // P&L
             final pnlA = double.tryParse(exchTsymA?.profitNloss ?? '0') ?? 0.0;
             final pnlB = double.tryParse(exchTsymB?.profitNloss ?? '0') ?? 0.0;
             comparison = pnlA.compareTo(pnlB);
+            break;
+          case 9: // Net Chg
+            final pctA = double.tryParse(exchTsymA?.pNlChng ?? '0') ?? 0.0;
+            final pctB = double.tryParse(exchTsymB?.pNlChng ?? '0') ?? 0.0;
+            comparison = pctA.compareTo(pctB);
             break;
         }
         return _sortAscending ? comparison : -comparison;
@@ -693,7 +708,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
-          for (int i = 0; i < 8; i++) {
+          for (int i = 0; i < 10; i++) {
             columnWidths[i] = minWidths[i] ?? 100.0;
           }
 
@@ -703,52 +718,13 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
           // Step 3: Handle width adjustment based on available space
           if (totalMinWidth < availableWidth) {
-            // Extra space available - distribute it proportionally
+            // Extra space available - distribute equally across all columns
+            // Equal distribution ensures uniform gaps between columns
             final extraSpace = availableWidth - totalMinWidth;
+            final extraPerColumn = extraSpace / 10;
 
-            // Define which columns can grow and their growth priorities
-            // Instrument gets more growth, numeric columns get less
-            // Net Qty (col 1) should not grow much - it has small content
-            const instrumentGrowthFactor =
-                2.0; // Instrument can grow 2x more than numeric
-            const numericGrowthFactor = 1.0;
-            const smallColumnGrowthFactor =
-                0.1; // Net Qty should grow minimally
-
-            // Calculate growth factors for each column
-            final growthFactors = <int, double>{};
-            double totalGrowthFactor = 0.0;
-
-            for (int i = 0; i < 8; i++) {
-              if (i == 0) {
-                // Column 0 is Instrument
-                growthFactors[i] = instrumentGrowthFactor;
-                totalGrowthFactor += instrumentGrowthFactor;
-              } else if (i == 1) {
-                // Column 1 is Net Qty - small content, minimal growth
-                growthFactors[i] = smallColumnGrowthFactor;
-                totalGrowthFactor += smallColumnGrowthFactor;
-              } else {
-                // Columns 2-7 are numeric
-                growthFactors[i] = numericGrowthFactor;
-                totalGrowthFactor += numericGrowthFactor;
-              }
-            }
-
-            // Distribute extra space proportionally
-            if (totalGrowthFactor > 0) {
-              for (int i = 0; i < 8; i++) {
-                if (growthFactors[i]! > 0) {
-                  final extraForThisColumn =
-                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
-                }
-              }
-            }
-
-            // Cap Net Qty column to prevent it from being too wide
-            if (columnWidths[1] != null && columnWidths[1]! > 120) {
-              columnWidths[1] = 120.0;
+            for (int i = 0; i < 10; i++) {
+              columnWidths[i] = columnWidths[i]! + extraPerColumn;
             }
           } else if (totalMinWidth > availableWidth) {
             // Not enough space - shrink columns proportionally to eliminate scroll
@@ -759,18 +735,20 @@ class _TableExample1State extends ConsumerState<TableExample1> {
               0: 160.0, // Instrument (needs space for Exit + 3-dot menu)
               1: 50.0,  // Net Qty
               2: 65.0,  // Avg Price
-              3: 50.0,  // LTP
+              3: 80.0,  // LTP
               4: 70.0,  // Invested
               5: 80.0,  // Current Value
-              6: 80.0,  // Day P&L
-              7: 80.0,  // Overall P&L
+              6: 70.0,  // Day P&L
+              7: 50.0,  // Day Chg
+              8: 70.0,  // P&L
+              9: 50.0,  // Net Chg
             };
 
             // Calculate how much each column can shrink
             final shrinkableAmounts = <int, double>{};
             double totalShrinkable = 0.0;
 
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < 10; i++) {
               final currentWidth = columnWidths[i]!;
               final absoluteMin = absoluteMinWidths[i] ?? 50.0;
               final shrinkable = currentWidth - absoluteMin;
@@ -789,7 +767,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                   ? excessWidth / totalShrinkable
                   : 1.0;
 
-              for (int i = 0; i < 8; i++) {
+              for (int i = 0; i < 10; i++) {
                 if (shrinkableAmounts[i]! > 0) {
                   final shrinkAmount = shrinkableAmounts[i]! * shrinkFactor;
                   columnWidths[i] = columnWidths[i]! - shrinkAmount;
@@ -820,19 +798,23 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
                     7: shadcn.FixedTableSize(columnWidths[7]!),
+                    8: shadcn.FixedTableSize(columnWidths[8]!),
+                    9: shadcn.FixedTableSize(columnWidths[9]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
                         buildHeaderCell('Instrument', 0),
-                        buildHeaderCell('Net Qty', 1, true),
-                        buildHeaderCell('Avg Price', 2, true),
+                        buildHeaderCell('Qty', 1, true),
+                        buildHeaderCell('Avg Prc', 2, true),
                         buildHeaderCell('LTP', 3, true),
-                        buildHeaderCell('Invested', 4, true),
-                        buildHeaderCell('Current Value', 5, true),
+                        buildHeaderCell('Inv', 4, true),
+                        buildHeaderCell('Cur Val', 5, true),
                         buildHeaderCell('Day P&L', 6, true),
-                        buildHeaderCell('Overall P&L', 7, true),
+                        buildHeaderCell('Day Chg', 7, true),
+                        buildHeaderCell('P&L', 8, true),
+                        buildHeaderCell('Net Chg', 9, true),
                       ],
                     ),
                   ],
@@ -855,7 +837,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                     child: ListView.builder(
                       controller: _verticalScrollController,
                       itemCount: displayHoldings.length,
-                      itemExtent: 50.0,
+                      itemExtent: 42.0,
                       itemBuilder: (context, index) {
                         final holding = displayHoldings[index];
                         final exchTsym =
@@ -877,8 +859,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                             5: shadcn.FixedTableSize(columnWidths[5]!),
                             6: shadcn.FixedTableSize(columnWidths[6]!),
                             7: shadcn.FixedTableSize(columnWidths[7]!),
+                            8: shadcn.FixedTableSize(columnWidths[8]!),
+                            9: shadcn.FixedTableSize(columnWidths[9]!),
                           },
-                          defaultRowHeight: const shadcn.FixedTableSize(50),
+                          defaultRowHeight: const shadcn.FixedTableSize(40),
                           rows: [
                             shadcn.TableRow(
                               cells: [
@@ -1070,15 +1054,16 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                             decoration: BoxDecoration(
-                                              color: MyntColors.secondary.withValues(alpha: 0.1),
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.primaryDark.withValues(alpha: 0.15),
+                                                  light: MyntColors.secondary.withValues(alpha: 0.1)),
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
                                               'T1: ${int.parse(holding.npoadt1qty ?? "0") + int.parse(holding.btstqty ?? "0")}',
                                               style: MyntWebTextStyles.para(
                                                 context,
-                                                color: MyntColors.secondary,
-                                                darkColor: MyntColors.secondary,
+                                                darkColor: MyntColors.primaryDark,
                                                 lightColor: MyntColors.secondary,
                                                 fontWeight: MyntFonts.medium,
                                               ).copyWith(fontSize: 10),
@@ -1103,13 +1088,13 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      (double.tryParse(
-                                                  holding.avgPrc ?? '0') ??
-                                              0.0)
-                                          .toStringAsFixed(2),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (double.tryParse(holding.avgPrc ?? '0') ?? 0.0).toStringAsFixed(2);
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                                 // LTP - with WebSocket updates
@@ -1121,10 +1106,13 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      exchTsym?.lp ?? '0.00',
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = exchTsym?.lp ?? '0.00';
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                                 // Invested
@@ -1136,10 +1124,13 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      (holding.invested ?? '0.00').toIndianFormat(),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (holding.invested ?? '0.00').toIndianFormat();
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                                 // Current Value - with WebSocket updates
@@ -1151,13 +1142,16 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      (holding.currentValue ?? '0.00').toIndianFormat(),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (holding.currentValue ?? '0.00').toIndianFormat();
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
-                                // Day P&L - with WebSocket updates (includes percentage)
+                                // Day P&L
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 6,
@@ -1166,13 +1160,20 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: _buildPnLColumn(
-                                      exchTsym?.oneDayChg ?? '0.00',
-                                      exchTsym?.perChange ?? '0.00',
+                                    child: Builder(
+                                      builder: (context) {
+                                        final dayPnlValue = exchTsym?.oneDayChg ?? '0.00';
+                                        final numValue = double.tryParse(dayPnlValue.replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+                                        final displayValue = dayPnlValue.toIndianFormat();
+                                        return Tooltip(
+                                          message: displayValue,
+                                          child: Text(displayValue, style: _getTextStyle(context, color: _getValueColor(numValue)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
-                                // Overall P&L - with WebSocket updates (includes percentage)
+                                // Day Chg
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 7,
@@ -1181,9 +1182,60 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: _buildPnLColumn(
-                                      exchTsym?.profitNloss ?? '0.00',
-                                      exchTsym?.pNlChng ?? '0.00',
+                                    child: Builder(
+                                      builder: (context) {
+                                        final dayPctValue = exchTsym?.perChange ?? '0.00';
+                                        final numValue = double.tryParse(dayPctValue) ?? 0.0;
+                                        final displayValue = '${numValue >= 0 ? "+" : ""}$dayPctValue%';
+                                        return Tooltip(
+                                          message: displayValue,
+                                          child: Text(displayValue, style: _getTextStyle(context, color: _getValueColor(numValue)).copyWith(fontSize: 12, fontWeight: FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                // P&L (overall profit/loss value)
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 8,
+                                  alignRight: true,
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Builder(
+                                      builder: (context) {
+                                        final pnlValue = exchTsym?.profitNloss ?? '0.00';
+                                        final numValue = double.tryParse(pnlValue.replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+                                        final displayValue = pnlValue.toIndianFormat();
+                                        return Tooltip(
+                                          message: displayValue,
+                                          child: Text(displayValue, style: _getTextStyle(context, color: _getValueColor(numValue)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                // Net Chg (overall change %)
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 9,
+                                  alignRight: true,
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Builder(
+                                      builder: (context) {
+                                        final pctValue = exchTsym?.pNlChng ?? '0.00';
+                                        final numValue = double.tryParse(pctValue) ?? 0.0;
+                                        final displayValue = '${numValue >= 0 ? "+" : ""}$pctValue%';
+                                        return Tooltip(
+                                          message: displayValue,
+                                          child: Text(displayValue, style: _getTextStyle(context, color: _getValueColor(numValue)).copyWith(fontSize: 12, fontWeight: FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
@@ -1515,7 +1567,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
           _handleExitHolding(holding, exchTsym);
         },
         child: Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: resolveThemeColor(context,
                 dark: MyntColors.textWhite,
@@ -1533,8 +1585,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
           ),
           child: SvgPicture.asset(
             assets.exitPositionIcon,
-            height: 18,
-            width: 18,
+            height: 16,
+            width: 16,
             colorFilter: ColorFilter.mode(
               resolveThemeColor(context,
                   dark: MyntColors.lossDark,
@@ -1662,7 +1714,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             setState(() {});
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -1682,7 +1734,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
              color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),

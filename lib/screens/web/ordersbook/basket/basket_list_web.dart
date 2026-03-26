@@ -199,7 +199,7 @@ class _BasketListState extends ConsumerState<BasketList> {
               width: double.infinity,
               height: double.infinity,
               padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding, vertical: 8),
+                  horizontal: horizontalPadding, vertical: 4),
               alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
               decoration: BoxDecoration(
                 color: hoveredRowId == '$rowIndex'
@@ -463,7 +463,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                         style: MyntWebTextStyles.tableCell(
                           context,
                           fontWeight: MyntFonts.medium,
-                        ),
+                        ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -511,7 +511,7 @@ class _BasketListState extends ConsumerState<BasketList> {
           ? null
           : () => _handleDeleteBasket(context, basket, index),
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               // dark: MyntColors.loss.withValues(alpha: 0.15),
@@ -531,7 +531,7 @@ class _BasketListState extends ConsumerState<BasketList> {
         ),
         child: Icon(
           Icons.close,
-          size: 18,
+          size: 16,
           fontWeight: FontWeight.bold,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
@@ -630,7 +630,7 @@ class _BasketListState extends ConsumerState<BasketList> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -650,7 +650,7 @@ class _BasketListState extends ConsumerState<BasketList> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: styles.MyntColors.textPrimary,
                   light: styles.MyntColors.textPrimary),
@@ -673,7 +673,7 @@ class _BasketListState extends ConsumerState<BasketList> {
         style: MyntWebTextStyles.tableCell(
           context,
           fontWeight: MyntFonts.medium,
-        ),
+        ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -774,7 +774,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                       1: shadcn.FixedTableSize(columnWidths[1]!),
                       2: shadcn.FixedTableSize(columnWidths[2]!),
                     },
-                    defaultRowHeight: const shadcn.FixedTableSize(50),
+                    defaultRowHeight: const shadcn.FixedTableSize(40),
                     rows: [
                       shadcn.TableHeader(
                         cells: [
@@ -818,7 +818,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                                       1: shadcn.FixedTableSize(columnWidths[1]!),
                                       2: shadcn.FixedTableSize(columnWidths[2]!),
                                     },
-                                    defaultRowHeight: const shadcn.FixedTableSize(50),
+                                    defaultRowHeight: const shadcn.FixedTableSize(40),
                                     rows: sortedBaskets.asMap().entries.map((entry) {
                                       final index = entry.key;
                                       final basket =
@@ -1050,7 +1050,7 @@ class _BasketListState extends ConsumerState<BasketList> {
             elevation: 0,
             child: Container(
               constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.5,
+                maxWidth: MediaQuery.of(context).size.width * 0.6,
                 maxHeight: MediaQuery.of(context).size.height * 0.8,
               ),
               decoration: BoxDecoration(
@@ -1090,66 +1090,63 @@ class _BasketListState extends ConsumerState<BasketList> {
     return Column(
       children: [
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? MyntColors.secondary
-                      : WebColors.primary,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: theme.isDarkMode
+                    ? MyntColors.secondary
+                    : WebColors.primary,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(5),
-                    splashColor: Colors.white.withOpacity(0.2),
-                    highlightColor: Colors.white.withOpacity(0.1),
-                    onTap: () {
-                      Future.delayed(const Duration(milliseconds: 150), () {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (BuildContext context) {
-                            final theme = ref.read(themeProvider);
-                            return Dialog(
-                              backgroundColor: theme.isDarkMode
-                                  ? MyntColors.backgroundColorDark
-                                  : MyntColors.backgroundColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: const SizedBox(
-                                width: 400,
-                                child: CreateBasket(),
-                              ),
-                            );
-                          },
-                        );
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      child: Text(
-                        "Create Basket",
-                        style: WebTextStyles.buttonMd(
-                          isDarkTheme: theme.isDarkMode,
-                          color: Colors.white,
-                        ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(5),
+                  splashColor: Colors.white.withOpacity(0.2),
+                  highlightColor: Colors.white.withOpacity(0.1),
+                  onTap: () {
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          final theme = ref.read(themeProvider);
+                          return Dialog(
+                            backgroundColor: theme.isDarkMode
+                                ? MyntColors.backgroundColorDark
+                                : MyntColors.backgroundColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: const SizedBox(
+                              width: 400,
+                              child: CreateBasket(),
+                            ),
+                          );
+                        },
+                      );
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    child: Text(
+                      "Create Basket",
+                      style: WebTextStyles.buttonMd(
+                        isDarkTheme: theme.isDarkMode,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         basket.isBasketLoading
@@ -1234,11 +1231,11 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+      cellPadding = const EdgeInsets.fromLTRB(16, 4, 4, 4);
     } else if (isLastColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+      cellPadding = const EdgeInsets.fromLTRB(4, 4, 16, 4);
     } else {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -2165,7 +2162,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                     shadcn.Table(
                                       columnWidths: columnWidths,
                                       defaultRowHeight:
-                                          const shadcn.FixedTableSize(48),
+                                          const shadcn.FixedTableSize(40),
                                       rows: [
                                         shadcn.TableHeader(
                                           cells: headers
@@ -2195,7 +2192,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                           child: shadcn.Table(
                                             columnWidths: columnWidths,
                                             defaultRowHeight:
-                                                const shadcn.FixedTableSize(56),
+                                                const shadcn.FixedTableSize(40),
                                             rows: sortedItems
                                                 .asMap()
                                                 .entries
@@ -2637,17 +2634,20 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              isBuy ? "BUY" : "SELL",
-              style: MyntWebTextStyles.tableCell(
-                context,
-                color: color,
-                darkColor: color,
-                lightColor: color,
-                fontWeight: MyntFonts.semiBold,
+            child: Tooltip(
+              message: isBuy ? "BUY" : "SELL",
+              child: Text(
+                isBuy ? "BUY" : "SELL",
+                style: MyntWebTextStyles.tableCell(
+                  context,
+                  color: color,
+                  darkColor: color,
+                  lightColor: color,
+                  fontWeight: MyntFonts.semiBold,
+                ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         );
@@ -2667,14 +2667,17 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
-            child: Text(
-              product,
-              style: MyntWebTextStyles.tableCell(
-                context,
-                fontWeight: MyntFonts.medium,
+            child: Tooltip(
+              message: product,
+              child: Text(
+                product,
+                style: MyntWebTextStyles.tableCell(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         );
@@ -2688,14 +2691,17 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
-            child: Text(
-              totalQty,
-              style: MyntWebTextStyles.tableCell(
-                context,
-                fontWeight: MyntFonts.medium,
+            child: Tooltip(
+              message: totalQty,
+              child: Text(
+                totalQty,
+                style: MyntWebTextStyles.tableCell(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         );
@@ -2714,14 +2720,17 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
-            child: Text(
-              price,
-              style: MyntWebTextStyles.tableCell(
-                context,
-                fontWeight: MyntFonts.medium,
+            child: Tooltip(
+              message: price,
+              child: Text(
+                price,
+                style: MyntWebTextStyles.tableCell(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         );
@@ -2746,21 +2755,24 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                orderStatus,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                softWrap: false,
-                style: MyntWebTextStyles.para(
-                  context,
-                  color: statusColor,
-                  fontWeight: MyntFonts.medium,
+            child: Tooltip(
+              message: orderStatus,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  orderStatus,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: MyntWebTextStyles.para(
+                    context,
+                    color: statusColor,
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
               ),
             ),
@@ -3417,7 +3429,7 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(4),
@@ -3432,7 +3444,7 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
         ),
         child: Icon(
           icon,
-          size: 18,
+          size: 16,
           color: iconColor,
         ),
       ),
@@ -3471,7 +3483,7 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
                             style: MyntWebTextStyles.tableCell(
                               context,
                               fontWeight: MyntFonts.semiBold,
-                            ),
+                            ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
                           ),
                           if (exch.isNotEmpty)
                             TextSpan(
@@ -3621,14 +3633,19 @@ class _BasketLtpCellState extends ConsumerState<_BasketLtpCell> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      "$ltp",
-      style: MyntWebTextStyles.tableCell(
-        context,
-        darkColor: styles.MyntColors.textPrimaryDark,
-        lightColor: styles.MyntColors.textPrimary,
-        fontWeight: MyntFonts.medium,
+    return Tooltip(
+      message: "$ltp",
+      child: Text(
+        "$ltp",
+        style: MyntWebTextStyles.tableCell(
+          context,
+          darkColor: styles.MyntColors.textPrimaryDark,
+          lightColor: styles.MyntColors.textPrimary,
+          fontWeight: MyntFonts.medium,
+        ).copyWith(fontFeatures: [FontFeature.tabularFigures()]),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
-  } 
+  }
 }

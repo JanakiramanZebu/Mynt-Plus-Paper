@@ -1,6 +1,8 @@
 // import 'dart:developer';
 
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import '../models/profile_model/algo_strategy_model.dart';
 import '../models/profile_model/client_detail_model.dart';
@@ -285,6 +287,32 @@ Future uploadImage(File imageFile) async {
       print("error in upload image $e");
       rethrow;
     }
+}
+
+Future uploadImageBytes(Uint8List bytes, String fileName) async {
+  try {
+    final uri = Uri.parse("https://v3.mynt.in/dd/profile/update_image");
+
+    var request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(defaultHeaders);
+    request.fields['client_id'] = prefs.clientId!;
+
+    request.files.add(http.MultipartFile.fromBytes(
+      'image',
+      bytes,
+      filename: fileName,
+    ));
+
+    final streamedResponse = await apiClient.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {'data': 'ServerSide error'};
+    }
+  } catch (e) {
+    rethrow;
+  }
 }
 
 Future removeProfileImage() async {

@@ -130,14 +130,14 @@ class AGMEGM {
   AGMEGM({this.eGMDate, this.agenda, this.companyName});
 
   AGMEGM.fromJson(Map<String, dynamic> json) {
-    eGMDate = json['EGM date'];
+    eGMDate = json['AGM date'];
     agenda = json['agenda'];
     companyName = json['company name'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['EGM date'] = eGMDate;
+    data['AGM date'] = eGMDate;
     data['agenda'] = agenda;
     data['company name'] = companyName;
     return data;

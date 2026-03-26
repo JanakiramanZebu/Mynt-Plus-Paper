@@ -34,6 +34,26 @@
 
   <title>MYNT by Zebu - Invest & Trade</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Digilocker OAuth popup callback handler.
+       If this page is loaded in a popup with ?code=&state= params,
+       send them to the opener window via postMessage and close. -->
+  <script>
+    (function() {
+      if (!window.opener) return;
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('code');
+      var state = params.get('state');
+      var error = params.get('error');
+      if (code && state) {
+        window.opener.postMessage({ type: 'digilocker_callback', code: code, state: state }, '*');
+        window.close();
+      } else if (error) {
+        window.opener.postMessage({ type: 'digilocker_callback', error: error }, '*');
+        window.close();
+      }
+    })();
+  </script>
   
   <style>
     
@@ -200,6 +220,8 @@
       }
     });
   </script>
+  <!-- Digio eSign SDK -->
+  <script src="https://app.digio.in/sdk/v11/digio.js"></script>
 </head>
 <body>
   <!-- MYNT splash shown during initialization -->
