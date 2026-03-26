@@ -280,6 +280,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   // QR/Wrapper UPI APIs
   String get wrapperUrl => 'https://fundapi.mynt.in/wrapper';
   String get indentUpiRequest => '$wrapperUrl/IndentUPIRequest';
+  String get upiCollectRequest => '$wrapperUrl/UPICollectRequest';
   String get wrapperCheckStatus => '$wrapperUrl/check_status';
   String get qrCodeUrl => 'https://copy.mynt.in/get_qr1';
 

@@ -18,6 +18,7 @@ import '../models/fund_model_testing_copy/view_upi_id.dart';
 import '../models/fund_model_testing_copy/indent_upi_request_model.dart';
 import '../models/fund_model_testing_copy/wrapper_check_status_model.dart';
 import '../models/fund_model_testing_copy/mtf_limits_model.dart';
+import '../models/fund_model_testing_copy/client_history_model.dart';
 import '../sharedWidget/fund_function.dart';
 import 'core/api_core.dart';
 
@@ -413,6 +414,43 @@ mixin TranscationApi on ApiCore {
     }
   }
 
+  /// Initiate UPI Collect Request via wrapper API (for UPI ID flow)
+  Future<IndentUpiResponse> upiCollectRequest({
+    required String name,
+    required String email,
+    required String mobile,
+    required String bankName,
+    required String seg,
+    required String code,
+    required String custAcc,
+    required String bankIfsc,
+    required String amt,
+    required String upi,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.upiCollectRequest);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "name": name,
+            "email": email,
+            "mobile": mobile,
+            "bankname": bankName,
+            "seg": seg,
+            "code": code,
+            "custacc": custAcc,
+            "bankifsc": bankIfsc,
+            "amt": amt,
+            "upi": upi,
+          }));
+      final json = jsonDecode(res.body);
+      log("upiCollectRequest => ${res.body}");
+      return IndentUpiResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Check UPI QR payment status via wrapper API
   Future<WrapperCheckStatusResponse> wrapperCheckStatus({
     required String orderNo,
@@ -494,6 +532,19 @@ mixin TranscationApi on ApiCore {
       final json = jsonDecode(res.body);
       log("fundTransferMTF => ${res.body}");
       return MtfFundTransferResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<ClientHistoryResponse> getClientHistory() async {
+    try {
+      final uri = Uri.parse("https://funduat.mynt.in/logs/ClientHistory");
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({"clientid": prefs.clientId}));
+      final json = jsonDecode(res.body);
+      return ClientHistoryResponse.fromJson(json);
     } catch (e) {
       rethrow;
     }
