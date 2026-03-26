@@ -284,6 +284,8 @@ class TranctionProvider extends DefaultChangeNotifier {
   void resetBottomSheetState() {
     _isUpiAppsBottomSheetShown = false;
     _isUpiIdBottomSheetShown = false;
+    _upiCollectResponse = null;
+    stopUpiCollectStatusPolling();
     notifyListeners();
   }
 
@@ -356,6 +358,9 @@ class TranctionProvider extends DefaultChangeNotifier {
 
   HdfcUPIStatus? _hdfcUPIStatus;
   HdfcUPIStatus? get hdfcUPIStatus => _hdfcUPIStatus;
+
+  IndentUpiResponse? _upiCollectResponse;
+  IndentUpiResponse? get upiCollectResponse => _upiCollectResponse;
 
   FundTokenValidation? _fundTokenValidation;
   FundTokenValidation? get fundTokenValidation => _fundTokenValidation;
@@ -704,6 +709,97 @@ class TranctionProvider extends DefaultChangeNotifier {
       _qrPaymentLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Initiate UPI Collect Request (UPI ID payment flow via wrapper)
+  Future<bool> fetchUpiCollectRequest(BuildContext context) async {
+    try {
+      togglefundLoading(true);
+
+      final clientData = _decryptclientcheck!.clientCheck!.dATA![_indexss];
+      final clientCode = clientData[0];
+      final clientName = clientData[2];
+      final clientEmail = clientData[4];
+      final clientMobile = clientData[5];
+
+      _upiCollectResponse = await api.upiCollectRequest(
+        name: clientName,
+        email: clientEmail,
+        mobile: clientMobile,
+        bankName: _bankname,
+        seg: _textValue,
+        code: clientCode,
+        custAcc: _allacc,
+        bankIfsc: _ifsc,
+        amt: "${amount.text}.00",
+        upi: upiid.text,
+      );
+
+      if (_upiCollectResponse?.data?.status == "INITIATED") {
+        notifyListeners();
+        return true;
+      } else {
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "fetchUpiCollectRequest", "Error": "$e"});
+      notifyListeners();
+      return false;
+    } finally {
+      togglefundLoading(false);
+    }
+  }
+
+  /// Poll UPI collect payment status via wrapper check_status
+  Timer? _upiCollectPollTimer;
+  bool _upiCollectPolling = false;
+
+  void startUpiCollectStatusPolling(BuildContext context, {Function(String status)? onStatusUpdate}) {
+    _upiCollectPolling = true;
+    notifyListeners();
+
+    _upiCollectPollTimer?.cancel();
+    _upiCollectPollTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (!_upiCollectPolling) {
+        timer.cancel();
+        return;
+      }
+      try {
+        final response = await api.wrapperCheckStatus(
+          orderNo: _upiCollectResponse!.data!.orderNumber!,
+          upiTranID: _upiCollectResponse!.data!.upiTransactionNo!,
+          clientID: _decryptclientcheck!.clientCheck!.dATA![_indexss][0],
+          gateway: _upiCollectResponse!.gateway ?? 'HDFC',
+        );
+
+        final status = response.data?.status ?? '';
+
+        if (status == "SUCCESS" || status == "FAILED" || status == "REJECTED" || status == "EXPIRED") {
+          _upiCollectPolling = false;
+          timer.cancel();
+          onStatusUpdate?.call(status);
+        } else if (status == "FAILURE" || status == "PENDING FROM BANK" || status == "NODATA" || status == "PENDING") {
+          // Continue polling
+        } else {
+          _upiCollectPolling = false;
+          timer.cancel();
+          onStatusUpdate?.call(status);
+        }
+      } catch (e) {
+        // Continue polling on error
+      }
+    });
+  }
+
+  void stopUpiCollectStatusPolling() {
+    _upiCollectPolling = false;
+    _upiCollectPollTimer?.cancel();
+    _upiCollectPollTimer = null;
+    notifyListeners();
   }
 
   void startQrStatusPolling(BuildContext context, {Function(String status)? onStatusUpdate}) {

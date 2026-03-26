@@ -21,6 +21,7 @@ import '../../../sharedWidget/snack_bar.dart';
 import '../profile/fund_screen/fund_screen.dart';
 import '../profile/fund_screen/withdraw/withdraw_screen.dart';
 import '../profile/fund_screen/mtf/mtf_transfer_screen.dart';
+import '../profile/fund_screen/transaction_history_screen.dart';
 
 class SecureFundWeb extends ConsumerStatefulWidget {
   final String? initialAction;
@@ -34,6 +35,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
   bool _showAddMoney = false;
   bool _showWithdraw = false;
   bool _showMtf = false;
+  bool _showTransactionHistory = false;
 
   @override
   void initState() {
@@ -143,6 +145,12 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
             _showAddMoney = false;
           });
         },
+        onViewTransactions: () {
+          setState(() {
+            _showAddMoney = false;
+            _showTransactionHistory = true;
+          });
+        },
       );
     }
 
@@ -165,6 +173,16 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
         onBack: () {
           setState(() {
             _showMtf = false;
+          });
+        },
+      );
+    }
+
+    if (_showTransactionHistory) {
+      return TransactionHistoryScreen(
+        onBack: () {
+          setState(() {
+            _showTransactionHistory = false;
           });
         },
       );
