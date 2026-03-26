@@ -283,10 +283,10 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               iconColor: iconColor,
               textColor: textColor,
               subtitleColor: subtitleColor,
-              onPressed: (ctx) async {
-                await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+              onPressed: (ctx) {
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.myAccount);
+                }
               },
             ),
 
@@ -299,10 +299,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               iconColor: iconColor,
               textColor: textColor,
               subtitleColor: subtitleColor,
-              onPressed: (ctx) async {
-                await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/ledger?uid=${pref.clientId}&token=${pref.token}';
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+           onPressed: (ctx) {
+                widget.onNavigateToScreen!(ScreenType.reports);
               },
             ),
 
@@ -332,9 +330,11 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/pledge?uid=${pref.clientId}&token=${pref.token}';
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.pledgeUnpledge);
+                } else {
+                  Navigator.pushNamed(widget.parentContext, Routes.pledgeandun);
+                }
               },
             ),
 
@@ -348,11 +348,9 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                final url = 'https://profile.zebuetrade.com/refer?uid=${pref.clientId}&token=${pref.token}';
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                // await Share.share(
-                //   "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
-                // );
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.refer);
+                }
               },
             ),
 
@@ -366,9 +364,9 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://zebuetrade.com/contactus';
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.helpSupport);
+                }
               },
             ),
             // webhook

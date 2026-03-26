@@ -817,7 +817,9 @@ class _CollectionBasketBuilderState
                                       light: MyntColors.textSecondary)
                                   .withOpacity(0.3)
                               : fund.isLocked
-                                  ? MyntColors.primary
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary)
                                   : resolveThemeColor(context,
                                       dark: MyntColors.textSecondaryDark,
                                       light: MyntColors.textSecondary),
@@ -2245,7 +2247,7 @@ class _CollectionBasketBuilderState
                                     strategy.investmentError!,
                                     style: MyntWebTextStyles.caption(ctx,
                                         fontWeight: MyntFonts.medium,
-                                        color: MyntColors.loss),
+                                        color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)),
                                   ),
                                 ],
                                 const SizedBox(height: 16),
@@ -2742,7 +2744,9 @@ class _FundSearchDialogContentState
                             'Done',
                             style: MyntWebTextStyles.body(context,
                                 fontWeight: MyntFonts.semiBold,
-                                color: MyntColors.primary),
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.primaryDark,
+                                    light: MyntColors.primary)),
                           ),
                         ),
                       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/pledge_list.dart';
+import 'package:mynt_plus/screens/web/profile/pledge/pledge_unpledge_screen.dart';
 import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
@@ -40,6 +42,7 @@ class WebRoutes {
   static const String scalper = '/scalper';
   static const String tradingViewWebHook = '/tradingview-webhook';
   static const String basketDashboard = '/basket-dashboard';
+  static const String pledge = '/pledge';
 }
 
 /// Global GoRouter instance for web
@@ -179,6 +182,24 @@ void initializeWebRouter() {
       GoRoute(
         path: WebRoutes.scalper,
         builder: (context, state) => const ScalperScreenWeb(),
+      ),
+      GoRoute(
+        path: WebRoutes.pledge,
+        builder: (context, state) => const PledgenUnpledge( ddd: 'args', ),
+      ),
+
+      // Profile details screen (also handles Digilocker callback with ?code=&state=)
+      GoRoute(
+        path: WebRoutes.profile,
+        builder: (context, state) {
+          final code = state.uri.queryParameters['code'];
+          final stateParam = state.uri.queryParameters['state'];
+          return CustomizableSplitHomeScreen(
+            initialRightPanel: ScreenTypeParam.profileDetails,
+            digilockerCode: code,
+            digilockerState: stateParam,
+          );
+        },
       ),
     ],
 

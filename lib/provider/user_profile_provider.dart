@@ -1143,4 +1143,44 @@ class UserProfileProvider extends DefaultChangeNotifier {
     }
   }
 
+  /// Web-compatible: pick image using file_picker and upload bytes
+  Future<void> pickAndUploadImageWeb(BuildContext context) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        if (file.bytes == null) return;
+
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+          warningMessage(context, 'File size exceeds the limit of 10MB');
+          return;
+        }
+
+        toggleimageloader(true);
+        final responseData = await api.uploadImageBytes(
+          file.bytes!,
+          file.name,
+        );
+
+        if (responseData["status"] == "success") {
+          successMessage(context, 'Profile image updated successfully!');
+          _profileimage = await api.getProfileImage();
+          notifyListeners();
+        } else {
+          warningMessage(context, 'Failed to update image');
+        }
+      }
+    } catch (e) {
+      print("error in web upload image $e");
+    } finally {
+      toggleimageloader(false);
+    }
+  }
+
 }

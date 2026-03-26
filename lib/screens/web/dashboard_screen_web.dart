@@ -1062,11 +1062,15 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'badge': null,
         'icon': Icons.card_giftcard_rounded,
         'isIcon' :true,
-        'onTap': () {
-          final Preferences pref = locator<Preferences>();
-          final url =
-              'https://profile.zebuetrade.com/refer?uid=${pref.clientId}&token=${pref.token}';
-          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        // 'onTap': () {
+        //   final Preferences pref = locator<Preferences>();
+          // final url =
+          //     'https://profile.zebuetrade.com/refer?uid=${pref.clientId}&token=${pref.token}';
+          // launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+          'onTap': () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo('refer');
+          }
         },
       },
     ];
