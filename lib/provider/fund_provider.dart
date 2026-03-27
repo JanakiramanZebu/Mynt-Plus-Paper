@@ -177,6 +177,39 @@ class FundProvider extends DefaultChangeNotifier {
     }
   }
 
+  /// E-DIS for Mutual Funds Web - Opens in new browser tab
+  Future<void> eDisMfWeb() async {
+    log("===== MF E-DIS Web Debug Info =====");
+    log("HS Token Model: ${fundHstoken != null ? 'Received' : 'NULL'}");
+    if (fundHstoken != null) {
+      log("HS Token UID: ${fundHstoken!.uid}");
+      log("HS Token ActID: ${fundHstoken!.actid}");
+      log("HS Token HSTK: ${fundHstoken!.hstk}");
+      log("HS Token Stat: ${fundHstoken!.stat}");
+    }
+
+    final String rawParams =
+        'sLoginId=${fundHstoken!.uid}&sAccountId=${fundHstoken!.actid}&prd=C&token=${fundHstoken!.hstk}&sBrokerId=ZEBU&open=edis';
+    log("MF Raw Params (before encoding): $rawParams");
+
+    var enCodePass = utf8.encode(rawParams);
+    var base64Pass = base64.encode(enCodePass);
+    log("MF Base64 Encoded Params: $base64Pass");
+
+    final String edisUrl =
+        "https://go.mynt.in/NorenMfEdis/NonPoaHoldings/?$base64Pass";
+    log("MF E-DIS URL being opened: $edisUrl");
+    log("================================");
+
+    final Uri uri = Uri.parse(edisUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      log("MF E-DIS URL launched successfully in new tab");
+    } else {
+      log("ERROR: Could not launch MF E-DIS URL");
+    }
+  }
+
   optionZ(BuildContext context) async {
     var enCodePass = utf8.encode(
         'sLoginId=${pref.clientId}&sAccountId=${pref.clientId}&token=${fundHstoken!.hstk}&sBrokerId=ZEBU');

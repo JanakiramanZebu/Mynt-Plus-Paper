@@ -733,6 +733,11 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 _buildEdisButton(theme, portfolioData),
                 const SizedBox(width: 12),
               ],
+              // MF E-DIS button (always show on Mutual Fund tab)
+              if (_selectedTabIndex == 1) ...[
+                _buildMfEdisButton(theme),
+                const SizedBox(width: 12),
+              ],
               // Download button
               if (_selectedTabIndex == 0)
                 _buildDownloadButton(theme, portfolioData),
@@ -984,6 +989,40 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           await ref.read(fundProvider).fetchHstoken(context);
           // Use web-specific E-DIS that opens in new browser tab
           await ref.read(fundProvider).eDisWeb();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.secondary,
+            light: MyntColors.primary,
+          ),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          'E-DIS',
+          style: MyntWebTextStyles.body(
+            context,
+            fontWeight: MyntFonts.semiBold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // MF E-DIS button
+  Widget _buildMfEdisButton(ThemesProvider theme) {
+    return SizedBox(
+      height: 35,
+      child: ElevatedButton(
+        onPressed: () async {
+          await ref.read(fundProvider).fetchHstoken(context);
+          await ref.read(fundProvider).eDisMfWeb();
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: resolveThemeColor(
