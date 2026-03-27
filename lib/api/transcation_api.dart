@@ -245,22 +245,22 @@ mixin TranscationApi on ApiCore {
     }
   }
 
-  Future<BankDetails> getbankDetails() async {
-    String payload = jsonEncode({"client_code": prefs.clientId});
-    String encryptedPayload = encryptionFunction(payload);
-    try {
-      final uri = Uri.parse(apiLinks.bankcheck);
-      final res = await apiClient.post(uri,
-          headers: funddefaultHeaders,
-          body: jsonEncode({"code": encryptedPayload}));
-      final json = jsonDecode(res.body);
-      final decryptedData = decryptionFunction(json["str"]);
-      // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
-      return BankDetails.fromJson(jsonDecode(decryptedData));
-    } catch (e) {
-      rethrow;
-    }
-  }
+  // Future<BankDetails> getbankDetails() async {
+  //   String payload = jsonEncode({"client_code": prefs.clientId});
+  //   String encryptedPayload = encryptionFunction(payload);
+  //   try {
+  //     final uri = Uri.parse(apiLinks.bankcheck);
+  //     final res = await apiClient.post(uri,
+  //         headers: funddefaultHeaders,
+  //         body: jsonEncode({"code": encryptedPayload}));
+  //     final json = jsonDecode(res.body);
+  //     final decryptedData = decryptionFunction(json["str"]);
+  //     // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+  //     return BankDetails.fromJson(jsonDecode(decryptedData));
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
 
   Future<List<ViewUpiIdModel>> getUpiId(
       String bankname, String accountnumber) async {
