@@ -402,6 +402,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               ],
             ),
           ),
+        ),
         );
   }
 
@@ -417,50 +418,80 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         final absReturnPercent =
             _formatValue(summary?.absReturnPercent?.toString());
 
+        final cards = [
+          _buildStatCard(
+            label: 'Invested',
+            value: investedValue.toIndianRupee(),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Current Value',
+            value: currentValue.toIndianRupee(),
+            valueColor: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            theme: theme,
+          ),
+          _buildStatCard(
+            label: 'Returns',
+            value: absReturnValue.toIndianRupee(),
+            percentage: absReturnPercent,
+            valueColor: getValueColor(context, absReturnValue),
+            theme: theme,
+          ),
+        ];
+
         return LayoutBuilder(
           builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 800 ? 3 : 2;
+            final isWide = constraints.maxWidth >= 800;
 
-            return GridView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                mainAxisExtent: 90, // Fixed height - matches equity stats
-              ),
-              children: [
-                _buildStatCard(
-                  label: 'Invested',
-                  value: investedValue.toIndianRupee(),
-                  valueColor: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
+            if (isWide) {
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (int i = 0; i < cards.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 12),
+                      Expanded(child: cards[i]),
+                    ],
+                  ],
+                ),
+              );
+            } else {
+              return Column(
+                children: [
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: cards[0]),
+                        const SizedBox(width: 12),
+                        Expanded(child: cards[1]),
+                      ],
+                    ),
                   ),
-                  theme: theme,
-                ),
-                _buildStatCard(
-                  label: 'Current Value',
-                  value: currentValue.toIndianRupee(),
-                  valueColor: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
+                  const SizedBox(height: 12),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: cards[2]),
+                        const SizedBox(width: 12),
+                        Expanded(child: Container()),
+                      ],
+                    ),
                   ),
-                  theme: theme,
-                ),
-                _buildStatCard(
-                  label: 'Returns',
-                  value: absReturnValue.toIndianRupee(),
-                  percentage: absReturnPercent,
-                  valueColor: getValueColor(context, absReturnValue),
-                  theme: theme,
-                ),
-              ],
-            ],
-          ),
+                ],
+              );
+            }
+          },
         );
       },
     );
