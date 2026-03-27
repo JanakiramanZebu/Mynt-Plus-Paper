@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/custom_drag_handler.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/list_divider.dart';
+import '../../../../../res/mynt_web_color_styles.dart';
+import '../../../../../res/mynt_web_text_styles.dart';
 
 
 class RazorpayFailedUi extends StatefulWidget {
-  final String acco;
-  final String ifsc;
   final String amount;
-  final String bankname;
+  final String? upiAddress;
+  final String? orderId;
+  final String? upiTransactionId;
+  final String? statusDescription;
+  final String? status;
   const RazorpayFailedUi({
     super.key,
-    required this.acco,
-    required this.ifsc,
     required this.amount,
-    required this.bankname,
+    this.upiAddress,
+    this.orderId,
+    this.upiTransactionId,
+    this.statusDescription,
+    this.status,
   });
 
   @override
@@ -44,186 +46,187 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
       },
       child: Consumer(
         builder: (context, ref, child) {
-          //  final fund = ref.watch(transcationProvider);
-          final theme = ref.watch(themeProvider);
-          return SafeArea(
-            child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.cardDark,
+                light: MyntColors.card,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon + Status
+                Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.cancel_rounded,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.errorDark,
+                          light: MyntColors.error,
+                        ),
+                        size: 64,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        widget.status ?? "REJECTED",
+                        style: MyntWebTextStyles.title(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.errorDark,
+                            light: MyntColors.error,
+                          ),
+                          fontWeight: MyntFonts.semiBold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Transaction fail",
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "₹${widget.amount}",
+                        style: MyntWebTextStyles.head(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                          fontWeight: MyntFonts.semiBold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        time,
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                     color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                     border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                  ),),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      alignment: Alignment.center,
-                      child: Column(
-                        children: [
-                          const CustomDragHandler(),
-                          Icon(
-                            Icons.cancel_rounded,
-                            //
-                            color: theme.isDarkMode
-                                ? colors.errorDark
-                                : colors.errorLight,
-                            size: 70,
-                          ),
-                          const SizedBox(
-                            height: 16,
-                          ),
-                          TextWidget.subText(
-                            text: "Failed",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0,
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          TextWidget.subText(
-                            text: "Your payment has failed.",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fw: 0,
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          TextWidget.custmText(
-                              text: "₹${widget.amount}.00",
-                              fs: 40,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0,
-                              theme: false),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          TextWidget.paraText(
-                            text: time,
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fw: 0,
-                          ),
-                        ],
+                const SizedBox(height: 20),
+                const ListDivider(),
+
+                // Details
+                if (widget.upiAddress != null && widget.upiAddress!.isNotEmpty) ...[
+                  _dataRow(context, "UPI Address", widget.upiAddress!),
+                  const ListDivider(),
+                ],
+                if (widget.orderId != null && widget.orderId!.isNotEmpty) ...[
+                  _dataRow(context, "Order ID", widget.orderId!),
+                  const ListDivider(),
+                ],
+                if (widget.upiTransactionId != null && widget.upiTransactionId!.isNotEmpty) ...[
+                  _dataRow(context, "UPI Transaction ID", widget.upiTransactionId!),
+                  const ListDivider(),
+                ],
+                _dataRow(
+                  context,
+                  "Status Description",
+                  widget.statusDescription ?? "Transaction fail",
+                ),
+                const SizedBox(height: 24),
+
+                // Close button
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final fund = ref.read(transcationProvider);
+                      fund.amount.clear();
+                      fund.textFiledonChange('');
+                      Navigator.pop(context);
+                      FocusScope.of(context).unfocus();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.secondary,
+                        light: MyntColors.primary,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    data("Bank Name", widget.bankname, theme),
-                    data("A/c No", widget.acco, theme),
-                    data(
-                        "Reason",
-                        "Your payment has been cancelled. Try again or complete the payment later.",
-                        theme),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              minimumSize: const Size(0, 45),
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.primaryDark
-                                  : colors.primaryLight,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            onPressed: () {
-                              // Clear the amount text field
-                              ref.read(transcationProvider).amount.clear();
-                              Navigator.pop(context);
-                              FocusScope.of(context).unfocus();
-                            },
-                            child: TextWidget.subText(
-                                text: 'Close',
-                                theme: false,
-                                color: colors.colorWhite,
-                                fw: 2)),
+                    child: Text(
+                      'Done',
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: Colors.white,
+                        fontWeight: MyntFonts.semiBold,
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                )),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  data(String name, String value, ThemesProvider theme) {
-    return Column(
-      children: [
-        const SizedBox(height: 12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextWidget.subText(
-              text: name,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0,
-            ),
-            const SizedBox(width: 16),
-            SizedBox(
-              width: 200,
-              child: TextWidget.subText(
-                text: value,
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                align: TextAlign.right,
-                fw: 0,
+  Widget _dataRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              fontWeight: MyntFonts.medium,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Divider(
-          thickness: 0,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-        )
-      ],
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                fontWeight: MyntFonts.semiBold,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

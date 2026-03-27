@@ -40,7 +40,7 @@ class _QrPaymentDialogState extends ConsumerState<QrPaymentDialog> {
         fund.indentUpiResponse?.data?.amount ?? fund.amount.text;
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       backgroundColor: resolveThemeColor(
         context,
         dark: MyntColors.cardDark,
@@ -188,7 +188,10 @@ class _QrPaymentDialogState extends ConsumerState<QrPaymentDialog> {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: MyntColors.primary,
+                        color: 
+                   resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary)
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -223,9 +226,13 @@ class _QrPaymentDialogState extends ConsumerState<QrPaymentDialog> {
                 },
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
-                  backgroundColor: MyntColors.primary,
+                  backgroundColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.secondary,
+                    light: MyntColors.primary,
+                  ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
                 child: Text(

@@ -9,15 +9,15 @@ import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:mynt_plus/utils/no_emoji_inputformatter.dart';
 import 'razorpay/razorpay_web.dart';
 import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../res/mynt_web_text_styles.dart';
 import '../../../../../sharedWidget/common_text_fields_web.dart';
+import '../../../../../sharedWidget/common_buttons_web.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
@@ -30,10 +30,8 @@ import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/fund_function.dart';
 import '../../../../../provider/fund_provider.dart';
 import '../../../../../res/global_state_text.dart';
-import '../../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../../sharedWidget/list_divider.dart';
 import '../../../../../sharedWidget/loader_ui.dart';
-import '../../../../../sharedWidget/splash_loader.dart';
 import '../../../../../utils/no_emoji_inputformatter.dart';
 import '../../../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../../../../../models/fund_model_testing_copy/secured_client_data_model.dart';
@@ -425,80 +423,115 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                   onPopInvokedWithResult: (didPop, result) {
                     if (didPop) return;
                   },
-                  child: Dialog(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    backgroundColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.cardDark,
-                      light: MyntColors.card,
-                    ),
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      padding: const EdgeInsets.all(28),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Awaiting UPI confirmation",
-                            style: MyntWebTextStyles.title(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.semiBold,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: MyntColors.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "This will take a few seconds.",
-                            style: MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 46,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                fund.focusNode.unfocus();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: MyntColors.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                  child: Center(
+                    child: shadcn.Card(
+                      borderRadius: BorderRadius.circular(8),
+                      padding: EdgeInsets.zero,
+                      child: Container(
+                        width: 400,
+                        constraints: const BoxConstraints(maxHeight: 250),
+                        decoration: BoxDecoration(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.dialogDark,
+                              light: MyntColors.dialog),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Header
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .border,
+                                  ),
                                 ),
                               ),
-                              child: Text(
-                                "Cancel Transaction",
-                                style: MyntWebTextStyles.body(
-                                  context,
-                                  color: Colors.white,
-                                  fontWeight: MyntFonts.semiBold,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Awaiting UPI Confirmation',
+                                    style: MyntWebTextStyles.title(
+                                      context,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  MyntCloseButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      fund.focusNode.unfocus();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Content
+                            Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 32,
+                                      height: 32,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'This will take a few seconds.',
+                                      textAlign: TextAlign.center,
+                                      style: MyntWebTextStyles.body(
+                                        context,
+                                        fontWeight: FontWeight.w500,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.textPrimaryDark,
+                                          light: MyntColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    MyntButton(
+                                      type: MyntButtonType.primary,
+                                      size: MyntButtonSize.large,
+                                      label: 'Cancel Transaction',
+                                      isFullWidth: true,
+                                      backgroundColor: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.secondary,
+                                        light: MyntColors.primary,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        fund.focusNode.unfocus();
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ));
@@ -533,11 +566,16 @@ class _FundScreenState extends ConsumerState<FundScreen> {
               builder: (context) => Dialog(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
-                child: RazorpayFailedUi(
-                  acco: fund.accno,
-                  ifsc: fund.ifsc,
-                  amount: fund.amount.text,
-                  bankname: fund.bankname,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: RazorpayFailedUi(
+                    amount: fund.amount.text,
+                    upiAddress: fund.upiid.text,
+                    orderId: fund.hdfcUPIStatus?.data?.orderNumber,
+                    upiTransactionId: fund.hdfcUPIStatus?.data?.upiTransactionNo,
+                    statusDescription: fund.hdfcUPIStatus?.data?.statusDescription,
+                    status: fund.hdfcUPIStatus?.data?.status,
+                  ),
                 ),
               ),
             );
@@ -623,6 +661,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         ),
       );
     } else if (status != null && status != 'CANCELLED') {
+      final qrData = fund.qrCheckStatusResponse?.data;
       showDialog(
         barrierDismissible: false,
         context: context,
@@ -631,10 +670,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
             child: RazorpayFailedUi(
-              acco: fund.accno,
-              ifsc: fund.ifsc,
-              amount: fund.amount.text,
-              bankname: fund.bankname,
+              amount: qrData?.amount ?? fund.amount.text,
+              upiAddress: qrData?.clientVPA ?? fund.upiid.text,
+              orderId: qrData?.orderNumber ?? fund.hdfcUPIStatus?.data?.orderNumber,
+              upiTransactionId: qrData?.upiTransactionNo ?? fund.hdfcUPIStatus?.data?.upiTransactionNo,
+              statusDescription: qrData?.statusDescription ?? fund.hdfcUPIStatus?.data?.statusDescription,
+              status: qrData?.status ?? fund.hdfcUPIStatus?.data?.status,
             ),
           ),
         ),
@@ -656,28 +697,51 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         fund.bankdetails == null ||
         fund.decryptclientcheck == null) {
       return Scaffold(
-        backgroundColor:
-            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        backgroundColor: resolveThemeColor(
+          context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor,
+        ),
         appBar: AppBar(
           centerTitle: false,
           leadingWidth: 48,
           titleSpacing: 6,
-          leading: CustomBackBtn(onBack: widget.onBack),
-          elevation: .2,
-          title: TextWidget.titleText(
-            text: 'Add Money',
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            theme: theme.isDarkMode,
-            fw: 1,
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
+          ),
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_outlined,
+              size: 18,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ),
+            ),
+            onPressed: widget.onBack ?? () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Add Money',
+            style: MyntWebTextStyles.title(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
+              fontWeight: MyntFonts.semiBold,
+            ),
           ),
         ),
         body: Center(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            ),
-            child: CircularLoaderImage(),
+          child: CircularProgressIndicator(
+            color: resolveThemeColor(context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary),
           ),
         ),
       );
@@ -728,416 +792,442 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: Row(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Left column: Amount + Bank
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Available balance header
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                    // ── Top bar card ──────────────────────────────────
+                    shadcn.Theme(
+                      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+                      child: shadcn.Card(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                          child: Row(
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Available Balance",
-                                      style: MyntWebTextStyles.title(
-                                        context,
-                                        color: resolveThemeColor(
-                                          context,
-                                          dark: MyntColors.textSecondaryDark,
-                                          light: MyntColors.textSecondary,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}",
-                                      style: MyntWebTextStyles.head(
-                                        context,
-                                        color: resolveThemeColor(
-                                          context,
-                                          dark: MyntColors.textPrimaryDark,
-                                          light: MyntColors.textPrimary,
-                                        ),
-                                        fontWeight: MyntFonts.semiBold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Amount input
-                          MyntTextField(
-                            focusNode: fund.focusNode,
-                            controller: fund.amount,
-                            placeholder: "Enter amount",
-                            keyboardType: TextInputType.number,
-                            height: 50,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            leadingIcon: assets.ruppeIcon,
-                            textStyle: MyntWebTextStyles.title(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.semiBold,
-                            ),
-                            placeholderStyle: MyntWebTextStyles.title(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary,
-                              ).withValues(alpha: 0.4),
-                            ),
-                            onChanged: (value) {
-                              fund.textFiledonChange(value);
-                            },
-                          ),
-
-                          // Quick amount chips
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [500, 1000, 5000, 10000]
-                                .map((amt) {
-                                  final isSelected = fund.amount.text == amt.toString();
-                                  return ChoiceChip(
-                                    label: Text(
-                                      "₹${NumberFormat('#,##,###').format(amt)}",
-                                    ),
-                                    selected: isSelected,
-                                    onSelected: (_) {
-                                      fund.amount.text = amt.toString();
-                                      fund.textFiledonChange(amt.toString());
-                                    },
-                                    labelStyle: MyntWebTextStyles.bodySmall(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Available Balance",
+                                    style: MyntWebTextStyles.bodySmall(
                                       context,
-                                      color: isSelected
-                                          ? MyntColors.primary
-                                          : resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.textSecondaryDark,
-                                              light: MyntColors.textSecondary,
-                                            ),
+                                      fontWeight: MyntFonts.medium,
+                                      darkColor: MyntColors.textSecondaryDark,
+                                      lightColor: MyntColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}",
+                                    style: MyntWebTextStyles.head(
+                                      context,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
                                       fontWeight: MyntFonts.medium,
                                     ),
-                                    selectedColor: MyntColors.primary.withValues(alpha: 0.1),
-                                    backgroundColor: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.cardDark,
-                                      light: MyntColors.inputBg,
-                                    ),
-                                    side: BorderSide(
-                                      color: isSelected
-                                          ? MyntColors.primary
-                                          : resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.cardBorderDark,
-                                              light: MyntColors.cardBorder,
-                                            ),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    showCheckmark: false,
+                                  ),
+                                ],
+                              ),
+                              const Spacer(),
+                              // View All Transactions
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(6),
+                                  onTap: widget.onViewTransactions,
+                                  child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 2),
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    visualDensity: VisualDensity.compact,
-                                  );
-                                })
-                                .toList(),
-                          ),
-
-                          // Error text
-                          if (fund.amount.text.isNotEmpty && fund.intValue < 50)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                fund.funderror,
-                                style: MyntWebTextStyles.caption(
-                                  context,
-                                  color: resolveThemeColor(
-                                    context,
-                                    dark: MyntColors.errorDark,
-                                    light: MyntColors.error,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (fund.intValue > 5000000)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                fund.maxfunderror,
-                                style: MyntWebTextStyles.caption(
-                                  context,
-                                  color: resolveThemeColor(
-                                    context,
-                                    dark: MyntColors.errorDark,
-                                    light: MyntColors.error,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          const SizedBox(height: 24),
-
-                          // Bank account
-                          Text(
-                            "Bank account",
-                            style: MyntWebTextStyles.bodyMedium(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          InkWell(
-                            onTap: () {
-                              fund.focusNode.unfocus();
-                              showBottomSheetbank(fund, theme);
-                            },
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.cardDark,
-                                  light: MyntColors.card,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: resolveThemeColor(
-                                    context,
-                                    dark: MyntColors.cardBorderDark,
-                                    light: MyntColors.cardBorder,
-                                  ),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 36,
-                                    height: 36,
+                                        horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: resolveThemeColor(
-                                        context,
-                                        dark: MyntColors.backgroundColorDark,
-                                        light: MyntColors.inputBg,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary)),
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
-                                    child: Icon(
-                                      Icons.account_balance_rounded,
-                                      size: 18,
-                                      color: resolveThemeColor(
-                                        context,
-                                        dark: MyntColors.iconSecondaryDark,
-                                        light: MyntColors.iconSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text(
-                                          fund.bankname,
-                                          style: MyntWebTextStyles.body(
-                                            context,
-                                            color: resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.textPrimaryDark,
-                                              light: MyntColors.textPrimary,
-                                            ),
-                                            fontWeight: MyntFonts.semiBold,
-                                          ),
+                                        Icon(
+                                          Icons.history,
+                                          size: 16,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary),
                                         ),
-                                        const SizedBox(height: 3),
+                                        const SizedBox(width: 6),
                                         Text(
-                                          hideAccountNumber(fund.accno),
+                                          "View All Transactions",
                                           style: MyntWebTextStyles.bodySmall(
                                             context,
-                                            color: resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.textSecondaryDark,
-                                              light: MyntColors.textSecondary,
-                                            ),
+                                            fontWeight: MyntFonts.semiBold,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.primaryDark,
+                                                light: MyntColors.primary),
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    size: 20,
-                                    color: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.iconSecondaryDark,
-                                      light: MyntColors.iconSecondary,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-
-                          const SizedBox(height: 20),
-
-                          // View All Transactions
-                          InkWell(
-                            onTap: widget.onViewTransactions,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.history,
-                                    size: 18,
-                                    color: MyntColors.primary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "View All Transactions",
-                                    style: MyntWebTextStyles.body(
-                                      context,
-                                      color: MyntColors.primary,
-                                      fontWeight: MyntFonts.semiBold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 16),
 
-                    const SizedBox(width: 24),
+                    // ── Main content card (two columns) ──────────────
+                    Container(
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.transparent, light: MyntColors.card),
+                        borderRadius: BorderRadius.circular(2),
+                        border: Border.all(
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.cardBorderDark,
+                                light: MyntColors.cardBorder)),
+                      ),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Left column: Amount + Bank
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Enter Amount",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
 
-                    // Right column: Payment methods
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Payment method",
-                            style: MyntWebTextStyles.bodyMedium(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Scan QR
-                          _buildPaymentMethodCard(
-                            fund: fund,
-                            theme: theme,
-                            index: 0,
-                            icon: SvgPicture.asset(assets.upiIcon, width: 32),
-                            title: "Scan QR",
-                            maxLimit: "₹1,00,000",
-                            badges: ["free", "recommended"],
-                            isDisabled: fund.intValue > 100000,
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Enter UPI ID (with inline form inside card)
-                          _buildUpiIdCard(fund, theme, context),
-                          const SizedBox(height: 10),
-
-                          // Net Banking
-                          _buildPaymentMethodCard(
-                            fund: fund,
-                            theme: theme,
-                            index: 2,
-                            icon: SvgPicture.asset(
-                              assets.netbankingIcon,
-                              width: 32,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.iconSecondaryDark,
-                                light: MyntColors.iconSecondary,
-                              ),
-                            ),
-                            title: "Net Banking",
-                            maxLimit: "₹50,00,000",
-                            badges: ["free"],
-                            isDisabled: false,
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // Pay button
-                          if (_selectedPaymentMethod >= 0)
-                            SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: fund.fundLoading
-                                    ? null
-                                    : () => _onPayPressed(context, fund),
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  backgroundColor: MyntColors.primary,
-                                  disabledBackgroundColor:
-                                      MyntColors.primary.withValues(alpha: 0.6),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: fund.fundLoading
-                                    ? const SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        "${_selectedPaymentMethod == 1 ? "Pay via UPI ID" : _selectedPaymentMethod == 0 ? "Pay via QR" : "Pay via Net Banking"}${fund.amount.text.isNotEmpty ? "  ·  ₹${fund.amount.text}" : ""}",
-                                        style: MyntWebTextStyles.title(
-                                          context,
-                                          color: Colors.white,
-                                          fontWeight: MyntFonts.semiBold,
+                                    // Amount input
+                                    MyntTextField(
+                                      focusNode: fund.focusNode,
+                                      controller: fund.amount,
+                                      placeholder: "0.00",
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                      ],
+                                      leadingWidget: Center(
+                                        widthFactor: 1,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(left: 12),
+                                          child: Text(
+                                            "₹",
+                                            style: MyntWebTextStyles.body(
+                                              context,
+                                              fontWeight: MyntFonts.medium,
+                                              darkColor: MyntColors.textSecondaryDark,
+                                              lightColor: MyntColors.textSecondary,
+                                            ),
+                                          ),
                                         ),
                                       ),
+                                      onChanged: (value) {
+                                        fund.textFiledonChange(value);
+                                      },
+                                    ),
+
+                                    // Quick amount chips
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: [500, 1000, 5000, 10000]
+                                          .map((amt) {
+                                            final isSelected = fund.amount.text == amt.toString();
+                                            return ChoiceChip(
+                                              label: Text(
+                                                "₹${NumberFormat('#,##,###').format(amt)}",
+                                              ),
+                                              selected: isSelected,
+                                              onSelected: (_) {
+                                                fund.amount.text = amt.toString();
+                                                fund.textFiledonChange(amt.toString());
+                                              },
+                                              labelStyle: MyntWebTextStyles.bodySmall(
+                                                context,
+                                                color: isSelected
+                                                    ? resolveThemeColor(context,
+                                                        dark: MyntColors.primaryDark,
+                                                        light: MyntColors.primary)
+                                                    : resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.textSecondaryDark,
+                                                        light: MyntColors.textSecondary,
+                                                      ),
+                                                fontWeight: MyntFonts.medium,
+                                              ),
+                                              selectedColor: resolveThemeColor(
+                                                context,
+                                                dark: MyntColors.primaryDark.withValues(alpha: 0.1),
+                                                light: MyntColors.primary.withValues(alpha: 0.1),
+                                              ),
+                                              backgroundColor: resolveThemeColor(
+                                                context,
+                                                dark: MyntColors.cardDark,
+                                                light: MyntColors.inputBg,
+                                              ),
+                                              side: BorderSide(
+                                                color: isSelected
+                                                    ? resolveThemeColor(context,
+                                                        dark: MyntColors.primaryDark,
+                                                        light: MyntColors.primary)
+                                                    : resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.cardBorderDark,
+                                                        light: MyntColors.cardBorder,
+                                                      ),
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              showCheckmark: false,
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 2),
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize.shrinkWrap,
+                                              visualDensity: VisualDensity.compact,
+                                            );
+                                          })
+                                          .toList(),
+                                    ),
+
+                                    // Error text
+                                    if (fund.amount.text.isNotEmpty && fund.intValue < 50)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Text(
+                                          fund.funderror,
+                                          style: MyntWebTextStyles.caption(
+                                            context,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.errorDark,
+                                              light: MyntColors.error,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    if (fund.intValue > 5000000)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Text(
+                                          fund.maxfunderror,
+                                          style: MyntWebTextStyles.caption(
+                                            context,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.errorDark,
+                                              light: MyntColors.error,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Bank account
+                                    Text(
+                                      "Bank account",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    InkWell(
+                                      onTap: () {
+                                        fund.focusNode.unfocus();
+                                        showBottomSheetbank(fund, theme);
+                                      },
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 14),
+                                        decoration: BoxDecoration(
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.cardDark,
+                                            light: MyntColors.card,
+                                          ),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.cardBorderDark,
+                                              light: MyntColors.cardBorder,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 36,
+                                              height: 36,
+                                              decoration: BoxDecoration(
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.backgroundColorDark,
+                                                  light: MyntColors.inputBg,
+                                                ),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Icon(
+                                                Icons.account_balance_rounded,
+                                                size: 18,
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.iconSecondaryDark,
+                                                  light: MyntColors.iconSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    fund.bankname,
+                                                    style: MyntWebTextStyles.body(
+                                                      context,
+                                                      color: resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.textPrimaryDark,
+                                                        light: MyntColors.textPrimary,
+                                                      ),
+                                                      fontWeight: MyntFonts.semiBold,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    hideAccountNumber(fund.accno),
+                                                    style: MyntWebTextStyles.bodySmall(
+                                                      context,
+                                                      color: resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.textSecondaryDark,
+                                                        light: MyntColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              size: 20,
+                                              color: resolveThemeColor(
+                                                context,
+                                                dark: MyntColors.iconSecondaryDark,
+                                                light: MyntColors.iconSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                        ],
+
+                            // Vertical divider
+                            Container(
+                              width: 1,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.cardBorderDark,
+                                  light: MyntColors.cardBorder),
+                            ),
+
+                            // Right column: Payment methods
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Payment method",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // Scan QR
+                                    _buildPaymentMethodCard(
+                                      fund: fund,
+                                      theme: theme,
+                                      index: 0,
+                                      icon: SvgPicture.asset(assets.upiIcon, width: 32),
+                                      title: "Scan QR",
+                                      maxLimit: "₹1,00,000",
+                                      badges: ["free", "recommended"],
+                                      isDisabled: fund.intValue > 100000,
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Enter UPI ID (with inline form inside card)
+                                    _buildUpiIdCard(fund, theme, context),
+                                    const SizedBox(height: 10),
+
+                                    // Net Banking
+                                    _buildPaymentMethodCard(
+                                      fund: fund,
+                                      theme: theme,
+                                      index: 2,
+                                      icon: SvgPicture.asset(
+                                        assets.netbankingIcon,
+                                        width: 32,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.iconSecondaryDark,
+                                          light: MyntColors.iconSecondary,
+                                        ),
+                                      ),
+                                      title: "Net Banking",
+                                      maxLimit: "₹50,00,000",
+                                      badges: ["free"],
+                                      isDisabled: false,
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Pay button
+                                    if (_selectedPaymentMethod >= 0)
+                                      MyntPrimaryButton(
+                                        label: "${_selectedPaymentMethod == 1 ? "Pay via UPI ID" : _selectedPaymentMethod == 0 ? "Pay via QR" : "Pay via Net Banking"}${fund.amount.text.isNotEmpty ? "  ·  ₹${fund.amount.text}" : ""}",
+                                        isLoading: fund.fundLoading,
+                                        onPressed: () => _onPayPressed(context, fund),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1259,7 +1349,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isSelected
-                  ? MyntColors.primary
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary)
                   : resolveThemeColor(
                       context,
                       dark: MyntColors.cardBorderDark,
@@ -1368,7 +1460,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 Icon(
                   Icons.check_circle,
                   size: 22,
-                  color: MyntColors.primary,
+                  color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                 ),
             ],
           ),
@@ -1439,7 +1531,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isSelected
-                  ? MyntColors.primary
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary)
                   : resolveThemeColor(
                       context,
                       dark: MyntColors.cardBorderDark,
@@ -1533,7 +1627,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                       Icon(
                         Icons.check_circle,
                         size: 22,
-                        color: MyntColors.primary,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
                       ),
                   ],
                 ),
@@ -2011,9 +2109,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(6),
           ),
-          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.cardDark,
+            light: MyntColors.card,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Column(
@@ -2071,7 +2173,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                             horizontal: 20, vertical: 14),
                         color: isSelected
                             ? (theme.isDarkMode
-                                ? MyntColors.primary.withValues(alpha: 0.15)
+                                ? MyntColors.primaryDark.withValues(alpha: 0.15)
                                 : const Color(0xFFE8F0FE))
                             : Colors.transparent,
                         child: Row(
@@ -2105,7 +2207,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                               Icon(
                                 Icons.check_circle,
                                 size: 20,
-                                color: colors.primaryLight,
+                                color: theme.isDarkMode
+                                    ? MyntColors.primaryDark
+                                    : MyntColors.primary,
                               ),
                           ],
                         ),
@@ -2131,10 +2235,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 440),
           child: RazorpayFailedUi(
-            acco: widget.dd.accno,
-            ifsc: widget.dd.ifsc,
             amount: ref.read(transcationProvider).amount.text,
-            bankname: widget.dd.bankname,
+            upiAddress: ref.read(transcationProvider).upiid.text,
+            orderId: ref.read(transcationProvider).hdfcUPIStatus?.data?.orderNumber,
+            upiTransactionId: ref.read(transcationProvider).hdfcUPIStatus?.data?.upiTransactionNo,
+            statusDescription: ref.read(transcationProvider).hdfcUPIStatus?.data?.statusDescription,
+            status: ref.read(transcationProvider).hdfcUPIStatus?.data?.status,
           ),
         ),
       ),
