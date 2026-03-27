@@ -242,7 +242,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                             ElevatedButton(
                               // style: ElevatedButton.styleFrom(
                               //   // padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                              //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                              //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                               //   backgroundColor: Colors.black,
                               // ),
                               onPressed: () async{
@@ -268,7 +268,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                 shape:
                                     // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
                                     RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(32),
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
                                 side: BorderSide(
                                   width: 1,
@@ -607,7 +607,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                     //           vertical: 12, horizontal: 12),
                                     //       shape: RoundedRectangleBorder(
                                     //         borderRadius:
-                                    //             BorderRadius.circular(25),
+                                    //             BorderRadius.circular(4),
                                     //       ),
                                     //     ),
                                     //     child: Text(
@@ -662,7 +662,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                                               vertical: 12, horizontal: 12),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(25),
+                                                BorderRadius.circular(4),
                                           ),
                                         ),
                                         child: TextWidget.subText(
@@ -705,7 +705,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //                 vertical: 12, horizontal: 12),
                               //             shape: RoundedRectangleBorder(
                               //               borderRadius:
-                              //                   BorderRadius.circular(25),
+                              //                   BorderRadius.circular(4),
                               //             ),
                               //           ),
                               //           child: Text(
@@ -748,7 +748,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //                 vertical: 12, horizontal: 12),
                               //             shape: RoundedRectangleBorder(
                               //               borderRadius:
-                              //                   BorderRadius.circular(25),
+                              //                   BorderRadius.circular(4),
                               //             ),
                               //           ),
                               //           child: Text(
@@ -862,7 +862,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //       padding: const EdgeInsets.symmetric(
                               //           vertical: 12, horizontal: 12),
                               //       shape: RoundedRectangleBorder(
-                              //         borderRadius: BorderRadius.circular(25),
+                              //         borderRadius: BorderRadius.circular(4),
                               //       ),
                               //     ),
                               //   ),
@@ -883,7 +883,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //                 vertical: 12, horizontal: 12),
                               //             shape: RoundedRectangleBorder(
                               //               borderRadius:
-                              //                   BorderRadius.circular(25),
+                              //                   BorderRadius.circular(4),
                               //             ),
                               //           ),
                               //           child: Text(
@@ -906,7 +906,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                               //                 vertical: 12, horizontal: 12),
                               //             shape: RoundedRectangleBorder(
                               //               borderRadius:
-                              //                   BorderRadius.circular(25),
+                              //                   BorderRadius.circular(4),
                               //             ),
                               //           ),
                               //           child: Text('Submit'),
@@ -1024,7 +1024,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: Text(
@@ -1065,7 +1065,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: Text('Submit'),
@@ -1095,7 +1095,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: Text('Submit otp'),
@@ -1195,7 +1195,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: Text(
@@ -1231,7 +1231,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: Text('Submit'),
@@ -1259,7 +1259,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: const Text('Submit otp'),
@@ -1511,7 +1511,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ),
@@ -1533,7 +1533,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: Text(
@@ -1600,7 +1600,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: const Text('Submit'),
@@ -1829,7 +1829,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                     ElevatedButton(
                       // style: ElevatedButton.styleFrom(
                       //   // padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                      //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                       //   backgroundColor: Colors.black,
                       // ),
                       onPressed: () async {
@@ -1853,14 +1853,14 @@ class UserNomineeInfoCard extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        minimumSize: Size(double.infinity, 30),
+                        minimumSize: Size(double.infinity, 35),
                         backgroundColor: theme.isDarkMode
                             ? colors.colorBlack
                             : colors.colorWhite,
                         shape:
                             // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
                             RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         side: BorderSide(
                           width: 1,
@@ -2692,7 +2692,7 @@ class MTFSection extends ConsumerWidget {
                           shape:
                              
                               RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           side: BorderSide(
                             width: 1,

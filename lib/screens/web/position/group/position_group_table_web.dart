@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -46,6 +47,8 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -124,7 +127,7 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
         child: Text(
           label,
@@ -174,7 +177,7 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
             }
 
             final container = Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               color: backgroundColor,
               alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
               child: cachedChild,
@@ -310,7 +313,7 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
           1: 180,  // Instrument (needs more space)
           2: 80,   // Qty
           3: 90,   // Avg
-          4: 90,   // LTP
+          4: 80,   // LTP
           5: 100,  // P&L
         };
 
@@ -321,17 +324,12 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
         final columnWidths = <int, shadcn.TableSize>{};
 
         if (availableWidth > totalMinWidth) {
-          // Extra space available - give it mostly to Instrument column
+          // Extra space available - distribute equally across all columns
           final extraSpace = availableWidth - totalMinWidth;
+          final extraPerColumn = extraSpace / headers.length;
 
           for (int i = 0; i < headers.length; i++) {
-            if (i == 1) {
-              // Instrument column gets most of the extra space
-              columnWidths[i] = shadcn.FixedTableSize(minWidths[i]! + (extraSpace * 0.7));
-            } else {
-              // Other columns get proportional extra space
-              columnWidths[i] = shadcn.FixedTableSize(minWidths[i]! + (extraSpace * 0.06));
-            }
+            columnWidths[i] = shadcn.FixedTableSize(minWidths[i]! + extraPerColumn);
           }
         } else {
           // Use minimum widths
@@ -342,7 +340,7 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
 
         return shadcn.Table(
       columnWidths: columnWidths,
-      defaultRowHeight: const shadcn.FixedTableSize(44),
+      defaultRowHeight: const shadcn.FixedTableSize(40),
       rows: [
         // Header row
         shadcn.TableHeader(
@@ -443,10 +441,15 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
                 alignRight: true,
                 isClosed: isClosed,
                 position: groupItem,
-                child: Text(
-                  qtyStr,
-                  style: _getTextStyle(context,
-                      color: isClosed ? textColor : _getQtyColor(qty, context)),
+                child: Tooltip(
+                  message: qtyStr,
+                  child: Text(
+                    qtyStr,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _getTextStyle(context,
+                        color: isClosed ? textColor : _getQtyColor(qty, context)),
+                  ),
                 ),
               ),
               // Avg cell
@@ -455,9 +458,14 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
                 alignRight: true,
                 isClosed: isClosed,
                 position: groupItem,
-                child: Text(
-                  avgPrice,
-                  style: _getTextStyle(context, color: textColor),
+                child: Tooltip(
+                  message: avgPrice,
+                  child: Text(
+                    avgPrice,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _getTextStyle(context, color: textColor),
+                  ),
                 ),
               ),
               // LTP cell
@@ -466,9 +474,14 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
                 alignRight: true,
                 isClosed: isClosed,
                 position: groupItem,
-                child: Text(
-                  ltp,
-                  style: _getTextStyle(context, color: textColor),
+                child: Tooltip(
+                  message: ltp,
+                  child: Text(
+                    ltp,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _getTextStyle(context, color: textColor),
+                  ),
                 ),
               ),
               // P&L cell
@@ -477,10 +490,15 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
                 alignRight: true,
                 isClosed: isClosed,
                 position: groupItem,
-                child: Text(
-                  pnlStr,
-                  style: _getTextStyle(context,
-                      color: isClosed ? textColor : _getPnlColor(pnlValue, context)),
+                child: Tooltip(
+                  message: pnlStr,
+                  child: Text(
+                    pnlStr,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _getTextStyle(context,
+                        color: isClosed ? textColor : _getPnlColor(pnlValue, context)),
+                  ),
                 ),
               ),
             ],

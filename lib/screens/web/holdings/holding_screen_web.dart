@@ -16,9 +16,13 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../locator/locator.dart';
+import '../../../../locator/preference.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/snack_bar.dart';
 import '../../../utils/rupee_convert_format.dart';
+import 'holdings_download_helper.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -362,7 +366,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                           fontWeight: MyntFonts.medium,
                         ),
                       ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 2),
                       // Use Wrap to move percentage to next line when space is limited
                       Wrap(
                         spacing: 6,
@@ -398,8 +402,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               ],
             ),
           ),
-        ));
+        );
   }
+
 
   Widget _buildMutualFundsSummaryCards(ThemesProvider theme) {
     return Consumer(
@@ -454,8 +459,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                   theme: theme,
                 ),
               ],
-            );
-          },
+            ],
+          ),
         );
       },
     );
@@ -728,12 +733,16 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 _buildEdisButton(theme, portfolioData),
                 const SizedBox(width: 12),
               ],
+              // Download button
+              if (_selectedTabIndex == 0)
+                _buildDownloadButton(theme, portfolioData),
+              if (_selectedTabIndex == 0) const SizedBox(width: 12),
               // Reload button - triggers manual refresh
               _buildIconButton(
                 icon: Icons.refresh,
                 onPressed: () {
                   _handleManualRefresh();
-                  
+
                 },
                 theme: theme,
               ),
@@ -801,52 +810,49 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         }
 
         // Default layout: All in one row
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-          child: Row(
-            children: [
-              buildTabs(),
-              const Spacer(),
-              // Insights button (only for Equity tab)
-              if (_selectedTabIndex == 0) ...[
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      if (WebNavigationHelper.isAvailable) {
-                        WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(4),
-                    hoverColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark.withValues(alpha: 0.1),
-                      light: MyntColors.primary.withValues(alpha: 0.1),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      child: Text(
-                        'Insights',
-                        style: MyntWebTextStyles.symbol(
+        return Row(
+          children: [
+            buildTabs(),
+            const Spacer(),
+            // Insights button (only for Equity tab)
+            if (_selectedTabIndex == 0) ...[
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    if (WebNavigationHelper.isAvailable) {
+                      WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  hoverColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark.withValues(alpha: 0.1),
+                    light: MyntColors.primary.withValues(alpha: 0.1),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text(
+                      'Insights',
+                      style: MyntWebTextStyles.symbol(
+                        context,
+                        fontWeight: MyntFonts.bold,
+                        color: resolveThemeColor(
                           context,
-                          fontWeight: MyntFonts.bold,
-                          color: resolveThemeColor(
-                            context,
-                            dark: MyntColors.primaryDark,
-                            light: MyntColors.primary,
-                          ),
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-              ],
-              buildSearch(),
+              ),
               const SizedBox(width: 12),
-              buildActionButtons(),
             ],
-          ),
+            buildSearch(),
+            const SizedBox(width: 12),
+            buildActionButtons(),
+          ],
         );
       },
     );
@@ -888,6 +894,83 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           ),
         ),
       ),
+    );
+  }
+
+  // Download button (PDF / Excel)
+  Widget _buildDownloadButton(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.download,
+        size: 24,
+        color: theme.isDarkMode
+            ? MyntColors.textWhite
+            : MyntColors.textPrimary,
+      ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      tooltip: 'Download',
+      color: resolveThemeColor(context,
+          dark: MyntColors.cardDark, light: MyntColors.card),
+      onSelected: (value) {
+        final pref = locator<Preferences>();
+        final clientId = pref.clientId ?? '';
+        final clientName = pref.clientName ?? '';
+        final holdings = portfolioData.holdingsModel ?? [];
+        final socketData = ref.read(websocketProvider).socketDatas;
+
+        if (holdings.isEmpty) {
+          warningMessage(context, 'No holdings to download');
+          return;
+        }
+
+        if (value == 'pdf') {
+          HoldingsDownloadHelper.downloadPdf(
+            holdings: holdings,
+            clientId: clientId,
+            clientName: clientName,
+            totalInvested: double.tryParse(portfolioData.totInvesHold) ?? 0,
+            totalCurrentValue: portfolioData.totalCurrentVal,
+            totalPnl: portfolioData.totalPnlHolding,
+            totalDayChange: portfolioData.oneDayChng,
+            socketData: socketData,
+          );
+        } else if (value == 'excel') {
+          HoldingsDownloadHelper.downloadExcel(
+            holdings: holdings,
+            clientId: clientId,
+            clientName: clientName,
+            totalInvested: double.tryParse(portfolioData.totInvesHold) ?? 0,
+            totalCurrentValue: portfolioData.totalCurrentVal,
+            totalPnl: portfolioData.totalPnlHolding,
+            totalDayChange: portfolioData.oneDayChng,
+            socketData: socketData,
+          );
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'pdf',
+          child: Row(
+            children: [
+              Icon(Icons.picture_as_pdf, size: 18, color: Colors.red[700]),
+              const SizedBox(width: 8),
+              const Text('Download PDF'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'excel',
+          child: Row(
+            children: [
+              Icon(Icons.table_chart, size: 18, color: Colors.green[700]),
+              const SizedBox(width: 8),
+              const Text('Download Excel'),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

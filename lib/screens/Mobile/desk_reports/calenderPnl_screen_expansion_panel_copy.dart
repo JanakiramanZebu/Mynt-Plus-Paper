@@ -51,7 +51,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       : colors.colorBlack)),
           elevation: 0.2,
           title: TextWidget.heroText(
-              text: "Calender P&L",
+              text: "P&L Summary",
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
               fw: 1),

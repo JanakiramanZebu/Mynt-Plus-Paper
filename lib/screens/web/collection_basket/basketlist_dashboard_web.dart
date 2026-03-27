@@ -498,7 +498,9 @@ class _StrategyDashboardScreenState
                                   nameError!,
                                   style: MyntWebTextStyles.caption(ctx,
                                       fontWeight: MyntFonts.medium,
-                                      color: MyntColors.loss),
+                                      color: resolveThemeColor(ctx,
+                                          dark: MyntColors.errorDark,
+                                          light: MyntColors.error)),
                                 ),
                               ],
                               const SizedBox(height: 20),
@@ -716,8 +718,8 @@ class _StrategyDashboardScreenState
                             label: 'Delete',
                             isFullWidth: true,
                             backgroundColor: resolveThemeColor(dialogContext,
-                                dark: MyntColors.primaryDark,
-                                light: MyntColors.primary),
+                                dark: MyntColors.errorDark,
+                                light: MyntColors.error),
                             onPressed: () {
                               ref.read(dashboardProvider).deleteStrategy(
                                   strategyData.uuid ?? '', dialogContext);

@@ -1,12 +1,17 @@
 import 'dart:developer';
 // import 'dart:io';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
+import 'dart:typed_data';
 
+import 'package:mynt_plus/models/desk_reports_model/contract_note_model.dart';
 import 'package:mynt_plus/models/desk_reports_model/pdf_download_model.dart';
 import 'package:mynt_plus/models/desk_reports_model/pnl_seg_charges_model.dart';
 // import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_core.dart';
 import '../models/desk_reports_model/SharingResponseCalendar_model.dart';
+import '../models/desk_reports_model/approved_pledge_list_model.dart';
 import '../models/desk_reports_model/ca_events_model.dart';
 import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
@@ -29,6 +34,7 @@ import '../models/desk_reports_model/sharing_on_off_model.dart';
 import '../models/desk_reports_model/tax_pnl_Eq_charge_model.dart';
 import '../models/desk_reports_model/taxpnl_eq_model.dart';
 import '../models/desk_reports_model/tradebook_model.dart';
+import 'dart:convert';
 
 import '../models/desk_reports_model/unpledge_history_model.dart';
 import '../sharedWidget/fund_function.dart';
@@ -116,7 +122,7 @@ mixin LedgerApi on ApiCore {
             "from": from, "to": to
           }));
 
-      print('getLedgerdata response: ${res.body}');
+      print('getLedgerdata response: ' + res.body);
       final json = jsonDecode((res.body));
       // print("${json['stat']}");
       if (json['stat'] != 'Not Ok') {
@@ -447,7 +453,8 @@ mixin LedgerApi on ApiCore {
   Future<CalenderpnlModel> getcalenderpnldata(
       String from, String to, String type) async {
     try {
-      final uri = Uri.parse('${apiLinks.reportsapi}getJournalDiary');
+      String endpoint = type == "Commodity" ? "getJournalDiary3" : "getJournalDiary";
+      final uri = Uri.parse('${apiLinks.reportsapi}$endpoint');
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
@@ -473,7 +480,7 @@ mixin LedgerApi on ApiCore {
         return CalenderpnlModel.fromJson({"data": res.body});
       } else {
         final json = jsonDecode((res.body));
-
+        json['segment'] = type;
         return CalenderpnlModel.fromJson(json as Map<String, dynamic>);
       }
       // log("MF Master ==>$json");
@@ -527,7 +534,7 @@ mixin LedgerApi on ApiCore {
 
       // print("${response}");
       final Uri uri = Uri.parse(
-          "${apiLinks.reportsapi}/downloaddocmob1?cc=${prefs.clientId}&recno=$recno");
+          "${apiLinks.reportsapi}/downloaddocmob1?cc=${prefs.clientId}&recno=${recno}");
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch  ';
       }
@@ -563,6 +570,108 @@ mixin LedgerApi on ApiCore {
       return "File downloaded successfully";
     } catch (e) {
       print("Error downloading file: $e");
+      rethrow;
+    }
+  }
+
+  Future<String> downloadDocWeb(String recno, String filename) async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportsapi}downloaddoc');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "cc": "${prefs.clientId}",
+            "recno": recno,
+          }));
+
+      if (res.statusCode == 200) {
+        final contentType = res.headers['content-type'] ?? '';
+
+        if (contentType.contains('application/json')) {
+          final json = jsonDecode(res.body);
+
+          if (json['stat'] == 'Not Ok') {
+            return json['msg'] ?? 'No data available';
+          }
+
+          final filepath = json['filepath']?.toString() ??
+              json['path']?.toString() ??
+              '';
+          if (filepath.isEmpty) {
+            return 'No data available';
+          }
+
+          final staticPath =
+              filepath.split('static').last.replaceAll(r'\', '/');
+          final finalUrl = '${apiLinks.reportsapi}static$staticPath';
+          html.window.open(finalUrl, '_blank');
+        } else {
+          if (res.bodyBytes.isEmpty) {
+            return 'No data available';
+          }
+          final blob = html.Blob(
+              [Uint8List.fromList(res.bodyBytes)], 'application/pdf');
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          html.AnchorElement(href: url)
+            ..setAttribute('download',
+                filename.isNotEmpty ? filename : 'document.pdf')
+            ..click();
+          html.Url.revokeObjectUrl(url);
+        }
+        return "File downloaded successfully";
+      } else {
+        return "Error: Server returned ${res.statusCode}";
+      }
+    } catch (e) {
+      print("Error downloading doc: $e");
+      rethrow;
+    }
+  }
+
+  Future<String> downloadTaxPnlWeb(int year, String format) async {
+    try {
+      final isPdf = format == 'PDF';
+      final uri = Uri.parse(
+          '${apiLinks.reportsapi}${isPdf ? 'taxpnl_pdf' : 'tax_p_l_excel'}');
+      final fromapi = '01/04/$year';
+      final toapi = '31/03/${year + 1}';
+
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "from_date": fromapi,
+            "to_date": toapi,
+          }));
+
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+
+        if (json['stat'] == 'Not Ok') {
+          return json['msg'] ?? 'Error generating file';
+        }
+
+        final filepath = json['filepath']?.toString() ?? '';
+        if (filepath.isEmpty) {
+          return 'Error: No file path in response';
+        }
+
+        // Build URL: split on "static" and append to base
+        final staticPath = filepath.split('static').last.replaceAll(r'\', '/');
+        final finalUrl = '${apiLinks.reportsapi}static$staticPath';
+
+        if (isPdf) {
+          html.window.open(finalUrl, '_blank');
+        } else {
+          html.window.location.href = finalUrl;
+        }
+
+        return "File downloaded successfully";
+      } else {
+        return "Error: Server returned ${res.statusCode}";
+      }
+    } catch (e) {
+      print("Error downloading tax pnl: $e");
       rethrow;
     }
   }
@@ -769,6 +878,22 @@ mixin LedgerApi on ApiCore {
     }
   }
 
+  Future<ApprovedPledgeListModel> getapprovepledge() async {
+    try {
+      // final uri = Uri.parse('${apiLinks.reportspledge}ApprovePledge');
+      final uri = Uri.parse('${apiLinks.reportspledge}ApprovedScripts');
+      final res = await apiClient.get(uri,
+          headers: defaultHeaders,
+          );
+      final json = jsonDecode((res.body));
+      print("Approved list $json");
+      return ApprovedPledgeListModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      print("Approved list error ${e}");
+      rethrow;
+    }
+  }
+
   Future<CAEventsModel> getcaevents(start, end) async {
     try {
       final uri = Uri.parse('${apiLinks.caevents}getEquityCorporateActions');
@@ -881,7 +1006,7 @@ mixin LedgerApi on ApiCore {
             'withopen': yrn
           }));
       final json = jsonDecode((res.body));
-      print("$json");
+      print("${json}");
       // log("MF Master ==>$json");
       return PnlSegCharge.fromJson(json as Map<String, dynamic>);
 
@@ -908,7 +1033,7 @@ mixin LedgerApi on ApiCore {
             'seg': seg
           }));
       final json = jsonDecode((res.body));
-      print("$json");
+      print("${json}");
       // log("MF Master ==>$json");
       return TaxPnlEqCharges.fromJson(json as Map<String, dynamic>);
 
@@ -933,7 +1058,7 @@ mixin LedgerApi on ApiCore {
             "pledgeReq": list
           }));
       final json = jsonDecode((res.body));
-      print("$json");
+      print("${json}");
 
       // log("MF Master ==>$json");
       return json;
@@ -955,7 +1080,7 @@ mixin LedgerApi on ApiCore {
             "reqid": response,
           }));
       final json = jsonDecode((res.body));
-      print("$json");
+      print("${json}");
 
       // log("MF Master ==>$json");
       return CdslReponseModel.fromJson(json as Map<String, dynamic>);
@@ -982,7 +1107,7 @@ mixin LedgerApi on ApiCore {
             'withopen': yrn
           }));
       final json = jsonDecode((res.body));
-      print("$json");
+      print("${json}");
       // log("MF Master ==>$json");
       return PnlSegCharge.fromJson(json as Map<String, dynamic>);
 
@@ -1009,7 +1134,7 @@ mixin LedgerApi on ApiCore {
             "cocd": comcode
           }));
       final json = jsonDecode((res.body));
-      print("$json");
+      print("${json}");
       // log("MF Master ==>$json");
 
       return PnlSummaryModel.fromJson({'data': json});
@@ -1033,7 +1158,7 @@ mixin LedgerApi on ApiCore {
           }));
       if (res.statusCode == 200) {
         final json = jsonDecode((res.body));
-        print("$json");
+        print("${json}");
         // log("MF Master ==>$json");
         return json;
       } else {
@@ -1053,7 +1178,7 @@ mixin LedgerApi on ApiCore {
           body: jsonEncode({"clientid": uccid, "ISIN": list}));
       if (res.statusCode == 200) {
         final json = jsonDecode((res.body));
-        print("$json");
+        print("${json}");
         // log("MF Master ==>$json");
         return json;
       } else {
@@ -1094,7 +1219,7 @@ mixin LedgerApi on ApiCore {
       // return TaxPnlEqModel.fromJson(json as Map<String, dynamic>);
       // log("MF Master ==>$json");
     } catch (e) {
-      print("$e errorerror");
+      print("${e} errorerror");
       rethrow;
     }
   }
@@ -1114,6 +1239,24 @@ mixin LedgerApi on ApiCore {
 
       final json = jsonDecode((res.body));
       return CmrDownloadModel.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<ContractNoteModel> getContractNote(String from, String to) async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportsapi}getContractNote');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "cc": "${prefs.clientId}",
+            "from": from,
+            "to": to,
+          }));
+
+      final json = jsonDecode(res.body);
+      return ContractNoteModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

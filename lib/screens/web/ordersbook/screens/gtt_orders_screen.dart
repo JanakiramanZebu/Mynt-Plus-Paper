@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart'
     show
         InkWell,
@@ -210,6 +211,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -333,7 +336,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
@@ -388,7 +391,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                           child: ListView.builder(
                             controller: _verticalScrollController,
                             itemCount: sortedOrders.length,
-                            itemExtent: 50.0,
+                            itemExtent: 42.0,
                             itemBuilder: (context, index) {
                               final gttOrder = sortedOrders[index];
                               return shadcn.Table(
@@ -401,7 +404,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                                   5: shadcn.FixedTableSize(columnWidths[5]!),
                                   6: shadcn.FixedTableSize(columnWidths[6]!),
                                 },
-                                defaultRowHeight: const shadcn.FixedTableSize(50),
+                                defaultRowHeight: const shadcn.FixedTableSize(40),
                                 rows: [
                                   shadcn.TableRow(
                                     cells: [
@@ -592,15 +595,15 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     EdgeInsets cellPadding;
     if (isFirstColumn) {
       // First column - more left padding
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 8, 8);
+      cellPadding = const EdgeInsets.fromLTRB(16, 4, 8, 4);
     } else if (isInstrumentColumn) {
       // Instrument column - symmetric padding
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     } else if (isLastColumn) {
       // Last column - more right padding
-      cellPadding = const EdgeInsets.fromLTRB(8, 8, 16, 8);
+      cellPadding = const EdgeInsets.fromLTRB(8, 4, 16, 4);
     } else {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -999,7 +1002,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               }
             },
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               // dark: MyntColors.loss.withValues(alpha: 0.15),
@@ -1019,7 +1022,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
         ),
         child: Icon(
           Icons.close,
-          size: 18,
+          size: 16,
           fontWeight: FontWeight.bold,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
@@ -1055,7 +1058,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               }
             },
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
               dark: MyntColors.textWhite,
@@ -1073,7 +1076,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
         ),
         child: Icon(
           Icons.edit_outlined,
-          size: 18,
+          size: 16,
           color: resolveThemeColor(context,
               dark: MyntColors.primaryDark, light: MyntColors.primary),
         ),
@@ -1208,7 +1211,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -1228,7 +1231,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
@@ -1283,7 +1286,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       ),
       child: Text(
         statusText.toUpperCase(),
-        style: MyntWebTextStyles.bodySmall(
+        style: MyntWebTextStyles.para(
           context,
           color: statusColor,
           fontWeight: MyntFonts.medium,

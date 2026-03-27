@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:mynt_plus/models/client_profile_all_details/details_change_current_status_model.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
 import 'package:mynt_plus/sharedWidget/fund_function.dart';
@@ -309,6 +310,112 @@ mixin ProfileAllDetailsApi on ApiCore {
 }
 
 
+  Future<DetailsChangeCurrentStatus> fetchMobEmailStatusApi() async {
+    try {
+      final uri = Uri.parse(apiLinks.detailschangecurrentstatusURL);
+      final res = await apiClient.post(
+        uri,
+        headers: funddefaultHeaders,
+        body: jsonEncode({"client_id": prefs.clientId}),
+      );
+      return DetailsChangeCurrentStatus.fromJson(jsonDecode(res.body));
+    } catch (e) {
+      print("error fetchMobEmailStatusApi :::: $e");
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> addSegmentApi({
+    required List<String> newSegments,
+    required List<String> existingSegments,
+    required String dpCode,
+    required String addingSegments,
+    required String reActiveSegments,
+    required String clientId,
+    required bool equitySelected,
+    required bool fnoSelected,
+    required bool currencySelected,
+    required bool commoditySelected,
+    required String clientEmail,
+    required String clientName,
+    required String address,
+    Uint8List? proofBytes,
+    String? proofFileName,
+    required String passwordRequired,
+    required String password,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.addSegmentURL);
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(funddefaultHeaders);
+
+      request.fields['new_segments'] = jsonEncode(newSegments);
+      request.fields['ext_segments'] = jsonEncode(existingSegments);
+      request.fields['dp_code'] = dpCode;
+      request.fields['adding_segments'] = addingSegments;
+      request.fields['re_active_segments'] = reActiveSegments;
+      request.fields['client_id'] = clientId;
+      request.fields['nse_equity'] = equitySelected ? 'YES' : 'NO';
+      request.fields['bse_equity'] = equitySelected ? 'YES' : 'NO';
+      request.fields['nse_equity_der'] = fnoSelected ? 'YES' : 'NO';
+      request.fields['bse_equity_der'] = fnoSelected ? 'YES' : 'NO';
+      request.fields['nse_currency_der'] = currencySelected ? 'YES' : 'NO';
+      request.fields['bse_currency_der'] = currencySelected ? 'YES' : 'NO';
+      request.fields['nse_commodity_der'] = commoditySelected ? 'YES' : 'NO';
+      request.fields['bse_commodity_der'] = commoditySelected ? 'YES' : 'NO';
+      request.fields['mcx_commodity_der'] = commoditySelected ? 'YES' : 'NO';
+      request.fields['icex_commodity_der'] = commoditySelected ? 'YES' : 'NO';
+      request.fields['nse_mfss'] = 'NO';
+      request.fields['bse_mfss'] = 'NO';
+      request.fields['nse_slbm'] = 'NO';
+      request.fields['client_email'] = clientEmail;
+      request.fields['client_name'] = clientName;
+      request.fields['address'] = address;
+      request.fields['password_required'] = passwordRequired;
+      request.fields['password'] = password;
+
+      if (proofBytes != null && proofFileName != null) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'proff',
+          proofBytes,
+          filename: proofFileName,
+        ));
+      } else {
+        request.fields['proff'] = '';
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return jsonDecode(response.body);
+    } catch (e) {
+      print("error addSegmentApi :::: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> filedownloadApi({
+    required String clientId,
+    required String fileId,
+    required String response,
+    required String type,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.filedownloadURL);
+      await apiClient.post(
+        uri,
+        headers: funddefaultHeaders,
+        body: jsonEncode({
+          'client_id': clientId,
+          'file_id': fileId,
+          'response': response,
+          'type': type,
+        }),
+      );
+    } catch (e) {
+      print("error filedownloadApi :::: $e");
+    }
+  }
+
   mobileotpapifun(String newmo, clemail, oldmobilmo, fulldataprf) async {
 //  String formattedData = jsonEncode(fulldataprf.toJson()); // Convert object to JSON
     // // print("Formatted Profile Data: $formattedData");
@@ -515,7 +622,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       // print("otp email resp ==>${json}");
 
-      return json['msg'];
+      return json;
     } catch (e) {
       rethrow;
     }
@@ -541,7 +648,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       // print("otp email resp ==>${json}");
 
-      return json['msg'];
+      return json;
     } catch (e) {
       rethrow;
     }
@@ -588,12 +695,7 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      if (json['msg'] == "otp valid") {
-        incomeupdateaapi(fulldataprf, chipval, file, proftye);
-      }
-
-      // print("otp email respincomeee ==>${json}");
-      // print("otp email in1234567 ==>${json['msg']}");
+      // Income update is now handled by the provider after OTP verification
 
       return json['msg'];
     } catch (e) {
@@ -602,7 +704,8 @@ mixin ProfileAllDetailsApi on ApiCore {
   }
 
   incomeupdateaapi(
-      fulldataprf, String chipval, String filepath, String proftye) async {
+      fulldataprf, String chipval, String proftye,
+      {List<int>? fileBytes, String? fileName}) async {
     try {
       globalfulldata = fulldataprf;
       final uri = Uri.parse(apiLinks.incomeURL);
@@ -626,19 +729,13 @@ mixin ProfileAllDetailsApi on ApiCore {
       request.fields['password'] = "";
       request.fields['password_reqiured'] = "";
 
-      //   // print("client_id: ${request.fields['client_id']}");
-      // // print("client_email: ${request.fields['client_email']}");
-      // // print("client_name: ${request.fields['client_name']}");
-      // // print("ext_income_range: ${request.fields['ext_income_range']}");
-      // // print("cur_income_range: ${request.fields['cur_income_range']}");
-      // // print("proff: ${request.fields['proff']}");
-      // // print("dp_code: ${request.fields['dp_code']}");
-      // // print("proff_type: ${request.fields['proff_type']}");
-
-      // Only add file if 'Above 25L' and filepath is valid
-      if (chipval == "Above 25L" && filepath.isNotEmpty) {
-        request.files
-            .add(await http.MultipartFile.fromPath('proff_file', filepath));
+      // Add file if 'Above 25L' and file bytes provided (web compatible)
+      if (chipval == "Above 25L" && fileBytes != null && fileBytes.isNotEmpty) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'proff_file',
+          fileBytes,
+          filename: fileName ?? 'proof.pdf',
+        ));
       }
 
       // Send the request
@@ -646,13 +743,72 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
-        // print("Response: $responseBody");
-        // Return the response message or do further processing
-      } else {
-        // print("Error: ${response.reasonPhrase}");
+        final json = jsonDecode(responseBody);
+        return json;
       }
+      return null;
     } catch (e) {
-      // print("Exception: $e");
+      print("Exception incomeupdateaapi: $e");
+      return null;
+    }
+  }
+
+  // Check if uploaded PDF is password protected
+  pdfLockCheckApi({required List<int> fileBytes, required String fileName}) async {
+    try {
+      final uri = Uri.parse(apiLinks.pdfLockURL);
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(funddefaultHeaders);
+      request.fields['client_id'] = "${prefs.clientId}";
+      request.fields['checktype'] = "income";
+      request.files.add(http.MultipartFile.fromBytes(
+        'proff_file',
+        fileBytes,
+        filename: fileName,
+      ));
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        final json = jsonDecode(responseBody);
+        return json;
+      }
+      return null;
+    } catch (e) {
+      print("Exception pdfLockCheckApi: $e");
+      return null;
+    }
+  }
+
+  // Verify PDF password
+  pdfPasswordCheckApi({
+    required List<int> fileBytes,
+    required String fileName,
+    required String password,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.pdfPasswordCheckURL);
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(funddefaultHeaders);
+      request.fields['client_id'] = "${prefs.clientId}";
+      request.fields['password'] = password;
+      request.fields['checktype'] = "income";
+      request.files.add(http.MultipartFile.fromBytes(
+        'proff_file',
+        fileBytes,
+        filename: fileName,
+      ));
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        final json = jsonDecode(responseBody);
+        return json;
+      }
+      return null;
+    } catch (e) {
+      print("Exception pdfPasswordCheckApi: $e");
+      return null;
     }
   }
 
@@ -688,6 +844,246 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
     } catch (e) {
       rethrow;
+    }
+  }
+
+  // IFSC lookup returning full data map
+  Future<Map<String, dynamic>?> ifscLookupApi(String ifscCode) async {
+    try {
+      if (ifscCode.length < 11) return null;
+      final uri = Uri.parse("https://ifsc.razorpay.com/$ifscCode");
+      final res = await http.get(uri);
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("Exception ifscLookupApi: $e");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> pincodeLookupApi(String pincode) async {
+    try {
+      if (pincode.length < 6) return null;
+      final uri = Uri.parse("https://api.postalpincode.in/pincode/$pincode");
+      final res = await http.get(uri);
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data is List &&
+            data.isNotEmpty &&
+            data[0]['PostOffice'] != null &&
+            (data[0]['PostOffice'] as List).isNotEmpty) {
+          return data[0]['PostOffice'][0] as Map<String, dynamic>;
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Exception pincodeLookupApi: $e");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> addressChangeApiWeb({
+    required String newAddress,
+    required String pincode,
+    required String district,
+    required String state,
+    required String country,
+    required String proofType,
+    required dynamic clientData,
+    List<int>? proofBytes,
+    String? proofFileName,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.adrchnURL);
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(funddefaultHeaders);
+
+      request.fields['proff'] = proofType;
+      request.fields['cur_address'] =
+          '{"address":"$newAddress","pincode":"$pincode","state":"$state","dist":"$district","country":"$country"}';
+      request.fields['ext_address'] =
+          "${clientData.toJson()['CL_RESI_ADD1']}, ${clientData.toJson()['CL_RESI_ADD2']}, ${clientData.toJson()['CL_RESI_ADD3']}";
+      request.fields['dp_code'] =
+          "${clientData.toJson()['CLIENT_DP_CODE']}";
+      request.fields['client_id'] = "${prefs.clientId}";
+      request.fields['client_name'] = "${prefs.clientName}";
+      request.fields['adr_manual'] = 'manual';
+      request.fields['aadhar_address'] = '';
+      request.fields['code'] = '';
+      request.fields['state'] = state;
+      request.fields['client_email'] =
+          "${clientData.toJson()['CLIENT_ID_MAIL']}";
+
+      if (proofBytes != null && proofFileName != null) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          proofBytes,
+          filename: proofFileName,
+        ));
+      }
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        return jsonDecode(responseBody) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("Exception addressChangeApiWeb: $e");
+      return null;
+    }
+  }
+
+  // Aadhaar/Digilocker address change API (adr_manual='aadhar')
+  Future<Map<String, dynamic>?> addressChangeDigilockerApiWeb({
+    required String code,
+    required String state,
+    required dynamic clientData,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.adrchnURL);
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(funddefaultHeaders);
+
+      request.fields['file'] = '';
+      request.fields['proff'] = '';
+      request.fields['cur_address'] = '';
+      request.fields['ext_address'] =
+          "${clientData.toJson()['CL_RESI_ADD1']} ${clientData.toJson()['CL_RESI_ADD2']} ${clientData.toJson()['CL_RESI_ADD3']}";
+      request.fields['dp_code'] =
+          "${clientData.toJson()['CLIENT_DP_CODE']}";
+      request.fields['client_id'] = "${prefs.clientId}";
+      request.fields['client_name'] = "${prefs.clientName}";
+      request.fields['client_email'] =
+          "${clientData.toJson()['CLIENT_ID_MAIL']}";
+      request.fields['aadhar_address'] = '';
+      request.fields['adr_manual'] = 'aadhar';
+      request.fields['code'] = code;
+      request.fields['state'] = state;
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        return jsonDecode(responseBody) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("Exception addressChangeDigilockerApiWeb: $e");
+      return null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  NOMINEE API
+  // ═══════════════════════════════════════════════════════════════
+
+  /// Submit nominee form - POST /nominee (multipart/form-data)
+  Future<Map<String, dynamic>?> nomineeSubmitApi({
+    required Map<String, String> fields,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.nomineeSubmitURL);
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(funddefaultHeaders);
+      request.fields.addAll(fields);
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        return jsonDecode(responseBody) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("Exception nomineeSubmitApi: $e");
+      return null;
+    }
+  }
+
+  /// Fetch nominee status - POST /nom_stat
+  /// Returns full response including nom_stat array with app_status, file_id, session etc.
+  Future<Map<String, dynamic>?> nomineeStatusApi() async {
+    try {
+      final uri = Uri.parse(apiLinks.fetctfileidURLnominee);
+      final res = await apiClient.post(
+        uri,
+        headers: defaultHeaders,
+        body: jsonEncode({"client_id": prefs.clientId}),
+      );
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("Exception nomineeStatusApi: $e");
+      return null;
+    }
+  }
+
+  // Web-compatible bank API (add/edit/delete/set-primary)
+  Future<Map<String, dynamic>?> addBankApiWeb({
+    required String option, // add, modify, delete
+    required String accountNo,
+    required String bankName,
+    required String ifsc,
+    required String branch,
+    required String bankAccountType,
+    required String setDefault,
+    required String micr,
+    required String dpCode,
+    required String mobile,
+    required String clientEmail,
+    required List<Map<String, String>> existingBanks,
+    String? proffType,
+    List<int>? proofBytes,
+    String? proofFileName,
+    String? passwordRequired,
+    String? password,
+    int count = 3,
+  }) async {
+    try {
+      final queryParams = 'mob=$mobile'
+          '&bankName=${Uri.encodeComponent(bankName)}'
+          '&ifsc=$ifsc'
+          '&accountNo=$accountNo'
+          '&proff_type=${proffType ?? ""}'
+          '&branch=${Uri.encodeComponent(branch)}'
+          '&bank_account_type=${Uri.encodeComponent(bankAccountType)}'
+          '&client_name=${prefs.clientName}'
+          '&option=$option'
+          '&client_id=${prefs.clientId}'
+          '&set_defalut=$setDefault'
+          '&dp_code=$dpCode'
+          '&micr=$micr'
+          '&client_email=${Uri.encodeComponent(clientEmail)}'
+          '&password_required=${passwordRequired ?? "NO"}'
+          '&password=${password ?? ""}'
+          '&count=$count';
+
+      final uri = Uri.parse("${apiLinks.bankURL}?$queryParams");
+      var request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(funddefaultHeaders);
+      request.fields['bank_exists'] = jsonEncode(existingBanks);
+
+      if (proofBytes != null && proofBytes.isNotEmpty) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'proff',
+          proofBytes,
+          filename: proofFileName ?? 'proof.pdf',
+        ));
+      }
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        final json = jsonDecode(responseBody);
+        return json as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("Exception addBankApiWeb: $e");
+      return null;
     }
   }
 
@@ -897,13 +1293,152 @@ mixin ProfileAllDetailsApi on ApiCore {
 
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
-        // print("Response: $responseBody");
-        // Return the response message or do further processing
+        final json = jsonDecode(responseBody);
+        return json;
       } else {
-        // print("Error: ${response.reasonPhrase}");
+        return null;
       }
     } catch (e) {
-      // print("Exception: $e");
+      print("acccloserapi Exception: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Mobile OTP verify (no auto file_write) ───
+  Future<String?> mobileOtpVerifyWebApi(String newMobile, String otp, dynamic clientData) async {
+    try {
+      final uri = Uri.parse(apiLinks.mobotpver);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "pres_mobile_no": newMobile,
+            "client_id": "${prefs.clientId}",
+            "mobile_otp": otp,
+            "prev_mobile_no": "${clientData.toJson()['MOBILE_NO']}",
+            "client_name": "${prefs.clientName}",
+            "client_email": "${clientData.toJson()['CLIENT_ID_MAIL']}",
+            "dp_code": "${clientData.toJson()['CLIENT_DP_CODE']}"
+          }));
+      final json = jsonDecode(res.body);
+      return json['msg']?.toString();
+    } catch (e) {
+      print("Exception mobileOtpVerifyWebApi: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Email OTP verify (no auto file_write) ───
+  Future<String?> emailOtpVerifyWebApi(String otp, String newEmail) async {
+    try {
+      final uri = Uri.parse(apiLinks.verifyOTPEmailURL);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "client_id": "${prefs.clientId}",
+            "present_email": newEmail,
+            "emailotp": otp
+          }));
+      final json = jsonDecode(res.body);
+      return json['msg']?.toString();
+    } catch (e) {
+      print("Exception emailOtpVerifyWebApi: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Mobile file write (callable separately) ───
+  Future<Map<String, dynamic>?> mobileFileWriteWebApi(String newMobile, dynamic clientData) async {
+    try {
+      DateTime nowUtc = DateTime.now().toUtc();
+      String formattedDateUtc =
+          "${nowUtc.year.toString().padLeft(4, '0')}-${nowUtc.month.toString().padLeft(2, '0')}-${nowUtc.day.toString().padLeft(2, '0')}T${nowUtc.hour.toString().padLeft(2, '0')}:${nowUtc.minute.toString().padLeft(2, '0')}:${nowUtc.second.toString().padLeft(2, '0')}.${nowUtc.millisecond.toString().padLeft(3, '0')}Z";
+
+      final uri = Uri.parse(apiLinks.filewritemob);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "pres_mobile_no": newMobile,
+            "client_id": "${prefs.clientId}",
+            "prev_mobile_no": "${clientData.toJson()['MOBILE_NO']}",
+            "client_name": "${prefs.clientName}",
+            "client_email": "${clientData.toJson()['CLIENT_ID_MAIL']}",
+            "dp_code": "${clientData.toJson()['CLIENT_DP_CODE']}",
+            "date_time": formattedDateUtc
+          }));
+      final json = jsonDecode(res.body);
+      return json as Map<String, dynamic>;
+    } catch (e) {
+      print("Exception mobileFileWriteWebApi: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Email file write (callable separately) ───
+  Future<Map<String, dynamic>?> emailFileWriteWebApi(String newEmail, String oldEmail, String dpCode) async {
+    try {
+      DateTime nowUtc = DateTime.now().toUtc();
+      String formattedDateUtc =
+          "${nowUtc.year.toString().padLeft(4, '0')}-${nowUtc.month.toString().padLeft(2, '0')}-${nowUtc.day.toString().padLeft(2, '0')}T${nowUtc.hour.toString().padLeft(2, '0')}:${nowUtc.minute.toString().padLeft(2, '0')}:${nowUtc.second.toString().padLeft(2, '0')}.${nowUtc.millisecond.toString().padLeft(3, '0')}Z";
+
+      final uri = Uri.parse(apiLinks.filewriteemailURL);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "client_id": "${prefs.clientId}",
+            "client_email": oldEmail,
+            "dp_code": dpCode,
+            "date_time": formattedDateUtc,
+            "present_email": newEmail,
+            "previous_email": oldEmail,
+            "client_name": "${prefs.clientName}",
+          }));
+      final json = jsonDecode(res.body);
+      return json as Map<String, dynamic>;
+    } catch (e) {
+      print("Exception emailFileWriteWebApi: $e");
+      return null;
+    }
+  }
+
+  // ─── KRA Image Check ───
+  Future<String?> kraImageCheckApi() async {
+    try {
+      final uri = Uri.parse(apiLinks.checkingImgURL);
+      final res = await apiClient.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"client_id": "${prefs.clientId}"}),
+      );
+      final json = jsonDecode(res.body);
+      return json['data']?.toString();
+    } catch (e) {
+      print("Exception kraImageCheckApi: $e");
+      return null;
+    }
+  }
+
+  // ─── KRA Image Upload ───
+  Future<String?> imgUploadApi({required List<int> imageBytes}) async {
+    try {
+      final uri = Uri.parse(apiLinks.imgUploadURL);
+      var request = http.MultipartRequest('POST', uri);
+      request.fields['client_id'] = "${prefs.clientId}";
+      request.files.add(http.MultipartFile.fromBytes(
+        'image',
+        imageBytes,
+        filename: 'photo.jpg',
+      ));
+
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        final json = jsonDecode(responseBody);
+        return json['data']?.toString();
+      }
+      return null;
+    } catch (e) {
+      print("Exception imgUploadApi: $e");
+      return null;
     }
   }
 }

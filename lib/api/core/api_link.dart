@@ -306,6 +306,9 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get cancelPendingesignURL => '${profileDetailsURL}manual_cancel_request';
   String get fetctfileidURL => '$profileDetailsURL/add_mob_email_stat';
   String get fetctfileidURLnominee => '$profileDetailsURL/nom_stat';
+  String get nomineeSubmitURL => '$profileDetailsURL/nominee';
+  String get addSegmentURL => '${profileDetailsURL}add_segment';
+  String get filedownloadURL => '${profileDetailsURL}filedownload';
 
   // email change
   String get sendOTPEmailURL => '$profileDetailsURL/mail_otpsend';
@@ -316,6 +319,10 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get mobotpreq => '$profileDetailsURL/mob_otp_req';
   String get mobotpver => '$profileDetailsURL/mob_otp_ver';
   String get filewritemob => '$profileDetailsURL/file_write_mob';
+
+  // KRA image check & upload
+  String get checkingImgURL => '${profileDetailsURL}checking_img';
+  String get imgUploadURL => '${profileDetailsURL}img_upload';
 
   // Address change
   String get adrchnURL => '$profileDetailsURL/adr_chn';
@@ -341,6 +348,8 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get incomeotpreqURL => '$profileDetailsURL/income_otp_req';
   String get incomeotpverURL => '$profileDetailsURL/income_otp_ver';
   String get incomeURL => '$profileDetailsURL/income';
+  String get pdfLockURL => '$profileDetailsURL/pdf_lock';
+  String get pdfPasswordCheckURL => '$profileDetailsURL/pdf_password_check';
 
   //Add Famliy
   String get sendlinkrequestURL => '$profileDetailsURL/send_link_request';

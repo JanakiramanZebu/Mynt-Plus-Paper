@@ -31,6 +31,8 @@ import 'package:flutter/material.dart'
         ValueKey,
         EdgeInsets,
         Color,
+        FontFeature,
+        FontWeight,
         MainAxisAlignment,
         CrossAxisAlignment,
         MainAxisSize,
@@ -105,6 +107,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
       darkColor: color ?? MyntColors.textPrimaryDark,
       lightColor: color ?? MyntColors.textPrimary,
       fontWeight: MyntFonts.medium,
+    ).copyWith(
+      fontFeatures: [FontFeature.tabularFigures()],
     );
   }
 
@@ -208,20 +212,20 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     dynamic holding, // Pass holding data for automatic row tap handling
   }) {
     final isFirstColumn = columnIndex == 0; // Fund Name column
-    final isLastColumn = columnIndex == 6; // P&L column
+    final isLastColumn = columnIndex == 7; // Chg column
 
     // Match the cell padding logic - Fund Name column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets cellPadding;
     if (isFirstColumn) {
       // Fund Name column - more left, minimal right (for overlay buttons)
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+      cellPadding = const EdgeInsets.fromLTRB(16, 4, 4, 4);
     } else if (isLastColumn) {
       // Last column - minimal left, more right
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+      cellPadding = const EdgeInsets.fromLTRB(4, 4, 16, 4);
     } else {
       // Other columns - symmetric padding
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     }
 
     return shadcn.TableCell(
@@ -307,20 +311,20 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Fund Name column
-    final isLastColumn = columnIndex == 6; // P&L column
+    final isLastColumn = columnIndex == 7; // Chg column
 
     // Match the cell padding logic - Fund Name column has more left, minimal right
     // Last column mirrors this - minimal left, more right
     EdgeInsets headerPadding;
     if (isFirstColumn) {
       // Fund Name column - more left, minimal right
-      headerPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+      headerPadding = const EdgeInsets.fromLTRB(16, 6, 4, 6);
     } else if (isLastColumn) {
       // Last column - minimal left, more right
-      headerPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+      headerPadding = const EdgeInsets.fromLTRB(4, 6, 16, 6);
     } else {
       // Other columns - symmetric padding
-      headerPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+      headerPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 6);
     }
 
     return shadcn.TableCell(
@@ -409,10 +413,11 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
       'Fund Name',
       'Units',
       'Avg NAV',
-      'Current NAV',
-      'Invested',
-      'Current Value',
+      'Cur NAV',
+      'Inv',
+      'Cur Val',
       'P&L',
+      'Chg',
     ];
 
     final minWidths = <int, double>{};
@@ -457,14 +462,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 double.tryParse(holding.currentValue ?? '0') ?? 0.0;
             cellText = currentValue.toStringAsFixed(2);
             break;
-          case 6: // P&L (with percentage - measure longest)
-            final pnl = holding.profitLoss ?? '0.00';
-            final pct = holding.changeprofitLoss ?? '0.00';
-            // Measure both value and percentage, use the longer one
-            final pnlWidth = _measureTextWidth(pnl, textStyle);
-            final pctWidth =
-                _measureTextWidth('$pct%', textStyle.copyWith(fontSize: 10));
-            cellText = pnlWidth > pctWidth ? pnl : '$pct%';
+          case 6: // P&L
+            final pnl = double.tryParse(holding.profitLoss ?? '0') ?? 0.0;
+            cellText = pnl.toStringAsFixed(2);
+            break;
+          case 7: // Chg %
+            final pct = double.tryParse(holding.changeprofitLoss ?? '0') ?? 0.0;
+            cellText = '${pct >= 0 ? "+" : ""}${pct.toStringAsFixed(2)}%';
             break;
         }
 
@@ -493,25 +497,30 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     final color = _getCellColor(numValue, context);
     final baseStyle = _getTextStyle(context, color: color);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(pnlValue, textAlign: TextAlign.end, style: baseStyle),
-        Text(
-          '$percentValue%',
-          textAlign: TextAlign.end,
-          style: baseStyle.copyWith(
-            fontSize: 10,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
+    return Tooltip(
+      message: '$pnlValue ($percentValue%)',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(pnlValue, textAlign: TextAlign.end, style: baseStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            '$percentValue%',
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: baseStyle.copyWith(
+              fontSize: 10,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
+              fontWeight: MyntFonts.medium,
             ),
-            fontWeight: MyntFonts.medium,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -749,7 +758,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             setState(() {});
           },
           child: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   // dark: MyntColors.primary.withValues(alpha: 0.1),
@@ -769,7 +778,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             ),
             child: Icon(
               Icons.more_vert,
-              size: 18,
+              size: 16,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
@@ -839,6 +848,11 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             final bPnL = double.tryParse(b.profitLoss ?? '0') ?? 0;
             comparison = aPnL.compareTo(bPnL);
             break;
+          case 7: // Chg %
+            final aChg = double.tryParse(a.changeprofitLoss ?? '0') ?? 0;
+            final bChg = double.tryParse(b.changeprofitLoss ?? '0') ?? 0;
+            comparison = aChg.compareTo(bChg);
+            break;
         }
         return _sortAscending ? comparison : -comparison;
       });
@@ -873,7 +887,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
 
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
-          for (int i = 0; i < 7; i++) {
+          for (int i = 0; i < 8; i++) {
             columnWidths[i] = minWidths[i] ?? 100.0;
           }
 
@@ -881,42 +895,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
           final totalMinWidth = columnWidths.values
               .fold<double>(0.0, (sum, width) => sum + width);
 
-          // Step 3: If there's extra space, distribute it proportionally
-          // This prevents unnecessary horizontal scroll while using available space efficiently
+          // Step 3: If there's extra space, distribute equally across all columns
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
+            final extraPerColumn = extraSpace / 8;
 
-            // Define which columns can grow and their growth priorities
-            // Fund Name gets more growth, numeric columns get less
-            const fundNameGrowthFactor =
-                2.0; // Fund Name can grow 2x more than numeric
-            const numericGrowthFactor = 1.0;
-
-            // Calculate growth factors for each column
-            final growthFactors = <int, double>{};
-            double totalGrowthFactor = 0.0;
-
-            for (int i = 0; i < 7; i++) {
-              if (i == 0) {
-                // Column 0 is Fund Name
-                growthFactors[i] = fundNameGrowthFactor;
-                totalGrowthFactor += fundNameGrowthFactor;
-              } else {
-                // Columns 1-6 are numeric
-                growthFactors[i] = numericGrowthFactor;
-                totalGrowthFactor += numericGrowthFactor;
-              }
-            }
-
-            // Distribute extra space proportionally
-            if (totalGrowthFactor > 0) {
-              for (int i = 0; i < 7; i++) {
-                if (growthFactors[i]! > 0) {
-                  final extraForThisColumn =
-                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
-                }
-              }
+            for (int i = 0; i < 8; i++) {
+              columnWidths[i] = columnWidths[i]! + extraPerColumn;
             }
           } else if (totalMinWidth > availableWidth) {
             // Step 3b: If content exceeds available width, shrink proportionally
@@ -927,17 +912,18 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
               0: 120.0, // Fund Name (needs space for 3-dot menu)
               1: 60.0, // Units
               2: 70.0, // Avg NAV
-              3: 80.0, // Current NAV
-              4: 70.0, // Invested
-              5: 80.0, // Current Value
-              6: 70.0, // P&L
+              3: 70.0, // Cur NAV
+              4: 60.0, // Inv
+              5: 70.0, // Cur Val
+              6: 60.0, // P&L
+              7: 50.0, // Chg
             };
 
             // Calculate how much each column can shrink
             final shrinkableAmounts = <int, double>{};
             double totalShrinkable = 0.0;
 
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 8; i++) {
               final currentWidth = columnWidths[i]!;
               final absoluteMin = absoluteMinWidths[i] ?? 50.0;
               final shrinkable = currentWidth - absoluteMin;
@@ -953,7 +939,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             if (totalShrinkable > 0) {
               final shrinkRatio =
                   (excessWidth / totalShrinkable).clamp(0.0, 1.0);
-              for (int i = 0; i < 7; i++) {
+              for (int i = 0; i < 8; i++) {
                 if (shrinkableAmounts[i]! > 0) {
                   final shrinkAmount = shrinkableAmounts[i]! * shrinkRatio;
                   columnWidths[i] = columnWidths[i]! - shrinkAmount;
@@ -984,18 +970,20 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                     4: shadcn.FixedTableSize(columnWidths[4]!),
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
+                    7: shadcn.FixedTableSize(columnWidths[7]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
                         buildHeaderCell('Fund Name', 0),
                         buildHeaderCell('Units', 1, true),
                         buildHeaderCell('Avg NAV', 2, true),
-                        buildHeaderCell('Current NAV', 3, true),
-                        buildHeaderCell('Invested', 4, true),
-                        buildHeaderCell('Current Value', 5, true),
+                        buildHeaderCell('Cur NAV', 3, true),
+                        buildHeaderCell('Inv', 4, true),
+                        buildHeaderCell('Cur Val', 5, true),
                         buildHeaderCell('P&L', 6, true),
+                        buildHeaderCell('Chg', 7, true),
                       ],
                     ),
                   ],
@@ -1029,8 +1017,9 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                           4: shadcn.FixedTableSize(columnWidths[4]!),
                           5: shadcn.FixedTableSize(columnWidths[5]!),
                           6: shadcn.FixedTableSize(columnWidths[6]!),
+                          7: shadcn.FixedTableSize(columnWidths[7]!),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
+                        defaultRowHeight: const shadcn.FixedTableSize(40),
                         rows: [
                           // Data Rows
                           ...displayHoldings.asMap().entries.map((entry) {
@@ -1099,14 +1088,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   holding: holding,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      // holding.avgQty ?? '0',
-                                      (double.tryParse(
-                                                  holding.avgQty ?? '0') ??
-                                              0.0)
-                                          .toStringAsFixed(4),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (double.tryParse(holding.avgQty ?? '0') ?? 0.0).toStringAsFixed(4);
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                                 // Avg NAV - Make clickable for row tap
@@ -1117,13 +1105,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   holding: holding,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      (double.tryParse(
-                                                  holding.avgNav ?? '0') ??
-                                              0.0)
-                                          .toStringAsFixed(4),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (double.tryParse(holding.avgNav ?? '0') ?? 0.0).toStringAsFixed(4);
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                                 // Current NAV - Make clickable for row tap
@@ -1134,13 +1122,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   holding: holding,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      (double.tryParse(
-                                                  holding.curNav ?? '0') ??
-                                              0.0)
-                                          .toStringAsFixed(4),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (double.tryParse(holding.curNav ?? '0') ?? 0.0).toStringAsFixed(4);
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                                 // Invested - Make clickable for row tap
@@ -1151,14 +1139,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   holding: holding,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      (double.tryParse(
-                                                  holding.investedValue ??
-                                                      '0') ??
-                                              0.0)
-                                          .toStringAsFixed(2),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (double.tryParse(holding.investedValue ?? '0') ?? 0.0).toStringAsFixed(2);
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                                 // Current Value - Make clickable for row tap
@@ -1169,16 +1156,16 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   holding: holding,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      (double.tryParse(holding.currentValue ??
-                                                  '0') ??
-                                              0.0)
-                                          .toStringAsFixed(2),
-                                      style: _getTextStyle(context),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final value = (double.tryParse(holding.currentValue ?? '0') ?? 0.0).toStringAsFixed(2);
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
-                                // P&L with percentage - Make clickable for row tap
+                                // P&L
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 6,
@@ -1186,17 +1173,34 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   holding: holding,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: _buildPnLWithPercentage(
-                                      (double.tryParse(holding.profitLoss ??
-                                                  '0') ??
-                                              0.0)
-                                          .toStringAsFixed(2),
-                                      (double.tryParse(
-                                                  holding.changeprofitLoss ??
-                                                      '0') ??
-                                              0.0)
-                                          .toStringAsFixed(2),
-                                    ),
+                                    child: Builder(builder: (context) {
+                                      final pnlNum = double.tryParse(holding.profitLoss ?? '0') ?? 0.0;
+                                      final value = pnlNum.toStringAsFixed(2);
+                                      final color = _getCellColor(pnlNum, context);
+                                      return Tooltip(
+                                        message: value,
+                                        child: Text(value, style: _getTextStyle(context, color: color), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
+                                  ),
+                                ),
+                                // Chg %
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 7,
+                                  alignRight: true,
+                                  holding: holding,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Builder(builder: (context) {
+                                      final pctNum = double.tryParse(holding.changeprofitLoss ?? '0') ?? 0.0;
+                                      final displayValue = '${pctNum >= 0 ? "+" : ""}${pctNum.toStringAsFixed(2)}%';
+                                      final color = _getCellColor(pctNum, context);
+                                      return Tooltip(
+                                        message: displayValue,
+                                        child: Text(displayValue, style: _getTextStyle(context, color: color).copyWith(fontSize: 12, fontWeight: FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      );
+                                    }),
                                   ),
                                 ),
                               ],
