@@ -319,7 +319,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
         child: shadcn.Card(
           padding: EdgeInsets.all(10),
-          child: Row(
+          child: Container(
+            child: Row(
               children: [
                 // Icon in circle
                 // if (icon != null)
@@ -416,43 +417,47 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         final absReturnPercent =
             _formatValue(summary?.absReturnPercent?.toString());
 
-        final cards = [
-          _buildStatCard(
-            label: 'Invested',
-            value: investedValue.toIndianRupee(),
-            valueColor: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
-            ),
-            theme: theme,
-          ),
-          _buildStatCard(
-            label: 'Current Value',
-            value: currentValue.toIndianRupee(),
-            valueColor: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
-            ),
-            theme: theme,
-          ),
-          _buildStatCard(
-            label: 'Returns',
-            value: absReturnValue.toIndianRupee(),
-            percentage: absReturnPercent,
-            valueColor: getValueColor(context, absReturnValue),
-            theme: theme,
-          ),
-        ];
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 800 ? 3 : 2;
 
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (int i = 0; i < cards.length; i++) ...[
-                if (i > 0) const SizedBox(width: 12),
-                Expanded(child: cards[i]),
+            return GridView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                mainAxisExtent: 90, // Fixed height - matches equity stats
+              ),
+              children: [
+                _buildStatCard(
+                  label: 'Invested',
+                  value: investedValue.toIndianRupee(),
+                  valueColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
+                  theme: theme,
+                ),
+                _buildStatCard(
+                  label: 'Current Value',
+                  value: currentValue.toIndianRupee(),
+                  valueColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
+                  theme: theme,
+                ),
+                _buildStatCard(
+                  label: 'Returns',
+                  value: absReturnValue.toIndianRupee(),
+                  percentage: absReturnPercent,
+                  valueColor: getValueColor(context, absReturnValue),
+                  theme: theme,
+                ),
               ],
             ],
           ),

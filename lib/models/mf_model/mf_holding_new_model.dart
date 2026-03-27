@@ -45,7 +45,12 @@ class Data {
   String? profitLoss;
   String? changeprofitLoss;
   String? minRedemptionQty;
-  String? sCHEMECODE; 
+  String? sCHEMECODE;
+  String? minimumPurchaseAmount;
+  String? aUM;
+  String? type;
+  String? subType;
+  String? aMCCode;
   List<Transactions>? transactions;
 
   Data(
@@ -81,6 +86,11 @@ class Data {
     sCHEMECODE= json["Scheme_Code"].toString();
 
     minRedemptionQty=json["Minimum_Redemption_Qty"].toString();
+    minimumPurchaseAmount=json["Minimum_Purchase_Amount"].toString();
+    aUM=json["AUM"].toString();
+    type=json["Type"].toString();
+    subType=json["SubType"].toString();
+    aMCCode=json["AMC_Code"].toString();
     if (json['transactions'] != null) {
       transactions = <Transactions>[];
       json['transactions'].forEach((v) {
@@ -105,6 +115,11 @@ class Data {
     data['profit_loss'] = profitLoss;
     data['Minimum_Redemption_Qty'] = minRedemptionQty;
     data['Scheme_Code'] = sCHEMECODE;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['AUM'] = aUM;
+    data['Type'] = type;
+    data['SubType'] = subType;
+    data['AMC_Code'] = aMCCode;
     data['changeprofitLoss'] = changeprofitLoss;
     
     

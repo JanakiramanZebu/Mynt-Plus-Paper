@@ -2281,7 +2281,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
   setmfapicalls(context) async {
     ref.read(mfProvider).fetchnewMFBestList();
-    ref.read(mfProvider).fetchMFCategoryList("Z", "Z");
+    // ref.read(mfProvider).fetchMFCategoryList("Z", "Z");
     ref.read(mfProvider).fetchmfallcatnew();
     ref.read(mfProvider).fetchmfNFO(context);
     // ref.read(mfProvider).fetchMFWatchlist("", "", context, true, "");

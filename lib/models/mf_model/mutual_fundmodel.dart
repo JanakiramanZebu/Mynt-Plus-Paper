@@ -93,6 +93,23 @@ class MutualFundList {
   String? corpos;
   bool? isAdd;
   String? schemegroupName;
+  String? iDCWSchemeCode;
+  String? iDCWMinimumPurchaseAmount;
+  String? iDCWAdditionalPurchaseAmount;
+  String? iDCWMaximumPurchaseAmount;
+  String? iDCWL1SchemeCode;
+  String? iDCWL1MinimumPurchaseAmount;
+  String? iDCWL1MaximumPurchaseAmount;
+  String? reinvSchemeCode;
+  String? reinvMinimumPurchaseAmount;
+  String? reinvAdditionalPurchaseAmount;
+  String? reinvMaximumPurchaseAmount;
+  String? reinvL1SchemeCode;
+  String? reinvL1MinimumPurchaseAmount;
+  String? reinvL1MaximumPurchaseAmount;
+  String? l1SchemeCode;
+  String? l1MinimumPurchaseAmount;
+  String? l1MaximumPurchaseAmount;
 
   MutualFundList(
       {this.uniqueNo,
@@ -159,7 +176,12 @@ class MutualFundList {
       this.nAVSchemeType,
       this.isAdd,
       this.schemegroupName,
-      this.oneYearData});
+      this.oneYearData,
+      this.iDCWSchemeCode,
+      this.iDCWL1SchemeCode,
+      this.reinvSchemeCode,
+      this.reinvL1SchemeCode,
+      this.l1SchemeCode});
 
   MutualFundList.fromJson(Map<String, dynamic> json) {
     uniqueNo = json['Unique_No'];
@@ -229,6 +251,33 @@ class MutualFundList {
     subtype = json['SubType'];
     corpos = json["corpus"];
     isAdd = json['isAdd'] ?? false;
+    if (json['IDCW'] is Map && (json['IDCW'] as Map).isNotEmpty) {
+      iDCWSchemeCode = json['IDCW']['Scheme_Code'];
+      iDCWMinimumPurchaseAmount = json['IDCW']['Minimum_Purchase_Amount'];
+      iDCWAdditionalPurchaseAmount = json['IDCW']['Additional_Purchase_Amount'];
+      iDCWMaximumPurchaseAmount = json['IDCW']['Maximum_Purchase_Amount'];
+      if (json['IDCW']['L1'] is Map && (json['IDCW']['L1'] as Map).isNotEmpty) {
+        iDCWL1SchemeCode = json['IDCW']['L1']['Scheme_Code'];
+        iDCWL1MinimumPurchaseAmount = json['IDCW']['L1']['Minimum_Purchase_Amount'];
+        iDCWL1MaximumPurchaseAmount = json['IDCW']['L1']['Maximum_Purchase_Amount'];
+      }
+    }
+    if (json['Reinv'] is Map && (json['Reinv'] as Map).isNotEmpty) {
+      reinvSchemeCode = json['Reinv']['Scheme_Code'];
+      reinvMinimumPurchaseAmount = json['Reinv']['Minimum_Purchase_Amount'];
+      reinvAdditionalPurchaseAmount = json['Reinv']['Additional_Purchase_Amount'];
+      reinvMaximumPurchaseAmount = json['Reinv']['Maximum_Purchase_Amount'];
+      if (json['Reinv']['L1'] is Map && (json['Reinv']['L1'] as Map).isNotEmpty) {
+        reinvL1SchemeCode = json['Reinv']['L1']['Scheme_Code'];
+        reinvL1MinimumPurchaseAmount = json['Reinv']['L1']['Minimum_Purchase_Amount'];
+        reinvL1MaximumPurchaseAmount = json['Reinv']['L1']['Maximum_Purchase_Amount'];
+      }
+    }
+    if (json['L1'] is Map && (json['L1'] as Map).isNotEmpty) {
+      l1SchemeCode = json['L1']['Scheme_Code'];
+      l1MinimumPurchaseAmount = json['L1']['Minimum_Purchase_Amount'];
+      l1MaximumPurchaseAmount = json['L1']['Maximum_Purchase_Amount'];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -300,6 +349,41 @@ class MutualFundList {
     data['SubType'] = subtype;
     data['corpus'] = corpos;
     data['isAdd'] = isAdd;
+    if (iDCWSchemeCode != null) {
+      data['IDCW'] = {
+        'Scheme_Code': iDCWSchemeCode,
+        'Minimum_Purchase_Amount': iDCWMinimumPurchaseAmount,
+        'Additional_Purchase_Amount': iDCWAdditionalPurchaseAmount,
+        'Maximum_Purchase_Amount': iDCWMaximumPurchaseAmount,
+        if (iDCWL1SchemeCode != null)
+          'L1': {
+            'Scheme_Code': iDCWL1SchemeCode,
+            'Minimum_Purchase_Amount': iDCWL1MinimumPurchaseAmount,
+            'Maximum_Purchase_Amount': iDCWL1MaximumPurchaseAmount,
+          },
+      };
+    }
+    if (reinvSchemeCode != null) {
+      data['Reinv'] = {
+        'Scheme_Code': reinvSchemeCode,
+        'Minimum_Purchase_Amount': reinvMinimumPurchaseAmount,
+        'Additional_Purchase_Amount': reinvAdditionalPurchaseAmount,
+        'Maximum_Purchase_Amount': reinvMaximumPurchaseAmount,
+        if (reinvL1SchemeCode != null)
+          'L1': {
+            'Scheme_Code': reinvL1SchemeCode,
+            'Minimum_Purchase_Amount': reinvL1MinimumPurchaseAmount,
+            'Maximum_Purchase_Amount': reinvL1MaximumPurchaseAmount,
+          },
+      };
+    }
+    if (l1SchemeCode != null) {
+      data['L1'] = {
+        'Scheme_Code': l1SchemeCode,
+        'Minimum_Purchase_Amount': l1MinimumPurchaseAmount,
+        'Maximum_Purchase_Amount': l1MaximumPurchaseAmount,
+      };
+    }
     return data;
   }
 }
