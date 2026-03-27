@@ -16,6 +16,7 @@ import 'package:mynt_plus/models/mf_model/sip_mf_list_model.dart';
 import '../api/core/api_core.dart';
 import '../models/mf_model/best_mf_list_model.dart';
 import '../models/mf_model/best_mf_model.dart';
+import '../models/mf_model/client_bank_details_model.dart';
 import '../models/mf_model/mandate_detail_model.dart';
 import '../models/mf_model/mf_all_payment_model.dart';
 import '../models/mf_model/mf_category_list_model.dart';
@@ -842,6 +843,19 @@ mixin MutualFundApi on ApiCore {
           }));
       final json = jsonDecode((res.body));
       return MandateDetailModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<ClientBankDetailsResponse> getAllClientBankDetails() async {
+    try {
+      final uri = Uri.parse(apiLinks.allClientBankDetails);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"ClientCode": prefs.clientId}));
+      final json = jsonDecode(res.body);
+      return ClientBankDetailsResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

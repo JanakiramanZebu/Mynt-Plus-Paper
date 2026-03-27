@@ -246,10 +246,10 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get postRollingReturn => "$dashBoardURL/mf/postRollingReturn";
   String get bankDetail => "$dashBoardURL/mf/client_bank_details";
   String get mfSip => "$dashBoardURL/mf/sip_values";
-  String get mandateDetail => "$dashBoardURL/mf/mandate_details";
+  String get mandateDetail => "$newvenketmfurl/order/mandate_details";
   String get lumpsumOrder => "$dashBoardURL/mf/lumsum_purchase";
   String get lumpsumOrderbook => "$dashBoardURL/mf/mf_orderbook";
-  String get mandatecreate => "$dashBoardURL/mf/mandate_creation";
+  String get mandatecreate => "$newvenketmfurl/mandate_creation";
   String get mfXSiporder => "$dashBoardURL/mf/xsip_purchase";
   String get mfXsipcancleRes => "$dashBoardURL/mf/reasons";
   String get mfxsipcancel => "$dashBoardURL/mf/xsip_cancel";
@@ -261,7 +261,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
-  String get bankcheck => '$mainfund/bank_check';
+  // String get bankcheck => '$mainfund/bank_check';
 
   ///withdraw
   String get fundUpiIdView => 'https://fundapi.mynt.in/withdraw/upi_id_view';
@@ -362,7 +362,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get cmrdownload => 'https://rekycbe.mynt.in/report/cmr';
 
 //mf new3
-  String get newvenketmfurl => "http://192.168.5.61.:5003";
+  String get newvenketmfurl => "https://v3.mynt.in/mfapi";
   
   String get mfholdingsnewapi => "$newvenketmfurl/order/holdings";
   String get mfAllHoldingsApi => "$newvenketmfurl/order/All_holdings";
@@ -389,6 +389,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get mfsippausenew => "$newvenketmfurl/order/xsip_pause";
   String get mfredemptionenew => "$newvenketmfurl/order/PlaceRedeemOrder";
   String get mandatecreatenew => "$newvenketmfurl/order/mandate_creation";
+  String get allClientBankDetails => "$newvenketmfurl/order/all_client_bank_details";
 
   String get mfbasketanalysis => "$dashBoardURL/mfbasket/collections/portfolio_store";
   String get mfbaskbacktest => "$dashBoardURL/mfbasket/collections/portfolio_analysis";

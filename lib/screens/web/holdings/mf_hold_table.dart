@@ -60,6 +60,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
+import '../../../../provider/thems.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
@@ -588,23 +589,25 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     // Get screen dimensions
     final screenSize = MediaQuery.of(context).size;
     final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
-    final dialogHeight = screenSize.height * 0.65;
 
     // Show order dialog
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: SizedBox(
-          width: dialogWidth,
-          height: dialogHeight,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+      builder: (context) {
+        final isDark = ref.read(themeProvider).isDarkMode;
+        return Dialog(
+          backgroundColor: isDark
+              ? MyntColors.backgroundColorDark
+              : MyntColors.backgroundColor,
+          elevation: 0,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: SizedBox(
+            width: dialogWidth,
             child: MFOrderScreenWeb(mfData: mfItem, isAdditional: true),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

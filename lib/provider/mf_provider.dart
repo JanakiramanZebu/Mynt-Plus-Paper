@@ -188,6 +188,9 @@ class MFProvider extends DefaultChangeNotifier {
   List<MandateDetails>? _mandateData = [];
   List<MandateDetails>? get mandateData => _mandateData;
 
+  bool _mandateDataLoaded = false;
+  bool get mandateDataLoaded => _mandateDataLoaded;
+
   final List<MutualFundList> _mutualFundList = [];
   List<MutualFundList>? get mutualFundList => _mutualFundList;
 
@@ -828,6 +831,8 @@ class MFProvider extends DefaultChangeNotifier {
   TextEditingController invDuration = TextEditingController();
   String _freqName = "";
   String _dates = "1";
+  int _sipMonth = DateTime.now().month;
+  int get sipMonth => _sipMonth;
   String get freqName => _freqName;
   final String _sipreason = "";
   String get sipreason => _sipreason;
@@ -2096,7 +2101,7 @@ class MFProvider extends DefaultChangeNotifier {
   Future fetchMFMandateDetail() async {
     try {
       _investloader = true;
-
+      _mandateDataLoaded = false;
       _mandateData = [];
       _mandateDetailModel = await api.getMandateDetail();
 
@@ -2117,7 +2122,7 @@ class MFProvider extends DefaultChangeNotifier {
       debugPrint("$e");
     } finally {
       _investloader = false;
-
+      _mandateDataLoaded = true;
       notifyListeners();
     }
   }
@@ -2887,7 +2892,6 @@ class MFProvider extends DefaultChangeNotifier {
         //     "",
         //     upiId.text,
         //     schemecode);
-        Navigator.pop(context);
         notifyListeners();
       } else {
         // toggleLoadingOn(false);
@@ -2895,19 +2899,18 @@ class MFProvider extends DefaultChangeNotifier {
         warningMessage(context, "${_xsipOrderResponces!.remarks}");
         _investloader = false;
 
-        Navigator.pop(context);
-
         notifyListeners();
       }
       fetchmfsiplist();
       fetchMfOrderbook(context);
     } catch (e) {
-      log("Failed to Place X-sip :: ${e.toString()}");
+      debugPrint("Failed to Place X-sip :: ${e.toString()}");
+      _investloader = false;
       toggleLoadingOn(false);
       _loadingMessage = null;
       notifyListeners();
-      Navigator.pop(context);
     } finally {
+      _investloader = false;
       toggleLoadingOn(false);
       _loadingMessage = null;
       notifyListeners();
@@ -3192,6 +3195,15 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  changeInstallmentDate(int day, int month, int year) {
+    _dates = day.toString();
+    _sipMonth = month;
+    _startDate = "$day/$month/$year";
+    _endsDate = DateTime(year + 30, month, day - 1);
+    _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
+    notifyListeners();
+  }
+
   datePickerStart(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
         currentDate: _pickedStartDate ?? _curDate,
@@ -3207,6 +3219,12 @@ class MFProvider extends DefaultChangeNotifier {
           _pickedStartDate!.day - 1);
       _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
     }
+    notifyListeners();
+  }
+
+  setEndDate(DateTime date) {
+    _endsDate = date;
+    _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
     notifyListeners();
   }
 
@@ -3456,10 +3474,23 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  bool isValidUpiId(dynamic mfData, String val) {
-    // Debug print to see maximum purchase amount
-    print("Maximum Purchase Amount = ${mfData.maximumPurchaseAmount}");
-    print("Minimum Purchase Amount = ${mfData.minimumPurchaseAmount}");
+  bool isValidUpiId(dynamic mfData, String val, {String schemeType = "Growth"}) {
+    // Resolve min/max based on selected scheme type
+    String? resolvedMin;
+    String? resolvedMax;
+    if (schemeType == "Divided Payout") {
+      // IDCW Payout scheme
+      resolvedMin = mfData.iDCWMinimumPurchaseAmount ?? mfData.minimumPurchaseAmount;
+      resolvedMax = mfData.iDCWMaximumPurchaseAmount ?? mfData.maximumPurchaseAmount;
+    } else if (schemeType == "Divided Reinvest") {
+      // Reinvestment scheme
+      resolvedMin = mfData.reinvMinimumPurchaseAmount ?? mfData.minimumPurchaseAmount;
+      resolvedMax = mfData.reinvMaximumPurchaseAmount ?? mfData.maximumPurchaseAmount;
+    } else {
+      // Growth — base scheme
+      resolvedMin = mfData.minimumPurchaseAmount;
+      resolvedMax = mfData.maximumPurchaseAmount;
+    }
 
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
@@ -3478,16 +3509,15 @@ class MFProvider extends DefaultChangeNotifier {
         if (invAmt.text.isEmpty) {
           invAmtError = "Please enter Investment amount";
         } else if (double.parse(invAmt.text) <
-            double.parse(mfData.minimumPurchaseAmount!)) {
+            double.parse(resolvedMin!)) {
           invAmtError =
-              "Investment amount should not be less than ${double.parse(mfData.minimumPurchaseAmount!).toStringAsFixed(2)}";
-        } else if (mfData.maximumPurchaseAmount != null &&
-            mfData.maximumPurchaseAmount!.isNotEmpty &&
-            double.parse(mfData.maximumPurchaseAmount!) > 0 &&
-            double.parse(invAmt.text) >
-                double.parse(mfData.maximumPurchaseAmount!)) {
+              "Investment amount should not be less than ${double.parse(resolvedMin).toStringAsFixed(2)}";
+        } else if (resolvedMax != null &&
+                   resolvedMax.isNotEmpty &&
+                   double.parse(resolvedMax) > 0 &&
+                   double.parse(invAmt.text) > double.parse(resolvedMax)) {
           invAmtError =
-              "Investment amount should not be more than ${double.parse(mfData.maximumPurchaseAmount!).toStringAsFixed(2)}";
+              "Investment amount should not be more than ${double.parse(resolvedMax).toStringAsFixed(2)}";
         } else {
           invAmtError = "";
         }
@@ -3495,17 +3525,16 @@ class MFProvider extends DefaultChangeNotifier {
         if (invAmt.text.isEmpty) {
           invAmtError = "Please enter Investment amount";
         } else if (double.parse(invAmt.text) <
-                double.parse(mfData.minimumPurchaseAmount!) &&
+                double.parse(resolvedMin!) &&
             isInitalPay) {
           invAmtError =
-              "Investment amount should not be less than ${double.parse(mfData.minimumPurchaseAmount!).toStringAsFixed(2)}";
-        } else if (mfData.maximumPurchaseAmount != null &&
-            mfData.maximumPurchaseAmount!.isNotEmpty &&
-            double.parse(mfData.maximumPurchaseAmount!) > 0 &&
-            double.parse(invAmt.text) >
-                double.parse(mfData.maximumPurchaseAmount!)) {
+              "Investment amount should not be less than ${double.parse(resolvedMin).toStringAsFixed(2)}";
+        } else if (resolvedMax != null &&
+                   resolvedMax.isNotEmpty &&
+                   double.parse(resolvedMax) > 0 &&
+                   double.parse(invAmt.text) > double.parse(resolvedMax)) {
           invAmtError =
-              "Investment amount should not be more than ${double.parse(mfData.maximumPurchaseAmount!).toStringAsFixed(2)}";
+              "Investment amount should not be more than ${double.parse(resolvedMax).toStringAsFixed(2)}";
         } else {
           invAmtError = "";
         }
@@ -3513,16 +3542,15 @@ class MFProvider extends DefaultChangeNotifier {
         if (installmentAmt.text.isEmpty) {
           installmentAmtError = "Please enter Installment amount";
         } else if (double.parse(installmentAmt.text) <
-            double.parse(mfData.minimumPurchaseAmount!)) {
+            double.parse(resolvedMin!)) {
           installmentAmtError =
-              "Installment amount should not be less than ${double.parse(mfData.minimumPurchaseAmount!).toStringAsFixed(2)}";
-        } else if (mfData.maximumPurchaseAmount != null &&
-            mfData.maximumPurchaseAmount!.isNotEmpty &&
-            double.parse(mfData.maximumPurchaseAmount!) > 0 &&
-            double.parse(installmentAmt.text) >
-                double.parse(mfData.maximumPurchaseAmount!)) {
+              "Installment amount should not be less than ${double.parse(resolvedMin).toStringAsFixed(2)}";
+        } else if (resolvedMax != null &&
+                   resolvedMax.isNotEmpty &&
+                   double.parse(resolvedMax) > 0 &&
+                   double.parse(installmentAmt.text) > double.parse(resolvedMax)) {
           installmentAmtError =
-              "Installment amount should not be more than ${double.parse(mfData.maximumPurchaseAmount!).toStringAsFixed(2)}";
+              "Installment amount should not be more than ${double.parse(resolvedMax).toStringAsFixed(2)}";
         } else {
           installmentAmtError = "";
         }

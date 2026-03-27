@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../../sharedWidget/list_divider.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
 
 class CreateMandateDialogue extends ConsumerStatefulWidget {
   const CreateMandateDialogue({super.key});
@@ -20,19 +19,26 @@ class CreateMandateDialogue extends ConsumerStatefulWidget {
 }
 
 class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
+  final TextEditingController _amountController = TextEditingController();
+  bool _amountTouched = false;
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(mfProvider).getCurrentDate();
     });
-
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final fund = ref.watch(fundProvider);
     final mfOrder = ref.watch(mfProvider);
 
     return SafeArea(
@@ -42,334 +48,442 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
         ),
         child: Container(
           decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(12),
-           color: theme.isDarkMode ? MyntColors.backgroundColorDark : colors.colorWhite,
-           border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? MyntColors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : MyntColors.textWhite,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? MyntColors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : MyntColors.textWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? MyntColors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : MyntColors.textWhite,
-                                    ),
-                                  ),
-      
-           
+            borderRadius: BorderRadius.circular(8),
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
+            border: Border.all(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark, light: MyntColors.divider),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Title
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextWidget.titleText(
-                      text: "Create Mandate",
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                      theme: theme.isDarkMode,
-                      fw: 1,
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        onTap: () async {
-                          await Future.delayed(const Duration(milliseconds: 150));
-                          Navigator.pop(context);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.15)
-                            : Colors.black.withOpacity(0.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.08)
-                            : Colors.black.withOpacity(0.08),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Icon(
-                            Icons.close_rounded,
-                            size: 22,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const ListDivider(),
+              // Header
+              _buildHeader(context, theme),
+
+              // Form fields
               Flexible(
                 child: SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 16),
-                      TextWidget.subText(
-                        text: "Amount",
-                        color: theme.isDarkMode ? colors.textPrimaryDark   : colors.textPrimaryLight,
-                        theme: theme.isDarkMode,
-                        fw: 0,
+                      // Amount field
+                      Text(
+                        'Amount',
+                        style: MyntWebTextStyles.body(context,
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary)),
                       ),
-                      Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          height: 44,
-                          child: CustomTextFormField(
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.start,
-                              fillColor: theme.isDarkMode
-                                  ? colors.darkGrey
-                                  : const Color(0xffF1F3F8),
-                              hintText: '0',
-                              hintStyle: TextWidget.textStyle(
-                                color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                fontSize: 14,
-                                theme: theme.isDarkMode,
-                                fw: 0,
-                              ),
-                              inputFormate: [
-                                FilteringTextInputFormatter.digitsOnly
-                              ],
-                              style: TextWidget.textStyle(
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fontSize: 16,
-                                theme: theme.isDarkMode,
-                              ),
-                              textCtrl: mfOrder.installmentAmt,
-                              onChanged: (value) {
-                                setState(() {
-                                  fund.isValidUpiId();
-                                });
-                              })),
-                      // Error message below amount field
-                      if (mfOrder.installmentAmt.text.trim().isEmpty)
-                        TextWidget.paraText(
-                          text: "Please enter an amount",
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                          fw: 0,
-                          maxLines: 1,
-                          textOverflow: TextOverflow.ellipsis,
-                          align: TextAlign.start,
-                        ),
-                      // else if (double.tryParse(mfOrder.installmentAmt.text) != null &&
-                      //     double.parse(mfOrder.installmentAmt.text) < 100)
-                      //   TextWidget.paraText(
-                      //     text: "Amount must be at least 100",
-                      //     theme: theme.isDarkMode,
-                      //     color: colors.loss,
-                      //   ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextWidget.subText(
-                                  text: "Start Date",
-                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 0,
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 8),
-                                  height: 44,
-                                  child: InkWell(
-                                    onTap: () async {
-                                      await mfOrder.datePickerStart(context);
-                                      setState(() {});
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffF1F3F8),
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                          color:  theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10, horizontal: 10),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: TextWidget.subText(
-                                                text: mfOrder.startDate,
-                                                theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                              ),
-                                            ),
-                                            Icon(
-                                              Icons.calendar_today,
-                                              size: 20,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 22),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextWidget.subText(
-                                  text: "End Date",
-                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 0,
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 8),
-                                  height: 44,
-                                  child: InkWell(
-                                    onTap: () async {
-                                      await mfOrder.datePickerEnd(context);
-                                      setState(() {});
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffF1F3F8),
-                                        borderRadius: BorderRadius.circular(5),
-                                        border: Border.all(
-                                        color:  theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10, horizontal: 10),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: TextWidget.subText(
-                                                text: mfOrder.endDate,
-                                                theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                              ),
-                                            ),
-                                            Icon(
-                                              Icons.calendar_today,
-                                              size: 20,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                      const SizedBox(height: 10),
+                      MyntFormTextField(
+                        controller: _amountController,
+                        placeholder: 'Enter amount',
+                        height: 40,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
                         ],
+                        textStyle: MyntWebTextStyles.title(
+                          context,
+                          fontWeight: MyntFonts.medium,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textPrimary,
+                        ),
+                        leadingWidget: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SvgPicture.asset(
+                            assets.ruppeIcon,
+                            colorFilter: ColorFilter.mode(
+                              resolveThemeColor(context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          setState(() {});
+                        },
                       ),
+                      if (_amountTouched &&
+                          _amountController.text.trim().isEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Please enter an amount',
+                          style: MyntWebTextStyles.para(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+
+                      // Start Date & End Date row
+                      _buildDateRow(context, theme, mfOrder),
                       const SizedBox(height: 24),
                     ],
                   ),
                 ),
               ),
-              // Action buttons
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (mfOrder.installmentAmt.text.trim().isEmpty) {
-                            return; // Error is shown inline below the field
-                          }
-      
-                          int installmentAmount =
-                              double.parse(mfOrder.installmentAmt.text).toInt();
-                          if (installmentAmount >= 100) {
-                            await mfOrder.fetchCreateMandate(
-                                context,
-                                double.parse(mfOrder.installmentAmt.text)
-                                    .toInt()
-                                    .toString(),
-                                mfOrder.startDate,
-                                mfOrder.endDate);
-                            Navigator.pop(context);
-                          }
-                          // Error for low amount is shown inline below the field
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          minimumSize: const Size(0, 45), // width, height
-      
-                          backgroundColor: theme.isDarkMode
-                              ? MyntColors.secondary
-                              : MyntColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
+
+              // Footer
+              _buildFooter(context, theme, mfOrder),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ThemesProvider theme) {
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Create Mandate',
+            style: MyntWebTextStyles.title(
+              context,
+              fontWeight: MyntFonts.semiBold,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(
+              Icons.close,
+              size: 20,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.iconSecondaryDark,
+                  light: MyntColors.iconSecondary),
+            ),
+            splashRadius: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectStartDate(MFProvider mfOrder) async {
+    try {
+      final isDark = ref.read(themeProvider).isDarkMode;
+      final now = DateTime.now();
+      final initialDate = mfOrder.pickedStartDate ?? now;
+      final primary = isDark ? MyntColors.primaryDark : MyntColors.primary;
+      final bg = isDark ? MyntColors.cardDark : MyntColors.card;
+      final text = isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary;
+
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: initialDate,
+        firstDate: now,
+        lastDate: DateTime(now.year + 200),
+        builder: (dialogContext, child) => Theme(
+          data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+            colorScheme:
+                (isDark ? const ColorScheme.dark() : const ColorScheme.light())
+                    .copyWith(
+              primary: primary,
+              onPrimary: Colors.white,
+              surface: bg,
+              onSurface: text,
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: bg,
+              surfaceTintColor: Colors.transparent,
+              headerBackgroundColor: primary,
+              headerForegroundColor: Colors.white,
+              dividerColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: primary),
+            ),
+          ),
+          child: child!,
+        ),
+      );
+      if (picked != null && mounted) {
+        mfOrder.changeInstallmentDate(
+            picked.day, picked.month, picked.year);
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Date picker error: $e');
+    }
+  }
+
+  Future<void> _selectEndDate(MFProvider mfOrder) async {
+    try {
+      final isDark = ref.read(themeProvider).isDarkMode;
+      final now = DateTime.now();
+      final primary = isDark ? MyntColors.primaryDark : MyntColors.primary;
+      final bg = isDark ? MyntColors.cardDark : MyntColors.card;
+      final text = isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary;
+
+      final firstAllowed = now.add(const Duration(days: 3));
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: firstAllowed,
+        firstDate: firstAllowed,
+        lastDate: DateTime(now.year + 200),
+        builder: (dialogContext, child) => Theme(
+          data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+            colorScheme:
+                (isDark ? const ColorScheme.dark() : const ColorScheme.light())
+                    .copyWith(
+              primary: primary,
+              onPrimary: Colors.white,
+              surface: bg,
+              onSurface: text,
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: bg,
+              surfaceTintColor: Colors.transparent,
+              headerBackgroundColor: primary,
+              headerForegroundColor: Colors.white,
+              dividerColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: primary),
+            ),
+          ),
+          child: child!,
+        ),
+      );
+      if (picked != null && mounted) {
+        mfOrder.setEndDate(picked);
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Date picker error: $e');
+    }
+  }
+
+  Widget _buildDateRow(
+      BuildContext context, ThemesProvider theme, MFProvider mfOrder) {
+    final hasStartDate = mfOrder.startDate.isNotEmpty;
+    final hasEndDate = mfOrder.endDate.isNotEmpty;
+
+    return Row(
+      children: [
+        // Start Date
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Start Date',
+                style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.medium,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary)),
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () => _selectStartDate(mfOrder),
+                borderRadius: BorderRadius.circular(5),
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.inputBgDark,
+                        light: const Color(0xfff5f5f5)),
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(
+                      color: isDarkMode(context)
+                          ? MyntColors.primaryDark
+                          : MyntColors.primary,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          hasStartDate ? mfOrder.startDate : 'Select date',
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: hasStartDate
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary)
+                                : resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
                           ),
                         ),
-                        // padding: const EdgeInsets.symmetric(vertical: 12)),
-                        child: mfOrder.loading == true
-                            ? const SizedBox(
-                                height: 15,
-                                width: 15,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Color.fromARGB(99, 48, 48, 48)),
-                                  backgroundColor:
-                                      Color.fromARGB(255, 255, 255, 255),
-                                ),
-                              )
-                            : TextWidget.subText(
-                                text: "Submit",
-                                color: colors.colorWhite,
-                                theme: theme.isDarkMode,
-                                fw: 2,
-                              ),
                       ),
-                    ),
-                  ],
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 16,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
+        ),
+        const SizedBox(width: 16),
+        // End Date
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'End Date',
+                style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.medium,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary)),
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () => _selectEndDate(mfOrder),
+                borderRadius: BorderRadius.circular(5),
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.inputBgDark,
+                        light: const Color(0xfff5f5f5)),
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(
+                      color: isDarkMode(context)
+                          ? MyntColors.primaryDark
+                          : MyntColors.primary,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          hasEndDate ? mfOrder.endDate : 'Select date',
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: hasEndDate
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary)
+                                : resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 16,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter(
+      BuildContext context, ThemesProvider theme, MFProvider mfOrder) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
+          ),
+        ),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 40,
+        child: ElevatedButton(
+          onPressed: () async {
+            if (_amountController.text.trim().isEmpty) {
+              setState(() => _amountTouched = true);
+              return;
+            }
+
+            int installmentAmount =
+                double.parse(_amountController.text).toInt();
+            if (installmentAmount >= 100) {
+              await mfOrder.fetchCreateMandate(
+                  context,
+                  double.parse(_amountController.text)
+                      .toInt()
+                      .toString(),
+                  mfOrder.startDate,
+                  mfOrder.endDate);
+              Navigator.pop(context);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: theme.isDarkMode
+                ? MyntColors.secondary
+                : MyntColors.primary,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5)),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            elevation: 0,
+          ),
+          child: mfOrder.loading == true
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  'Submit',
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: MyntColors.backgroundColor,
+                  ),
+                ),
         ),
       ),
     );
