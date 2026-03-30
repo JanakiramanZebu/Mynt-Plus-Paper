@@ -1291,12 +1291,28 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
 
   // ─── Settings Dialog ──────────────────────────────────────────────
 
-  void _showSettingsDialog() {
-    showDialog(
+  void _showSettingsDialog() async {
+    final newSymbolIndex = await showDialog<int?>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (_) => const _ScalperSettingsDialog(),
     );
+
+    // If the user changed the default symbol, do a full tab switch
+    // (same flow as tapping a tab — updates charts + option chain)
+    if (newSymbolIndex != null && mounted) {
+      final gen = ++_switchGeneration;
+      _hasLoadedOptionChain = false;
+
+      final loadFuture = ref.read(scalperProvider).setSelectedIndex(newSymbolIndex, context);
+      _updateIndexChart();
+
+      await loadFuture;
+      if (_switchGeneration != gen) return;
+      if (ref.read(scalperProvider).selectedExpiry != null) {
+        await _loadOptionChain();
+      }
+    }
   }
 
   /// Index chart panel (center) with card styling matching option panels
@@ -1723,7 +1739,10 @@ class _ScalperSettingsDialogState
   }
 
   void _apply() {
-    ref.read(scalperProvider).applyAllSettings(
+    final scalper = ref.read(scalperProvider);
+    final symbolChanged = _defaultSymbol != scalper.selectedIndexType;
+
+    scalper.applyAllSettings(
       strikeSelectionMode: _mode,
       defaultCallOffset: _callOffset,
       defaultPutOffset: _putOffset,
@@ -1735,7 +1754,9 @@ class _ScalperSettingsDialogState
       positionFilter: _posFilter,
       isShortcutsEnabled: _shortcutsEnabled,
     );
-    Navigator.of(context).pop();
+
+    // Pop with the new symbol index if it changed, so the screen can do a full tab switch
+    Navigator.of(context).pop(symbolChanged ? _defaultSymbol : null);
   }
 
   @override
