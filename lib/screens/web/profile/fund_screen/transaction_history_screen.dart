@@ -29,6 +29,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   final TextEditingController _searchController = TextEditingController();
    final ValueNotifier<String> _selectedFilter = ValueNotifier<String>('All');
+  List<String> _availableFilters = ['All'];
   final _assets = Assets();
 
   @override
@@ -85,8 +86,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       final api = locator<ApiExporter>();
       final response = await api.getClientHistory();
       if (mounted) {
+        final data = response.data ?? [];
+        final statuses = data
+            .map((e) => e.status?.toUpperCase())
+            .where((s) => s != null && s.isNotEmpty)
+            .cast<String>()
+            .toSet()
+            .toList()
+          ..sort();
         setState(() {
-          _transactions = response.data ?? [];
+          _transactions = data;
+          _availableFilters = ['All', ...statuses];
           _isLoading = false;
         });
       }
@@ -122,112 +132,115 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: resolveThemeColor(
-        context,
-        dark: MyntColors.backgroundColorDark,
-        light: MyntColors.backgroundColor,
-      ),
-      appBar: AppBar(
-        centerTitle: false,
-        leadingWidth: 48,
-        titleSpacing: 6,
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Scaffold(
         backgroundColor: resolveThemeColor(
           context,
           dark: MyntColors.backgroundColorDark,
           light: MyntColors.backgroundColor,
         ),
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: MyntColors.transparent,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_outlined,
-            size: 18,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary,
-            ),
-          ),
-          onPressed: widget.onBack ?? () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Transaction History',
-          style: MyntWebTextStyles.title(
+        appBar: AppBar(
+          centerTitle: false,
+          leadingWidth: 48,
+          titleSpacing: 6,
+          backgroundColor: resolveThemeColor(
             context,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
-            ),
-            fontWeight: MyntFonts.semiBold,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
           ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: SizedBox(
-              width: context.responsiveValue<double>(
-                mobile: 140,
-                smallTablet: 180,
-                tablet: 220,
-                desktop: 300,
-                largeDesktop: 350,
-                widescreen: 400,
-              ),
-              child: MyntSearchTextField.withSmartClear(
-                controller: _searchController,
-                placeholder: 'Search transactions',
-                leadingIcon: _assets.searchIcon,
-                onClear: () => _searchController.clear(),
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: MyntColors.transparent,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_outlined,
+              size: 18,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
               ),
             ),
-          ),  
-          _buildFilterButton(),
-          const SizedBox(width: 15)
-        ],
-      ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary),
+            onPressed: widget.onBack ?? () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Transaction History',
+            style: MyntWebTextStyles.title(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
               ),
-            )
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_error!,
-                          style: MyntWebTextStyles.body(context,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.errorDark,
-                                  light: MyntColors.error))),
-                      const SizedBox(height: 12),
-                      TextButton(
-                          onPressed: _fetchHistory,
-                          child: const Text("Retry")),
-                    ],
-                  ),
-                )
-              : _transactions.isEmpty
-                  ? Center(
-                      child: Text(
-                        "No transactions found",
-                        style: MyntWebTextStyles.body(
-                          context,
-                          color: resolveThemeColor(context,
-                              dark: MyntColors.textSecondaryDark,
-                              light: MyntColors.textSecondary),
+              fontWeight: MyntFonts.semiBold,
+            ),
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: SizedBox(
+                width: context.responsiveValue<double>(
+                  mobile: 140,
+                  smallTablet: 180,
+                  tablet: 220,
+                  desktop: 300,
+                  largeDesktop: 350,
+                  widescreen: 400,
+                ),
+                child: MyntSearchTextField.withSmartClear(
+                  controller: _searchController,
+                  placeholder: 'Search transactions',
+                  leadingIcon: _assets.searchIcon,
+                  onClear: () => _searchController.clear(),
+                ),
+              ),
+            ),  
+            _buildFilterButton(),
+            const SizedBox(width: 15)
+          ],
+        ),
+        body: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary),
+                ),
+              )
+            : _error != null
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_error!,
+                            style: MyntWebTextStyles.body(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.errorDark,
+                                    light: MyntColors.error))),
+                        const SizedBox(height: 12),
+                        TextButton(
+                            onPressed: _fetchHistory,
+                            child: const Text("Retry")),
+                      ],
+                    ),
+                  )
+                : _transactions.isEmpty
+                    ? Center(
+                        child: Text(
+                          "No transactions found",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
                         ),
-                      ),
-                    )
-                  : LayoutBuilder(builder: (context, constraints) {
-                      return _buildTable(constraints);
-                    }),
+                      )
+                    : LayoutBuilder(builder: (context, constraints) {
+                        return _buildTable(constraints);
+                      }),
+      ),
     );
   }
 
@@ -478,13 +491,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildFilterMenuItem('All'),
-                  _buildFilterMenuItem('Success'),
-                  _buildFilterMenuItem('Failed'),
-                  _buildFilterMenuItem('Pending'),
-                  _buildFilterMenuItem('Initiated'),
-                ],
+                children: _availableFilters
+                    .map((filter) => _buildFilterMenuItem(filter))
+                    .toList(),
               ),
             ),
           ),
