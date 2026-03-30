@@ -3277,11 +3277,8 @@ class OrderProvider extends DefaultChangeNotifier {
           });
         }
 
-        // Calculate qty with lot size only for MCX
+        // Qty is already stored as actual quantity (lots × lotSize) for MCX in web basket
         String qty = '${_bsktScripList[0]["qty"]}';
-        if (_bsktScripList[0]["exch"] == 'MCX' && _bsktScripList[0]["ls"] != null) {
-          qty = (double.parse(_bsktScripList[0]["qty"]) * double.parse(_bsktScripList[0]["ls"])).toString();
-        }
 
         // Use first script as main input with available order parameters
         OrderMarginInput inputs = OrderMarginInput(
@@ -3720,15 +3717,9 @@ class OrderProvider extends DefaultChangeNotifier {
         }
         debugPrint("Final prd code: $prdCode");
 
-          final int qty =
+          // Qty is already stored as actual quantity (lots × lotSize) for MCX in web basket
+          final int finalQty =
         int.tryParse(element['qty']?.toString() ?? '0') ?? 0;
-
-        final int lotSize =
-            int.tryParse(element['ls']?.toString() ?? '1') ?? 1;
-
-        final int finalQty = element['exch'] == 'MCX'
-            ? (int.parse(qty.toString()) * lotSize)
-            : qty;
 
         PlaceOrderInput placeOrderInput = PlaceOrderInput(
             amo: element['amo'],

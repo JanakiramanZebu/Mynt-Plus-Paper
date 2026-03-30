@@ -18,6 +18,7 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 // import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
+import '../../../../utils/rupee_convert_format.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart' as styles;
 import '../../../../utils/responsive_snackbar.dart';
@@ -1857,12 +1858,12 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     final preTradeMargin = basket.bsktScripList.isEmpty ||
             basket.bsktOrderMargin == null
         ? "0.00"
-        : basket.bsktOrderMargin!.basketMargin.toStringAsFixed(2);
+        : basket.bsktOrderMargin!.basketMargin.toIndianFormat();
 
     final postTradeMargin = basket.bsktScripList.isEmpty ||
             basket.bsktOrderMargin == null
         ? "0.00"
-        : basket.bsktOrderMargin!.postTradeMargin.toStringAsFixed(2);
+        : basket.bsktOrderMargin!.postTradeMargin.toIndianFormat();
 
     return Material(
       color: theme.isDarkMode
