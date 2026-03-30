@@ -309,12 +309,12 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                   child: _buildStrikeLTP(context, optionFlash, isDark),
                 ),
 
-                // Exit button (only when positions exist)
-                if (optionFlash.hasSymbolPositions)
+                // Exit button (only when position exists for selected strike)
+                if (optionFlash.hasStrikePosition)
                   Tooltip(
-                    message: 'Exit All ${optionFlash.selectedSymbol?.display ?? ''} Positions',
+                    message: 'Exit ${optionFlash.selectedStrike?.option.tsym ?? ''} Position',
                     child: IconButton(
-                      onPressed: () => optionFlash.exitAllPositions(context),
+                      onPressed: () => optionFlash.exitStrikePosition(context),
                       icon: Icon(
                         Icons.output,
                         size: 20,
@@ -350,17 +350,35 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                 ),
               ],
             ),
-            // Net Qty & P&L row (only when positions exist)
-            if (optionFlash.hasSymbolPositions)
+            // Net Qty & P&L row (only when position exists for selected strike)
+            if (optionFlash.hasStrikePosition)
               Padding(
-                padding: const EdgeInsets.only(left: 6),
+                padding: const EdgeInsets.only(top: 6),
                 child: Row(
                   children: [
-                    // TODO: Net Qty display - commented out pending clarification
-                    // on how to handle mixed long/short positions (e.g. sold = -75)
-                    // Text('Net Qty ', ...),
-                    // Text(optionFlash.symbolNetQty.toString(), ...),
-                    // const SizedBox(width: 24),
+                    Text(
+                      'Net Qty ',
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary,
+                        ),
+                        fontWeight: MyntFonts.medium,
+                      ),
+                    ),
+                    Text(
+                      optionFlash.strikeNetQty.toString(),
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: optionFlash.strikeNetQty >= 0
+                            ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
+                            : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
+                        fontWeight: MyntFonts.medium,
+                      ),
+                    ),
+                    const SizedBox(width: 24),
                     _buildPnL(context, optionFlash, isDark),
                   ],
                 ),
