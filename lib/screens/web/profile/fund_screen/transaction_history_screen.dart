@@ -4,9 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:mynt_plus/api/core/api_export.dart';
 import 'package:mynt_plus/locator/locator.dart';
 import 'package:mynt_plus/models/fund_model_testing_copy/client_history_model.dart';
+import 'package:mynt_plus/res/assets.dart';
+import 'package:mynt_plus/sharedWidget/common_search_fields_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../res/mynt_web_text_styles.dart';
+import '../../../../../res/responsive_extensions.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -23,10 +26,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   String? _error;
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   final ScrollController _verticalScrollController = ScrollController();
+  final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
+  final TextEditingController _searchController = TextEditingController();
+  final _assets = Assets();
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      if (_searchController.text != _searchQuery.value) {
+        _searchQuery.value = _searchController.text;
+      }
+    });
     _fetchHistory();
   }
 
@@ -34,7 +45,24 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   void dispose() {
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
+    _searchQuery.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  List<ClientHistoryItem> _getFilteredTransactions() {
+    final query = _searchQuery.value.toLowerCase().trim();
+    if (query.isEmpty) return _transactions;
+    return _transactions.where((item) {
+      final date = _formatDate(item.dateTime).toLowerCase();
+      final order = (item.orderNumber ?? '').toLowerCase();
+      final type = (item.transtype ?? '').toLowerCase();
+      final amount = (item.amount ?? '').toLowerCase();
+      return date.contains(query) ||
+          order.contains(query) ||
+          type.contains(query) ||
+          amount.contains(query);
+    }).toList();
   }
 
   Future<void> _fetchHistory() async {
@@ -99,6 +127,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           light: MyntColors.backgroundColor,
         ),
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: MyntColors.transparent,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_outlined,
@@ -123,11 +153,36 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             fontWeight: MyntFonts.semiBold,
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: SizedBox(
+              width: context.responsiveValue<double>(
+                mobile: 140,
+                smallTablet: 180,
+                tablet: 220,
+                desktop: 300,
+                largeDesktop: 350,
+                widescreen: 400,
+              ),
+              child: MyntSearchTextField.withSmartClear(
+                controller: _searchController,
+                placeholder: 'Search transactions',
+                leadingIcon: _assets.searchIcon,
+                onClear: () => _searchController.clear(),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                  color: MyntColors.primary, strokeWidth: 2))
+                color: resolveThemeColor(context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary),
+              ),
+            )
           : _error != null
               ? Center(
                   child: Column(
@@ -135,7 +190,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     children: [
                       Text(_error!,
                           style: MyntWebTextStyles.body(context,
-                              color: MyntColors.error)),
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.errorDark,
+                                  light: MyntColors.error))),
                       const SizedBox(height: 12),
                       TextButton(
                           onPressed: _fetchHistory,
@@ -164,29 +221,30 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   Widget _buildTable(BoxConstraints constraints) {
     final totalWidth = constraints.maxWidth;
 
-    // Column proportions matching holdings: Icon 5%, Date 20%, Type 13%, Amount 13%, Order 24%, Status 13%, Gateway 12%
-    final iconW = (totalWidth * 0.05).clamp(45.0, double.infinity);
-    final dateW = (totalWidth * 0.20).clamp(130.0, double.infinity);
-    final typeW = (totalWidth * 0.13).clamp(80.0, double.infinity);
-    final amountW = (totalWidth * 0.13).clamp(80.0, double.infinity);
-    final orderW = (totalWidth * 0.24).clamp(140.0, double.infinity);
-    final statusW = (totalWidth * 0.13).clamp(90.0, double.infinity);
-    final vendorW = (totalWidth * 0.12).clamp(70.0, double.infinity);
+    // Column: Icon 5%, Date 18%, OrderNo 22%, Type 13%, Gateway 10%, Amount 16%, Status 16%
+    final iconW    = totalWidth * 0.05;
+    final dateW    = totalWidth * 0.18;
+    final orderW   = totalWidth * 0.22;
+    final typeW    = totalWidth * 0.13;
+    final gatewayW = totalWidth * 0.10;
+    final amountW  = totalWidth * 0.16;
+    final statusW  = totalWidth * 0.16;
 
     final columnWidths = <int, shadcn.TableSize>{
       0: shadcn.FixedTableSize(iconW),
       1: shadcn.FixedTableSize(dateW),
-      2: shadcn.FixedTableSize(typeW),
-      3: shadcn.FixedTableSize(amountW),
-      4: shadcn.FixedTableSize(orderW),
-      5: shadcn.FixedTableSize(statusW),
-      6: shadcn.FixedTableSize(vendorW),
+      2: shadcn.FixedTableSize(orderW),
+      3: shadcn.FixedTableSize(typeW),
+      4: shadcn.FixedTableSize(gatewayW),
+      5: shadcn.FixedTableSize(amountW),
+      6: shadcn.FixedTableSize(statusW),
     };
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         children: [
+          const SizedBox(height: 12),
           // Fixed header
           shadcn.Table(
             columnWidths: columnWidths,
@@ -207,25 +265,42 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           ),
         // Scrollable body
         Expanded(
-          child: RawScrollbar(
+          child: ValueListenableBuilder<String>(
+            valueListenable: _searchQuery,
+            builder: (context, query, _) {
+              final filtered = _getFilteredTransactions();
+              if (filtered.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No matching transactions',
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                    ),
+                  ),
+                );
+              }
+              return RawScrollbar(
             controller: _verticalScrollController,
             thumbVisibility: true,
             trackVisibility: true,
             trackColor: resolveThemeColor(context,
-                dark: Colors.grey.withValues(alpha: 0.1),
-                light: Colors.grey.withValues(alpha: 0.1)),
+                dark: MyntColors.scrollbarTrackDark,
+                light: MyntColors.scrollbarTrack),
             thumbColor: resolveThemeColor(context,
-                dark: Colors.grey.withValues(alpha: 0.3),
-                light: Colors.grey.withValues(alpha: 0.3)),
+                dark: MyntColors.scrollbarThumbDark,
+                light: MyntColors.scrollbarThumbLight),
             thickness: 6,
             radius: const Radius.circular(3),
             interactive: true,
             child: ListView.builder(
               controller: _verticalScrollController,
-              itemCount: _transactions.length,
+              itemCount: filtered.length,
               itemExtent: 50.0,
               itemBuilder: (context, index) {
-                final item = _transactions[index];
+                final item = filtered[index];
                 return shadcn.Table(
                   columnWidths: columnWidths,
                   defaultRowHeight: const shadcn.FixedTableSize(50),
@@ -296,6 +371,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 );
               },
             ),
+              );
+            },
           ),
         ),
       ],
