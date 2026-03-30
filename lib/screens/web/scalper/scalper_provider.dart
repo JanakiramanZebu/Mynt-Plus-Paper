@@ -54,6 +54,7 @@ class ScalperProvider extends ChangeNotifier {
     _callPremiumTarget = _pref.scalperCallPremium;
     _putPremiumTarget = _pref.scalperPutPremium;
     _defaultSymbolIndex = _pref.scalperDefaultSymbol;
+    _selectedIndexType = _defaultSymbolIndex; // Start on the saved default symbol
     _isMktProtectionEnabled = _pref.scalperMktProtEnabled;
     _mktProtectionPoints = _pref.scalperMktProtPoints;
     _positionFilter = _pref.scalperPosFilter;
