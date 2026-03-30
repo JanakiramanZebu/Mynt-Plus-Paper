@@ -624,11 +624,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         openRazorpayWeb(
           options: fund.razorpayOptions!,
           onSuccess: (paymentId, orderId, signature) {
+            print("Razorpay onSuccess Callback => paymentId: $paymentId, orderId: $orderId, signature: $signature");
             if (mounted && paymentId != null && paymentId.isNotEmpty) {
               _handleWebPaymentSuccess(paymentId);
             }
           },
           onError: (code, description, paymentId) {
+            print("Razorpay onError Callback => code: $code, description: $description, paymentId: $paymentId");
             if (mounted) {
               _handleWebPaymentError();
             }
@@ -844,7 +846,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    "₹ ${formatIndianCurrency(((double.tryParse(funds.fundDetailModel?.cash ?? '0') ?? 0) + (double.tryParse(funds.fundDetailModel?.payin ?? '0') ?? 0)).toStringAsFixed(2))}",
+                                    "₹ ${formatIndianCurrency(funds.fundDetailModel?.avlMrg ?? '0.00')}",
                                     style: MyntWebTextStyles.head(
                                       context,
                                       color: resolveThemeColor(

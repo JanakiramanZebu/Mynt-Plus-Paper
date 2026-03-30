@@ -1161,6 +1161,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       print(
           "Net Banking Payment Initiation: amt=$amt, accno=$accno, name=$name, ifsc=$ifsc, segment=$_textValue");
       _razorpay = await api.getrazorpay(amt, accno, name, ifsc);
+      print("Razorpay Order Full Response => ${_razorpay?.toJson()}");
       if (_razorpay?.status == "created") {
         _razorpayOptions = {
           'key': 'rzp_live_M3tazzVCcFf8Iq',
@@ -1195,12 +1196,14 @@ class TranctionProvider extends DefaultChangeNotifier {
             'max_count': 0,
           },
         };
+        print("Razorpay Options => $_razorpayOptions");
         notifyListeners();
       } else {
         notifyListeners();
       }
-    } catch (e) {
-      //  log("Failed to fetch bank Data:: ${e.toString()}");
+    } catch (e, stackTrace) {
+      print("Razorpay Order Error => $e");
+      print("Razorpay Order StackTrace => $stackTrace");
       ref
           .read(indexListProvider)
           .logError
@@ -1216,11 +1219,10 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       togglefundLoading(true);
       _razorpayTranstationRes = await api.getrazorpayStatus(paymentid);
-      print(
-          "Net Banking (Razorpay) Payment Status Response $_razorpayTranstationRes");
-      // log("PAYMENT ID${_razorpayTranstationRes?.id} $paymentid");
-    } catch (e) {
-      // log("Failed to Razorpay Status:: ${e.toString()}");
+      print("Razorpay Payment Status Full Response => ${_razorpayTranstationRes?.toJson()}");
+    } catch (e, stackTrace) {
+      print("Razorpay Status Error => $e");
+      print("Razorpay Status StackTrace => $stackTrace");
       ref
           .read(indexListProvider)
           .logError

@@ -123,11 +123,12 @@ mixin TranscationApi on ApiCore {
         headers: razorpaytHeaders,
       );
 
+      print("Razorpay API Raw Response => statusCode: ${res.statusCode}, body: ${res.body}");
       final json = jsonDecode(res.body);
-      // log("getrazorpay ${res.body} ");
       final razorpay = Razorpays.fromJson(json);
       return razorpay;
     } catch (e) {
+      print("Razorpay API Error => $e");
       rethrow;
     }
   }
@@ -142,15 +143,12 @@ mixin TranscationApi on ApiCore {
         headers: razorpaytHeaders,
       );
 
+      print("Razorpay Status API Raw Response => statusCode: ${res.statusCode}, body: ${res.body}");
       final json = jsonDecode(res.body);
-      log("getrazorpayStatus ${res.body} ");
       final razorpay = RazorpayTranstationRes.fromJson(json);
-      print("getrazorpayStatus success  ::::::: $razorpay");
-
       return razorpay;
     } catch (e) {
-      print("getrazorpayStatus error  ::::::: $e");
-      log("getrazorpayStatus error log  ::::::: $e");
+      print("Razorpay Status API Error => $e");
       rethrow;
     }
   }
