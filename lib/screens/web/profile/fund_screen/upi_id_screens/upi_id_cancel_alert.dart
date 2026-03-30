@@ -37,10 +37,15 @@ class _UPIIDPaymentCancelAlertState
   }
 
   void _handleInitialLogic() async {
-    final mfProv = ref.read(mfProvider);
     final txnProv = ref.read(transcationProvider);
 
-      
+    // If using the new wrapper UPI collect flow, polling is handled externally
+    if (txnProv.upiCollectResponse != null) {
+      return;
+    }
+
+    // Legacy flow: poll using old HDFC APIs
+    if (txnProv.hdfctranction?.data?.orderNumber != null) {
       _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
         final status = txnProv.hdfcpaymentstatus?.upiId?.status;
         if (status != "REJECTED" || status != "SUCCESS") {
@@ -51,7 +56,7 @@ class _UPIIDPaymentCancelAlertState
           );
         }
       });
-    
+    }
   }
 
   @override

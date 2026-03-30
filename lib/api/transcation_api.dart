@@ -15,6 +15,10 @@ import '../models/fund_model_testing_copy/fund_withdraw_status_model.dart';
 import '../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../models/fund_model_testing_copy/secured_client_data_model.dart';
 import '../models/fund_model_testing_copy/view_upi_id.dart';
+import '../models/fund_model_testing_copy/indent_upi_request_model.dart';
+import '../models/fund_model_testing_copy/wrapper_check_status_model.dart';
+import '../models/fund_model_testing_copy/mtf_limits_model.dart';
+import '../models/fund_model_testing_copy/client_history_model.dart';
 import '../sharedWidget/fund_function.dart';
 import 'core/api_core.dart';
 
@@ -119,11 +123,12 @@ mixin TranscationApi on ApiCore {
         headers: razorpaytHeaders,
       );
 
+      print("Razorpay API Raw Response => statusCode: ${res.statusCode}, body: ${res.body}");
       final json = jsonDecode(res.body);
-      // log("getrazorpay ${res.body} ");
       final razorpay = Razorpays.fromJson(json);
       return razorpay;
     } catch (e) {
+      print("Razorpay API Error => $e");
       rethrow;
     }
   }
@@ -138,15 +143,12 @@ mixin TranscationApi on ApiCore {
         headers: razorpaytHeaders,
       );
 
+      print("Razorpay Status API Raw Response => statusCode: ${res.statusCode}, body: ${res.body}");
       final json = jsonDecode(res.body);
-      log("getrazorpayStatus ${res.body} ");
       final razorpay = RazorpayTranstationRes.fromJson(json);
-      print("getrazorpayStatus success  ::::::: $razorpay");
-
       return razorpay;
     } catch (e) {
-      print("getrazorpayStatus error  ::::::: $e");
-      log("getrazorpayStatus error log  ::::::: $e");
+      print("Razorpay Status API Error => $e");
       rethrow;
     }
   }
@@ -241,22 +243,22 @@ mixin TranscationApi on ApiCore {
     }
   }
 
-  // Future<BankDetails> getbankDetails() async {
-  //   String payload = jsonEncode({"client_code": prefs.clientId});
-  //   String encryptedPayload = encryptionFunction(payload);
-  //   try {
-  //     final uri = Uri.parse(apiLinks.bankcheck);
-  //     final res = await apiClient.post(uri,
-  //         headers: funddefaultHeaders,
-  //         body: jsonEncode({"code": encryptedPayload}));
-  //     final json = jsonDecode(res.body);
-  //     final decryptedData = decryptionFunction(json["str"]);
-  //     // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
-  //     return BankDetails.fromJson(jsonDecode(decryptedData));
-  //   } catch (e) {
-  //     rethrow;
-  //   }
-  // }
+  Future<BankDetails> getbankDetails() async {
+    String payload = jsonEncode({"client_code": prefs.clientId});
+    String encryptedPayload = encryptionFunction(payload);
+    try {
+      final uri = Uri.parse(apiLinks.bankcheck);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({"code": encryptedPayload}));
+      final json = jsonDecode(res.body);
+      final decryptedData = decryptionFunction(json["str"]);
+      // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+      return BankDetails.fromJson(jsonDecode(decryptedData));
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   Future<List<ViewUpiIdModel>> getUpiId(
       String bankname, String accountnumber) async {
@@ -370,6 +372,177 @@ mixin TranscationApi on ApiCore {
         print(e.toString());
       }
       return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Initiate UPI QR payment via wrapper API
+  Future<IndentUpiResponse> indentUpiRequest({
+    required String name,
+    required String email,
+    required String mobile,
+    required String bankName,
+    required String seg,
+    required String code,
+    required String custAcc,
+    required String bankIfsc,
+    required String amt,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.indentUpiRequest);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "name": name,
+            "email": email,
+            "mobile": mobile,
+            "bankname": bankName,
+            "seg": seg,
+            "code": code,
+            "custacc": custAcc,
+            "bankifsc": bankIfsc,
+            "amt": amt,
+          }));
+      final json = jsonDecode(res.body);
+      log("indentUpiRequest => ${res.body}");
+      return IndentUpiResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Initiate UPI Collect Request via wrapper API (for UPI ID flow)
+  Future<IndentUpiResponse> upiCollectRequest({
+    required String name,
+    required String email,
+    required String mobile,
+    required String bankName,
+    required String seg,
+    required String code,
+    required String custAcc,
+    required String bankIfsc,
+    required String amt,
+    required String upi,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.upiCollectRequest);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "name": name,
+            "email": email,
+            "mobile": mobile,
+            "bankname": bankName,
+            "seg": seg,
+            "code": code,
+            "custacc": custAcc,
+            "bankifsc": bankIfsc,
+            "amt": amt,
+            "upi": upi,
+          }));
+      final json = jsonDecode(res.body);
+      log("upiCollectRequest => ${res.body}");
+      return IndentUpiResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Check UPI QR payment status via wrapper API
+  Future<WrapperCheckStatusResponse> wrapperCheckStatus({
+    required String orderNo,
+    required String upiTranID,
+    required String clientID,
+    required String gateway,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.wrapperCheckStatus);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            "OrderNo": orderNo,
+            "upiTranID": upiTranID,
+            "clientID": clientID,
+            "gateway": gateway,
+          }));
+      final json = jsonDecode(res.body);
+      log("wrapperCheckStatus => ${res.body}");
+      return WrapperCheckStatusResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Build QR code image URL
+  String buildQrCodeUrl({
+    required String orderNumber,
+    required String paidToVPA,
+    required String amount,
+    required String code,
+    required String gateway,
+  }) {
+    return '${apiLinks.qrCodeUrl}?orderNumber=$orderNumber&paid_to_VPA=$paidToVPA&amount=$amount&code=$code&gateway=$gateway';
+  }
+
+  /// Fetch all limits (cash, payin, payout, marginused)
+  Future<MtfLimitsResponse> getAllLimits(String clientId) async {
+    try {
+      final uri = Uri.parse(apiLinks.allLimits);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({"clientid": clientId}));
+      final json = jsonDecode(res.body);
+      log("getAllLimits => ${res.body}");
+      return MtfLimitsResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Fetch MTF limits
+  Future<MtfLimitsMTFResponse> getAllLimitsMTF(String clientId) async {
+    try {
+      final uri = Uri.parse(apiLinks.allLimitsMTF);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({"clientid": clientId}));
+      final json = jsonDecode(res.body);
+      log("getAllLimitsMTF => ${res.body}");
+      return MtfLimitsMTFResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Transfer fund to MTF
+  Future<MtfFundTransferResponse> fundTransferMTF(
+      String clientId, String amount) async {
+    try {
+      final uri = Uri.parse(apiLinks.fundTransfer);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            "clientid": clientId,
+            "tranfer_amount": amount,
+            "move": "MTF",
+          }));
+      final json = jsonDecode(res.body);
+      log("fundTransferMTF => ${res.body}");
+      return MtfFundTransferResponse.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<ClientHistoryResponse> getClientHistory() async {
+    try {
+      final uri = Uri.parse("https://funduat.mynt.in/logs/ClientHistory");
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({"clientid": prefs.clientId}));
+      final json = jsonDecode(res.body);
+      return ClientHistoryResponse.fromJson(json);
     } catch (e) {
       rethrow;
     }
