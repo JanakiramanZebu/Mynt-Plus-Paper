@@ -529,6 +529,19 @@ class Preferences {
   String get scalperPosFilter =>
       _prefInstance?.getString(_scalperPosFilter) ?? 'all';
 
+  /// Clear all scalper preferences on logout so they don't leak between accounts.
+  Future clearScalperSettings() async {
+    await _prefInstance?.remove(_scalperStrikeMode);
+    await _prefInstance?.remove(_scalperCallOffset);
+    await _prefInstance?.remove(_scalperPutOffset);
+    await _prefInstance?.remove(_scalperCallPremium);
+    await _prefInstance?.remove(_scalperPutPremium);
+    await _prefInstance?.remove(_scalperDefaultSymbol);
+    await _prefInstance?.remove(_scalperMktProtEnabled);
+    await _prefInstance?.remove(_scalperMktProtPoints);
+    await _prefInstance?.remove(_scalperPosFilter);
+  }
+
 }
 
 const String _userTheme = 'userTheme';
