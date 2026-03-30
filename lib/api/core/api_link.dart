@@ -261,7 +261,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
-  // String get bankcheck => '$mainfund/bank_check';
+  String get bankcheck => '$mainfund/bank_check';
 
   ///withdraw
   String get fundUpiIdView => 'https://fundapi.mynt.in/withdraw/upi_id_view';
@@ -276,6 +276,13 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get upimainfund => 'https://fundapi.mynt.in';
   String get fundpayment => "$upimainfund/hdfc/upi/UPItransactionRequest";
   String get fundUpiStatus => "$upimainfund/hdfc/upi/MobileUPIstatus";
+
+  // QR/Wrapper UPI APIs
+  String get wrapperUrl => 'https://fundapi.mynt.in/wrapper';
+  String get indentUpiRequest => '$wrapperUrl/IndentUPIRequest';
+  String get upiCollectRequest => '$wrapperUrl/UPICollectRequest';
+  String get wrapperCheckStatus => '$wrapperUrl/check_status';
+  String get qrCodeUrl => 'https://copy.mynt.in/get_qr1';
 
   //hdfc mainurl//
   String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
@@ -341,6 +348,9 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
 
   // MTF
   String get mtfURL => '$profileDetailsURL/mtf';
+  String get allLimits => '$ledgerBaseURL/all_limits';
+  String get allLimitsMTF => '$ledgerBaseURL/all_limits_MTF';
+  String get fundTransfer => '$ledgerBaseURL/FundTransfer';
   // String get freezeAccount => '$profileDetailsURL/FreezeAccount';
   // String get blockAcct => '$profileDetailsURL/BlockAcct';
 

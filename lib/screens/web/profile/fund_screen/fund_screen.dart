@@ -6,9 +6,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:mynt_plus/utils/no_emoji_inputformatter.dart';
+import 'razorpay/razorpay_web.dart';
+import '../../../../../res/mynt_web_color_styles.dart';
+import '../../../../../res/mynt_web_text_styles.dart';
+import '../../../../../sharedWidget/common_text_fields_web.dart';
+import '../../../../../sharedWidget/common_buttons_web.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
+
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/thems.dart';
@@ -17,25 +28,26 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/fund_function.dart';
-import 'package:mynt_plus/provider/fund_provider.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/list_divider.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
-import '../../../../utils/no_emoji_inputformatter.dart';
-import '../../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
-import '../../../../models/fund_model_testing_copy/secured_client_data_model.dart';
+import '../../../../../provider/fund_provider.dart';
+import '../../../../../res/global_state_text.dart';
+import '../../../../../sharedWidget/list_divider.dart';
+import '../../../../../sharedWidget/loader_ui.dart';
+import '../../../../../utils/no_emoji_inputformatter.dart';
+import '../../../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
+import '../../../../../models/fund_model_testing_copy/secured_client_data_model.dart';
 import 'ios_fund_screen/ios_no_upi_apps_ui.dart';
 import 'ios_fund_screen/ios_upi_apps_bottomsheet.dart';
 import 'razorpay/razorpay_failed_ui.dart';
 import 'razorpay/razorpay_success_ui.dart';
 import 'upi_id_screens/upi_id_cancel_alert.dart';
+import 'qr_payment_dialog.dart';
 import 'withdraw/withdraw_screen.dart';
 
 class FundScreen extends ConsumerStatefulWidget {
   final TranctionProvider dd;
-  const FundScreen({super.key, required this.dd});
+  final VoidCallback? onBack;
+  final VoidCallback? onViewTransactions;
+  const FundScreen({super.key, required this.dd, this.onBack, this.onViewTransactions});
 
   @override
   ConsumerState<FundScreen> createState() => _FundScreenState();
@@ -43,6 +55,8 @@ class FundScreen extends ConsumerStatefulWidget {
 
 class _FundScreenState extends ConsumerState<FundScreen> {
   bool _isInitialized = false;
+  bool _isUpiIdExpanded = false;
+  int _selectedPaymentMethod = -1; // -1 = none, 0 = Scan QR, 1 = UPI ID, 2 = Net Banking
 
   @override
   void initState() {
@@ -371,6 +385,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     fund.resetBottomSheetState();
 
     try {
+      // Step 1: Verify UPI ID via checkClientVPA
       await fund.fetcUPIIDPayment(
           context,
           fund.upiid.text,
@@ -381,42 +396,208 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       if (fund.upiiderror != null && fund.upiiderror!.isNotEmpty) {
         return; // Stop if there's an error
       }
-      await fund.fetchHdfctranction(
-        context,
-        fund.upiid.text,
-        int.parse(fund.amount.text),
-        fund.accno,
-        fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
-      );
 
       if (fund.hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Available" ||
           fund.hdfcpaymentdata!.data!.verifiedVPAStatus2 == "Available") {
-        Navigator.pop(context);
+
+        // Step 2: Initiate UPI Collect Request via wrapper
+        final success = await fund.fetchUpiCollectRequest(context);
+        if (!success) {
+          if (mounted) {
+            warningMessage(context,
+                fund.upiCollectResponse?.emsg ?? "Failed to initiate UPI payment");
+          }
+          return;
+        }
+
+        if (!mounted) return;
         fund.focusNode.unfocus();
 
-        showModalBottomSheet(
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            backgroundColor: const Color(0xffffffff),
-            isDismissible: false,
-            enableDrag: false,
-            showDragHandle: false,
-            useSafeArea: false,
-            isScrollControlled: true,
+        // Step 3: Start polling for payment status via wrapper/check_status
+        fund.startUpiCollectStatusPolling(context, onStatusUpdate: (status) {
+          if (!mounted) return;
+          // Close the awaiting dialog with the status
+          Navigator.of(context, rootNavigator: true).pop(status);
+        });
+
+        // Step 4: Show awaiting confirmation dialog and wait for result
+        final upiIdStatus = await showDialog<String>(
+            barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
               return PopScope(
-                  canPop: true,
+                  canPop: false,
                   onPopInvokedWithResult: (didPop, result) {
                     if (didPop) return;
                   },
-                  child: const UPIIDPaymentCancelAlert());
+                  child: Center(
+                    child: shadcn.Card(
+                      borderRadius: BorderRadius.circular(8),
+                      padding: EdgeInsets.zero,
+                      child: Container(
+                        width: 400,
+                        constraints: const BoxConstraints(maxHeight: 250),
+                        decoration: BoxDecoration(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.dialogDark,
+                              light: MyntColors.dialog),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Header
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .border,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Awaiting UPI Confirmation',
+                                    style: MyntWebTextStyles.title(
+                                      context,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  MyntCloseButton(
+                                    onPressed: () async {
+                                      fund.stopUpiCollectStatusPolling();
+                                      final result = await fund.checkUpiCollectStatusOnce();
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop(result?.data?.status ?? 'CANCELLED');
+                                        fund.focusNode.unfocus();
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Content
+                            Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 32,
+                                      height: 32,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'This will take a few seconds.',
+                                      textAlign: TextAlign.center,
+                                      style: MyntWebTextStyles.body(
+                                        context,
+                                        fontWeight: FontWeight.w500,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.textPrimaryDark,
+                                          light: MyntColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    MyntButton(
+                                      type: MyntButtonType.primary,
+                                      size: MyntButtonSize.large,
+                                      label: 'Cancel Transaction',
+                                      isFullWidth: true,
+                                      backgroundColor: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.secondary,
+                                        light: MyntColors.primary,
+                                      ),
+                                      onPressed: () async {
+                                        fund.stopUpiCollectStatusPolling();
+                                        final result = await fund.checkUpiCollectStatusOnce();
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop(result?.data?.status ?? 'CANCELLED');
+                                          fund.focusNode.unfocus();
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ));
             });
 
-        await fund.fetchHdfcpaymetstatus(
-            context,
-            '${fund.hdfctranction!.data!.orderNumber}',
-            '${fund.hdfctranction!.data!.upiTransactionNo}');
+        fund.stopUpiCollectStatusPolling();
+        if (!mounted) return;
+
+        // Step 5: Handle the result status and refresh balance
+        if (upiIdStatus == "SUCCESS") {
+          showDialog(
+            context: context,
+            builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: RazorpaySuccessUi(amount: fund.amount.text),
+              ),
+            ),
+          ).then((_) {
+            fund.amount.clear();
+            ref.read(fundProvider).fetchFunds(context);
+          });
+          ref.read(fundProvider).fetchFunds(context);
+        } else if (upiIdStatus != null) {
+          final collectData = await fund.checkUpiCollectStatusOnce();
+          if (!mounted) return;
+          showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: RazorpayFailedUi(
+                  amount: fund.amount.text,
+                  upiAddress: fund.upiid.text,
+                  orderId: collectData?.data?.orderNumber ?? fund.upiCollectResponse?.data?.orderNumber,
+                  upiTransactionId: collectData?.data?.upiTransactionNo ?? fund.upiCollectResponse?.data?.upiTransactionNo,
+                  statusDescription: collectData?.data?.statusDescription ?? upiIdStatus,
+                  status: collectData?.data?.status ?? upiIdStatus,
+                ),
+              ),
+            ),
+          ).then((_) {
+            ref.read(fundProvider).fetchFunds(context);
+          });
+          ref.read(fundProvider).fetchFunds(context);
+        }
       }
     } catch (e) {
       // Ensure loading state is reset on any error
@@ -427,11 +608,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
 
   Future<void> _handleRazorpayPayment(
       BuildContext context, TranctionProvider fund) async {
-    // Reset bottom sheet state when starting a new payment process
     fund.resetBottomSheetState();
-
-    // Razorpay razorpay = Razorpay();
-    Razorpay razorpay = Razorpay();
 
     await fund.fetchrazorpay(
       context,
@@ -439,10 +616,97 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       fund.accno,
       fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
       fund.ifsc,
-      razorpay,
+      null,
     );
-    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
-    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+
+    if (fund.razorpayOptions != null && mounted) {
+      try {
+        openRazorpayWeb(
+          options: fund.razorpayOptions!,
+          onSuccess: (paymentId, orderId, signature) {
+            if (mounted && paymentId != null && paymentId.isNotEmpty) {
+              _handleWebPaymentSuccess(paymentId);
+            }
+          },
+          onError: (code, description, paymentId) {
+            if (mounted) {
+              _handleWebPaymentError();
+            }
+          },
+        );
+      } catch (e) {
+        print("Razorpay open error: $e");
+        if (mounted) {
+          warningMessage(context, "Failed to open payment gateway");
+        }
+      }
+    }
+  }
+
+  Future<void> _handleScanQrPayment(
+      BuildContext context, TranctionProvider fund) async {
+    fund.resetBottomSheetState();
+    fund.focusNode.unfocus();
+
+    await fund.fetchValidateToken(context);
+
+    final success = await fund.fetchIndentUpiRequest(context);
+    if (!success) {
+      if (mounted) {
+        warningMessage(context,
+            fund.indentUpiResponse?.emsg ?? "Failed to initiate QR payment");
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    final status = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const QrPaymentDialog(),
+    );
+
+    if (!mounted) return;
+
+    if (status == "SUCCESS") {
+      ref.read(fundProvider).fetchFunds(context);
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: RazorpaySuccessUi(amount: fund.amount.text),
+          ),
+        ),
+      ).then((_) {
+        ref.read(fundProvider).fetchFunds(context);
+      });
+    } else if (status != null && status != 'CANCELLED') {
+      ref.read(fundProvider).fetchFunds(context);
+      final qrData = fund.qrCheckStatusResponse?.data;
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: RazorpayFailedUi(
+              amount: qrData?.amount ?? fund.amount.text,
+              upiAddress: qrData?.clientVPA ?? fund.upiid.text,
+              orderId: qrData?.orderNumber ?? fund.hdfcUPIStatus?.data?.orderNumber,
+              upiTransactionId: qrData?.upiTransactionNo ?? fund.hdfcUPIStatus?.data?.upiTransactionNo,
+              statusDescription: qrData?.statusDescription ?? fund.hdfcUPIStatus?.data?.statusDescription,
+              status: qrData?.status ?? fund.hdfcUPIStatus?.data?.status,
+            ),
+          ),
+        ),
+      ).then((_) {
+        ref.read(fundProvider).fetchFunds(context);
+      });
+    }
   }
 
   @override
@@ -459,204 +723,179 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         fund.bankdetails == null ||
         fund.decryptclientcheck == null) {
       return Scaffold(
-        backgroundColor:
-            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        backgroundColor: resolveThemeColor(
+          context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor,
+        ),
         appBar: AppBar(
           centerTitle: false,
           leadingWidth: 48,
           titleSpacing: 6,
-          leading: CustomBackBtn(),
-          elevation: .2,
-          title: TextWidget.titleText(
-            text: 'Add Money',
-            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-            theme: theme.isDarkMode,
-            fw: 1,
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
+          ),
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_outlined,
+              size: 18,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ),
+            ),
+            onPressed: widget.onBack ?? () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Add Money',
+            style: MyntWebTextStyles.title(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
+              fontWeight: MyntFonts.semiBold,
+            ),
           ),
         ),
         body: Center(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            ),
-            child: CircularLoaderImage(),
+          child: CircularProgressIndicator(
+            color: resolveThemeColor(context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary),
           ),
         ),
       );
     }
         return Scaffold(
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
+          ),
           appBar: AppBar(
             centerTitle: false,
             leadingWidth: 48,
             titleSpacing: 6,
-            leading: CustomBackBtn(),
-            elevation: .2,
-            title: TextWidget.titleText(
-              text: 'Add Money',
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
-              fw: 1,
+            backgroundColor: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_outlined,
+                size: 18,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
+              ),
+              onPressed: widget.onBack ?? () => Navigator.pop(context),
+            ),
+            title: Text(
+              'Add Money',
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                fontWeight: MyntFonts.semiBold,
+              ),
             ),
           ),
-          body:
-              // fund.loading
-              //     ? SizedBox(child: CircularLoaderImage())
-              //     // Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              //     //     const ProgressiveDotsLoader(),
-              //     //     const SizedBox(height: 3),
-              //     //     Text('This will take a few seconds.',
-              //     //         style: textStyle(colors.colorGrey, 13, FontWeight.w500)),
-              //     //   ])
-              //     :
-              SafeArea(
-                child: GestureDetector(
-                              onTap: () {
-                fund.focusNode.unfocus();
-                              },
-                              child: SingleChildScrollView(
-                                physics: ClampingScrollPhysics(),
+          body: GestureDetector(
+            onTap: () => fund.focusNode.unfocus(),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Padding(
-                    //     padding: const EdgeInsets.only(left: 16, top: 10),
-                    //     child: TextWidget.subText(
-                    //         text: "Choose type",
-                    //         theme: !theme.isDarkMode,
-                    //         fw: 1)),
-                    // Padding(
-                    //   padding: const EdgeInsets.only(left: 16, top: 10),
-                    //   child: Row(
-                    //     children: [
-                    //       TextWidget.subText(
-                    //         text: 'Deposit Money',
-                    //         theme: false,
-                    //         color: fund.enable
-                    //             ? theme.isDarkMode
-                    //                 ? colors.colorWhite
-                    //                 : const Color(0xff000000)
-                    //             : Colors.grey,
-                    //         fw: 1,
-                    //       ),
-                    //       const SizedBox(
-                    //         width: 16,
-                    //       ),
-                    //       CustomSwitch(
-                    //         value: fund.enable,
-                    //         onChanged: (bool val) async {
-                    //           fund.withdrawamount.clear();
-                    //           setState(() {
-                    //             fund.changebool(val);
-                    //           });
-                    //         },
-                    //       ),
-                    //       const SizedBox(
-                    //         width: 16,
-                    //       ),
-                    //       TextWidget.subText(
-                    //         text: 'Withdraw Money',
-                    //         theme: false,
-                    //         color: fund.enable == false
-                    //             ? theme.isDarkMode
-                    //                 ? colors.colorWhite
-                    //                 : colors.colorBlack
-                    //             : colors.colorGrey,
-                    //         fw: 1,
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    // fund.enable == true
-                    //     ?
-                
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 16, top: 16, right: 16, bottom: 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    // ── Top bar card ──────────────────────────────────
+                    shadcn.Theme(
+                      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+                      child: shadcn.Card(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                          child: Row(
                             children: [
-                              TextWidget.subText(
-                                text:
-                                    "Available",
-                                theme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fw: 0,
-                              ),
-                              const SizedBox(height: 12),
-                              TextWidget.titleText(
-                                text:
-                                    "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}",
-                                theme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fw: 0,
-                              ),
-                              const SizedBox(height: 12),
-                              TextFormField(
-                                focusNode: fund.focusNode,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Available Balance",
+                                    style: MyntWebTextStyles.bodySmall(
+                                      context,
+                                      fontWeight: MyntFonts.medium,
+                                      darkColor: MyntColors.textSecondaryDark,
+                                      lightColor: MyntColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "₹ ${formatIndianCurrency(((double.tryParse(funds.fundDetailModel?.cash ?? '0') ?? 0) + (double.tryParse(funds.fundDetailModel?.payin ?? '0') ?? 0)).toStringAsFixed(2))}",
+                                    style: MyntWebTextStyles.head(
+                                      context,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                      fontWeight: MyntFonts.medium,
+                                    ),
+                                  ),
                                 ],
-                                keyboardType: TextInputType.number,
-                                style: TextWidget.textStyle(
-                                  theme: theme.isDarkMode,
-                                  fontSize: 25,
-                                  color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  fw: 0,
-                                ),
-                                controller: fund.amount,
-                                onChanged: (value) {
-                                  fund.textFiledonChange(value);
-                                },
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  enabledBorder: OutlineInputBorder(
-                                      borderSide:
-                                          BorderSide(color: colors.colorBlue),
-                                      borderRadius: BorderRadius.circular(5)),
-                                  disabledBorder: InputBorder.none,
-                                  focusedBorder: OutlineInputBorder(
-                                      borderSide:
-                                          BorderSide(color: colors.colorBlue),
-                                      borderRadius: BorderRadius.circular(5)),
-                                  border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.circular(5)),
-                                  fillColor: theme.isDarkMode
-                                      ? colors.darkGrey
-                                      : const Color(0xffF1F3F8),
-                                  filled: true,
-                                  hintText: "0",
-                                  hintStyle: TextWidget.textStyle(
-                                    theme: false,
-                                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                    fontSize: 25,
-                                    fw: 0,
-                                  ),
-                                  labelStyle: TextWidget.textStyle(
-                                    theme: theme.isDarkMode,
-                                    fontSize: 25,
-                                    fw: 0,
-                                  ),
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: SvgPicture.asset(
-                                      assets.ruppeIcon,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
+                              ),
+                              const Spacer(),
+                              // View All Transactions
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(6),
+                                  onTap: widget.onViewTransactions,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary)),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.history,
+                                          size: 16,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          "View All Transactions",
+                                          style: MyntWebTextStyles.bodySmall(
+                                            context,
+                                            fontWeight: MyntFonts.semiBold,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.primaryDark,
+                                                light: MyntColors.primary),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -664,406 +903,364 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                             ],
                           ),
                         ),
-                
-                        Padding(
-                            padding: const EdgeInsets.only(left: 16, top: 8),
-                            child:
-                                fund.amount.text.isEmpty || fund.intValue < 50
-                                    ? TextWidget.captionText(
-                                        text: fund.funderror,
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight,
-                                        fw: 0,
-                                      )
-                                    : fund.intValue > 5000000
-                                        ? TextWidget.captionText(
-                                            text: fund.maxfunderror,
-                                            theme: false,
-                                            color: theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight,
-                                            fw: 0,
-                                          )
-                                        : const SizedBox.shrink()),
-                        // Padding(
-                        //     padding: const EdgeInsets.only(
-                        //       left: 16,
-                        //     ),
-                        //     child: fund.amount.text.isEmpty
-                        //         ? TextWidget.subText(
-                        //             text: "Enter the amount",
-                        //             theme: false,
-                        //             color: colors.colorGrey,
-                        //             fw: 0)
-                        //         : fund.amount.text.isEmpty ||
-                        //                 fund.intValue < 50
-                        //             ? TextWidget.subText(
-                        //                 text: fund.funderror,
-                        //                 theme: false,
-                        //                 color: colors.darkred,
-                        //                 fw: 0)
-                        //             : fund.intValue > 5000000
-                        //                 ? TextWidget.subText(
-                        //                     text: fund.maxfunderror,
-                        //                     theme: false,
-                        //                     color: colors.darkred,
-                        //                     fw: 0)
-                        //                 : TextWidget.subText(
-                        //                     text:
-                        //                         "${fund.textResult}only",
-                        //                     theme: false,
-                        //                     color: colors.colorGrey,
-                        //                     fw: 0)),
-                
-                        // Padding(
-                        //   padding: const EdgeInsets.only(
-                        //     left: 16,
-                        //   ),
-                        //   child: headerTitleText(
-                        //     "Segment",
-                        //   ),
-                        // ),
-                
-                        // type selection section
-                        // Container(
-                        //   padding: const EdgeInsets.symmetric(horizontal: 16),
-                        //   height: 35,
-                        //   child: Row(
-                        //     children: [
-                        //       Expanded(
-                        //         child: fund.decryptclientcheck!.companyCode!.contains("NSE_CASH") ? _buildSegmentTab(
-                        //           "Equity",
-                        //           fund.textValue == "NSE_CASH",
-                        // () => _selectSegment("NSE_CASH", fund),
-                        //           theme,
-                        //         ) : const SizedBox.shrink(),
-                        //       ),
-                        //       const SizedBox(width: 8),
-                        //       Expanded(
-                        //         child: fund.decryptclientcheck!.companyCode!.contains("NSE_FNO") ? _buildSegmentTab(
-                        //           "F&O",
-                        //           fund.textValue == "NSE_FNO",
-                        //           () => _selectSegment("NSE_FNO", fund),
-                        //           theme,
-                        //         ) : const SizedBox.shrink(),
-                        //       ),
-                        //       const SizedBox(width: 8),
-                        //       Expanded(
-                        //         child: fund.decryptclientcheck!.companyCode!.contains("MCX") ? _buildSegmentTab(
-                        //           "Commodity",
-                        //           fund.textValue == "MCX",
-                        //           () => _selectSegment("MCX", fund),
-                        //           theme,
-                        //         ) : const SizedBox.shrink(),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        // Old bank account UI (commented out)
-                        // Padding(
-                        //     padding: const EdgeInsets.only(
-                        //       left: 16,
-                        //     ),
-                        //     child: TextWidget.subText(
-                        //         text: "Bank account",
-                        //         theme: false,
-                        //         fw: 0,
-                        //         color: colors.colorGrey)),
-                        // GestureDetector(
-                        //   onTap: () {
-                        //     fund.focusNode.unfocus();
-                        // showBottomSheetbank(fund, theme);
-                        //   },
-                        //   child: Container(
-                        //       decoration: BoxDecoration(
-                        //           color: theme.isDarkMode
-                        //               ? colors.darkGrey
-                        //               : const Color(0xffF1F3F8),
-                        //           borderRadius:
-                        //               BorderRadius.circular(30)),
-                        //       width: MediaQuery.of(context).size.width,
-                        //       height: 44,
-                        //       margin: const EdgeInsets.symmetric(
-                        //           horizontal: 16, vertical: 16),
-                        //       padding: const EdgeInsets.symmetric(
-                        //           horizontal: 16, vertical: 10),
-                        //       child: Row(
-                        //         mainAxisAlignment:
-                        //             MainAxisAlignment.spaceBetween,
-                        //         children: [
-                        //           Expanded(
-                        //             child: TextWidget.titleText(
-                        //                 text: fund.initbank,
-                        //                 theme: theme.isDarkMode,
-                        //                 fw: 1,
-                        //                 textOverflow:
-                        //                     TextOverflow.ellipsis),
-                        //           ),
-                        //           SvgPicture.asset(assets.downArrow)
-                        //         ],
-                        //       )),
-                        // ),
-                
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Column(
-                            children: [
-                              Column(
-                                children: [
-                                  const ListDivider(),
-                                  InkWell(
-                            onTap: () async {
-                              await Future.delayed(
-                                  const Duration(milliseconds: 150));
-                              fund.focusNode.unfocus();
-                              showBottomSheetbank(fund, theme);
-                            },
-                                    child: ListTile(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                        horizontal: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── Main content card (two columns) ──────────────
+                    Container(
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.transparent, light: MyntColors.card),
+                        borderRadius: BorderRadius.circular(2),
+                        border: Border.all(
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.cardBorderDark,
+                                light: MyntColors.cardBorder)),
+                      ),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Left column: Amount + Bank
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Enter Amount",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
                                       ),
-                                      // minVerticalPadding: 16,
-                                      title: Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 4),
-                                        child: TextWidget.subText(
-                                          text: fund.bankname,
-                                          theme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          fw: 0,
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // Amount input
+                                    MyntTextField(
+                                      focusNode: fund.focusNode,
+                                      controller: fund.amount,
+                                      placeholder: "0.00",
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                      ],
+                                      leadingWidget: Center(
+                                        widthFactor: 1,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(left: 12),
+                                          child: Text(
+                                            "₹",
+                                            style: MyntWebTextStyles.body(
+                                              context,
+                                              fontWeight: MyntFonts.medium,
+                                              darkColor: MyntColors.textSecondaryDark,
+                                              lightColor: MyntColors.textSecondary,
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                      subtitle: Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: TextWidget.paraText(
-                                          text: hideAccountNumber(fund.accno),
-                                          theme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 0,
+                                      onChanged: (value) {
+                                        fund.textFiledonChange(value);
+                                      },
+                                    ),
+
+                                    // Quick amount chips
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: [500, 1000, 5000, 10000]
+                                          .map((amt) {
+                                            final isSelected = fund.amount.text == amt.toString();
+                                            return ChoiceChip(
+                                              label: Text(
+                                                "₹${NumberFormat('#,##,###').format(amt)}",
+                                              ),
+                                              selected: isSelected,
+                                              onSelected: (_) {
+                                                fund.amount.text = amt.toString();
+                                                fund.textFiledonChange(amt.toString());
+                                              },
+                                              labelStyle: MyntWebTextStyles.bodySmall(
+                                                context,
+                                                color: isSelected
+                                                    ? resolveThemeColor(context,
+                                                        dark: MyntColors.primaryDark,
+                                                        light: MyntColors.primary)
+                                                    : resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.textSecondaryDark,
+                                                        light: MyntColors.textSecondary,
+                                                      ),
+                                                fontWeight: MyntFonts.medium,
+                                              ),
+                                              selectedColor: resolveThemeColor(
+                                                context,
+                                                dark: MyntColors.primaryDark.withValues(alpha: 0.1),
+                                                light: MyntColors.primary.withValues(alpha: 0.1),
+                                              ),
+                                              backgroundColor: resolveThemeColor(
+                                                context,
+                                                dark: MyntColors.cardDark,
+                                                light: MyntColors.inputBg,
+                                              ),
+                                              side: BorderSide(
+                                                color: isSelected
+                                                    ? resolveThemeColor(context,
+                                                        dark: MyntColors.primaryDark,
+                                                        light: MyntColors.primary)
+                                                    : resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.cardBorderDark,
+                                                        light: MyntColors.cardBorder,
+                                                      ),
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              showCheckmark: false,
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 2),
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize.shrinkWrap,
+                                              visualDensity: VisualDensity.compact,
+                                            );
+                                          })
+                                          .toList(),
+                                    ),
+
+                                    // Error text
+                                    if (fund.amount.text.isNotEmpty && fund.intValue < 50)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Text(
+                                          fund.funderror,
+                                          style: MyntWebTextStyles.caption(
+                                            context,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.errorDark,
+                                              light: MyntColors.error,
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                      trailing: Material(
-                                        color: Colors.transparent,
-                                        shape: const CircleBorder(),
-                                        clipBehavior: Clip.hardEdge,
-                                        child: InkWell(
-                                          customBorder: const CircleBorder(),
-                                          splashColor: theme.isDarkMode
-                                              ? colors.splashColorDark
-                                              : colors.splashColorLight,
-                                          highlightColor: theme.isDarkMode
-                                              ? colors.highlightDark
-                                              : colors.highlightLight,
-                                          onTap: () async {
-                                            // Add delay for visual feedback
-                                            
-                                            await Future.delayed(const Duration(
-                                                milliseconds: 150));
-                                            fund.focusNode.unfocus();
-                                            showBottomSheetbank(fund, theme);
-                                          },
-                                          child: Container(
-                                            height: 32,
-                                            width: 32,
-                                            child: Center(
+                                    if (fund.intValue > 5000000)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Text(
+                                          fund.maxfunderror,
+                                          style: MyntWebTextStyles.caption(
+                                            context,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.errorDark,
+                                              light: MyntColors.error,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Bank account
+                                    Text(
+                                      "Bank account",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    InkWell(
+                                      onTap: () {
+                                        fund.focusNode.unfocus();
+                                        showBottomSheetbank(fund, theme);
+                                      },
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 14),
+                                        decoration: BoxDecoration(
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.cardDark,
+                                            light: MyntColors.card,
+                                          ),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.cardBorderDark,
+                                              light: MyntColors.cardBorder,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 36,
+                                              height: 36,
+                                              decoration: BoxDecoration(
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.backgroundColorDark,
+                                                  light: MyntColors.inputBg,
+                                                ),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
                                               child: Icon(
-                                                Icons.more_vert,
-                                                size: 22,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
+                                                Icons.account_balance_rounded,
+                                                size: 18,
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.iconSecondaryDark,
+                                                  light: MyntColors.iconSecondary,
+                                                ),
                                               ),
                                             ),
-                                          ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    fund.bankname,
+                                                    style: MyntWebTextStyles.body(
+                                                      context,
+                                                      color: resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.textPrimaryDark,
+                                                        light: MyntColors.textPrimary,
+                                                      ),
+                                                      fontWeight: MyntFonts.semiBold,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    hideAccountNumber(fund.accno),
+                                                    style: MyntWebTextStyles.bodySmall(
+                                                      context,
+                                                      color: resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors.textSecondaryDark,
+                                                        light: MyntColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.keyboard_arrow_down_rounded,
+                                              size: 20,
+                                              color: resolveThemeColor(
+                                                context,
+                                                dark: MyntColors.iconSecondaryDark,
+                                                light: MyntColors.iconSecondary,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                  ),
-                                    const ListDivider(),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        const SizedBox(height: 16),
-                        if(!isKeyboardOpen || fund.amount.text.isNotEmpty)...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
-                
-                          // Payment method
-                
-                          child: TextWidget.subText(
-                            text: "Payment method",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        ListView.separated(
-                          padding: const EdgeInsets.all(0),
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: fund.defaultUpiapps.length,
-                          separatorBuilder: (context, index) =>
-                              const ListDivider(),
-                          itemBuilder: (context, index) {
-                            bool isUpiPayment =
-                                index == 0 || index == 1; // UPI Apps and UPI ID
-                            bool isAmountAbove1Lakh = fund.intValue > 100000;
-                
-                            return Column(
-                              children: [
-                                if (index == 0) const ListDivider(),
-                                InkWell(
-                                  onTap: () {
-                                    if (fund.amount.text.isEmpty ||
-                                        fund.intValue < 50) {
-                                      warningMessage(
-                                              context, "Min amount ₹50");
-                                      return;
-                                    }
-                
-                                    // Check for UPI payment restriction above 1 lakh
-                                    if (isUpiPayment && isAmountAbove1Lakh) {
-                                      warningMessage(context,
-                                              "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.");
-                                      return;
-                                    }
-                
-                                    // Proceed with payment based on method
-                                    if (index == 0) {
-                                      if (defaultTargetPlatform ==
-                                          TargetPlatform.android) {
-                                        _handleAndroidUpiPayment(context, fund);
-                                      } else {
-                                        _handleIosUpiPayment(context, fund,
-                                            availableApps, theme);
-                                      }
-                                    } else if (index == 1) {
-                                      _showUpiIdForm(
-                                          context, fund, theme, colors);
-                                    } else if (index == 2) {
-                                      if (fund.intValue > 5000000) {
-                                        warningMessage(
-                                                context,
-                                                "Max amount ₹5,000,000");
-                                      } else {
-                                        _handleRazorpayPayment(context, fund);
-                                      }
-                                    }
-                                  },
-                                  child: Opacity(
-                                    opacity:
-                                        (isUpiPayment && isAmountAbove1Lakh)
-                                            ? 0.5
-                                            : 1.0,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 24),
-                                      child: Row(
-                                        children: [
-                                          SvgPicture.asset(
-                                            '${fund.addfundIcons[index]['image']}',
-                                            width: index == 0 && index == 1
-                                                ? 40
-                                                : 40,
-                                            color: index ==2 ? theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight : null,
-                                          ),
-                                          const SizedBox(width: 20),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    TextWidget.paraText(
-                                                      text:
-                                                          '${fund.defaultUpiapps[index]['name']}',
-                                                      theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                      fw: 0,
-                                                    ),
-                                                    SvgPicture.asset(
-                                                      assets.leftArrow,
-                                                      width: 16,
-                                                      height: 16,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textSecondaryDark
-                                                          : colors
-                                                              .textSecondaryLight,
-                                                    )
-                                                  ],
-                                                ),
-                                                if (isUpiPayment &&
-                                                    isAmountAbove1Lakh)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 8),
-                                                    child:
-                                                        TextWidget.captionText(
-                                                      text:
-                                                          "Not available for amount above ₹1,00,000",
-                                                      theme: false,
-                                                      color: theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight,
-                                                      fw: 0,
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (index == fund.defaultUpiapps.length - 1)
-                                  const ListDivider(),
-                              ],
-                            );
-                          },
-                        ),
-                        ],
-                      ],
-                    )
-                    // : WithdrawScreen(
-                    //     segment: fund.textValue,
-                    //     withdarw: fund,
-                    //     foucs: fund.focusNode,
-                    //     theme: theme,
-                    //   )
-                  ],
-                ),
                               ),
                             ),
+
+                            // Vertical divider
+                            Container(
+                              width: 1,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.cardBorderDark,
+                                  light: MyntColors.cardBorder),
+                            ),
+
+                            // Right column: Payment methods
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Payment method",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    // Scan QR
+                                    _buildPaymentMethodCard(
+                                      fund: fund,
+                                      theme: theme,
+                                      index: 0,
+                                      icon: SvgPicture.asset(assets.upiIcon, width: 32),
+                                      title: "Scan QR",
+                                      maxLimit: "₹1,00,000",
+                                      badges: ["free", "recommended"],
+                                      isDisabled: fund.intValue > 100000,
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Enter UPI ID (with inline form inside card)
+                                    _buildUpiIdCard(fund, theme, context),
+                                    const SizedBox(height: 10),
+
+                                    // Net Banking
+                                    _buildPaymentMethodCard(
+                                      fund: fund,
+                                      theme: theme,
+                                      index: 2,
+                                      icon: SvgPicture.asset(
+                                        assets.netbankingIcon,
+                                        width: 32,
+                                        color: resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.iconSecondaryDark,
+                                          light: MyntColors.iconSecondary,
+                                        ),
+                                      ),
+                                      title: "Net Banking",
+                                      maxLimit: "₹50,00,000",
+                                      badges: ["free"],
+                                      isDisabled: false,
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Pay button
+                                    if (_selectedPaymentMethod >= 0)
+                                      MyntPrimaryButton(
+                                        label: "${_selectedPaymentMethod == 1 ? "Pay via UPI ID" : _selectedPaymentMethod == 0 ? "Pay via QR" : "Pay via Net Banking"}${fund.amount.text.isNotEmpty ? "  ·  ₹${fund.amount.text}" : ""}",
+                                        isLoading: fund.fundLoading,
+                                        onPressed: () => _onPayPressed(context, fund),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            ),
+          ),
         );
       },
     );
@@ -1139,13 +1336,661 @@ class _FundScreenState extends ConsumerState<FundScreen> {
   }
 
   void _selectSegment(String segmentCode, TranctionProvider fund) {
-    // Find the index of the segment in the companyCode array
     if (fund.decryptclientcheck?.companyCode != null) {
       final index = fund.decryptclientcheck!.companyCode!.indexOf(segmentCode);
       fund.segmentselection(index);
-      print(" funddd index: $index");
-      print(" codes: ${fund.decryptclientcheck!.companyCode![index]}");
     }
+  }
+
+  Widget _buildPaymentMethodCard({
+    required TranctionProvider fund,
+    required dynamic theme,
+    required int index,
+    required Widget icon,
+    required String title,
+    required String maxLimit,
+    required List<String> badges,
+    required bool isDisabled,
+  }) {
+    final bool isSelected = _selectedPaymentMethod == index;
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: InkWell(
+        onTap: isDisabled
+            ? null
+            : () {
+                setState(() {
+                  _selectedPaymentMethod = isSelected ? -1 : index;
+                });
+              },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.cardDark,
+              light: MyntColors.card,
+            ),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary)
+                  : resolveThemeColor(
+                      context,
+                      dark: MyntColors.cardBorderDark,
+                      light: MyntColors.cardBorder,
+                    ),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              SizedBox(width: 32, height: 32, child: icon),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          title,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
+                            fontWeight: MyntFonts.semiBold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ...badges.map((badge) => Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: badge == "recommended"
+                                      ? const Color(0xFF4CAF50)
+                                          .withValues(alpha: 0.1)
+                                      : const Color(0xFF4CAF50)
+                                          .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  badge,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF4CAF50),
+                                  ),
+                                ),
+                              ),
+                            )),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(
+                          "Max limit: $maxLimit",
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Tooltip(
+                          message:
+                              "It depends on your bank account transaction limit.",
+                          child: Icon(
+                            Icons.info_outline,
+                            size: 13,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.iconSecondaryDark,
+                              light: MyntColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (isDisabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          "Not available for amount above ₹1,00,000",
+                          style: MyntWebTextStyles.caption(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.errorDark,
+                              light: MyntColors.error,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  size: 22,
+                  color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onPayPressed(BuildContext context, TranctionProvider fund) {
+    if (fund.amount.text.isEmpty || fund.intValue < 50) {
+      warningMessage(context, "Min amount ₹50");
+      return;
+    }
+
+    switch (_selectedPaymentMethod) {
+      case 0: // Scan QR
+        if (fund.intValue > 100000) {
+          warningMessage(context,
+              "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.");
+          return;
+        }
+        _handleScanQrPayment(context, fund);
+        break;
+      case 1: // UPI ID
+        if (fund.intValue > 100000) {
+          warningMessage(context,
+              "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.");
+          return;
+        }
+        fund.upiidOnchange(fund.upiid.text);
+        fund.validateUPI(fund.upiid.text);
+        if (fund.upiiderror == null || fund.upiiderror!.isEmpty) {
+          _handleUpiIdPayment(context, fund);
+        }
+        break;
+      case 2: // Net Banking
+        if (fund.intValue > 5000000) {
+          warningMessage(context, "Max amount ₹50,00,000");
+          return;
+        }
+        _handleRazorpayPayment(context, fund);
+        break;
+    }
+  }
+
+  Widget _buildUpiIdCard(
+      TranctionProvider fund, dynamic theme, BuildContext context) {
+    final bool isDisabled = fund.intValue > 100000;
+    final bool isSelected = _selectedPaymentMethod == 1;
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: InkWell(
+        onTap: isDisabled
+            ? null
+            : () {
+                setState(() {
+                  _selectedPaymentMethod = isSelected ? -1 : 1;
+                });
+              },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.cardDark,
+              light: MyntColors.card,
+            ),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary)
+                  : resolveThemeColor(
+                      context,
+                      dark: MyntColors.cardBorderDark,
+                      light: MyntColors.cardBorder,
+                    ),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  children: [
+                    SvgPicture.asset(assets.upiIcon, width: 32),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                "Enter UPI ID",
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary,
+                                  ),
+                                  fontWeight: MyntFonts.semiBold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4CAF50)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  "free",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF4CAF50),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Text(
+                                "Max limit: ₹1,00,000",
+                                style: MyntWebTextStyles.bodySmall(
+                                  context,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Tooltip(
+                                message:
+                                    "It depends on your bank account transaction limit.",
+                                child: Icon(
+                                  Icons.info_outline,
+                                  size: 13,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.iconSecondaryDark,
+                                    light: MyntColors.iconSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isSelected)
+                      Icon(
+                        Icons.check_circle,
+                        size: 22,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // Expanded UPI ID form + Pay button inside the card
+              if (isSelected && !isDisabled) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                  child: Divider(
+                    height: 1,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.cardBorderDark,
+                      light: MyntColors.cardBorder,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+                  child: Column(
+                    children: [
+                      MyntTextField(
+                        controller: fund.upiid,
+                        placeholder: "Enter UPI ID (e.g. name@upi)",
+                        inputFormatters: [
+                          NoEmojiInputFormatter(),
+                          FilteringTextInputFormatter.deny(
+                              RegExp('[π£•₹€℅™∆√¶/,]')),
+                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                        ],
+                        onChanged: (value) {
+                          fund.upiidOnchange(value);
+                          fund.validateUPI(value);
+                        },
+                      ),
+                      if (fund.upiiderror != null &&
+                          fund.upiiderror!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "${fund.upiiderror}",
+                              style: MyntWebTextStyles.caption(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.errorDark,
+                                  light: MyntColors.error,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpiIdPaymentCard(
+      TranctionProvider fund, dynamic theme, BuildContext context) {
+    final bool isDisabled = fund.intValue > 100000;
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.isDarkMode
+              ? const Color(0xFF1E1E1E)
+              : colors.colorWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: _isUpiIdExpanded
+              ? Border.all(color: colors.colorBlue, width: 1.5)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+          child: Column(
+            children: [
+              // Header row
+              InkWell(
+                onTap: () {
+                  if (isDisabled) {
+                    warningMessage(context,
+                        "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.");
+                    return;
+                  }
+                  setState(() {
+                    _isUpiIdExpanded = !_isUpiIdExpanded;
+                  });
+                },
+                borderRadius: _isUpiIdExpanded
+                    ? const BorderRadius.vertical(top: Radius.circular(8))
+                    : BorderRadius.circular(8),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(assets.upiIcon, width: 36),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                TextWidget.subText(
+                                  text: "Enter UPI ID",
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  fw: 1,
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4CAF50)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    "free",
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF4CAF50),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                TextWidget.captionText(
+                                  text: "Max limit: ₹1,00,000",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  fw: 0,
+                                ),
+                                const SizedBox(width: 4),
+                                Tooltip(
+                                  message:
+                                      "It depends on your bank account transaction limit.",
+                                  child: Icon(
+                                    Icons.info_outline,
+                                    size: 14,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (isDisabled)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: TextWidget.captionText(
+                                  text:
+                                      "Not available for amount above ₹1,00,000",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.lossDark
+                                      : colors.lossLight,
+                                  fw: 0,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (fund.amount.text.isNotEmpty)
+                        TextWidget.subText(
+                          text: "₹${fund.amount.text}",
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          fw: 1,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Expandable UPI ID form
+              if (_isUpiIdExpanded && !isDisabled)
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: fund.upiid,
+                        style: TextWidget.textStyle(
+                          fontSize: 14,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          theme: theme.isDarkMode,
+                          fw: 0,
+                        ),
+                        inputFormatters: [
+                          NoEmojiInputFormatter(),
+                          FilteringTextInputFormatter.deny(
+                              RegExp('[π£•₹€℅™∆√¶/,]')),
+                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                        ],
+                        decoration: InputDecoration(
+                          hintText: "Enter UPI ID",
+                          hintStyle: TextWidget.textStyle(
+                            fontSize: 14,
+                            theme: false,
+                            color: (theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight)
+                                .withValues(alpha: 0.4),
+                            fw: 0,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 12),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                        .withValues(alpha: 0.3)
+                                    : const Color(0xFFE0E0E0)),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: colors.colorBlue),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          filled: true,
+                        ),
+                        onChanged: (value) {
+                          fund.upiidOnchange(value);
+                          fund.validateUPI(value);
+                        },
+                      ),
+                      if (fund.upiiderror != null &&
+                          fund.upiiderror!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextWidget.captionText(
+                              text: "${fund.upiiderror}",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.lossDark
+                                  : colors.lossLight,
+                              fw: 0,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            minimumSize: const Size(0, 45),
+                            backgroundColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (fund.amount.text.isEmpty ||
+                                fund.intValue < 50) {
+                              warningMessage(context, "Min amount ₹50");
+                              return;
+                            }
+                            fund.upiidOnchange(fund.upiid.text);
+                            fund.validateUPI(fund.upiid.text);
+                            if (fund.upiiderror == null ||
+                                fund.upiiderror!.isEmpty) {
+                              await _handleUpiIdPayment(context, fund);
+                            }
+                          },
+                          child: fund.fundLoading
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.colorWhite,
+                                  ),
+                                )
+                              : TextWidget.subText(
+                                  text: "Pay via UPI ID",
+                                  theme: false,
+                                  color: colors.colorWhite,
+                                  fw: 2,
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+    );
   }
 
   _showBottomSheet(TranctionProvider fund, ThemesProvider theme) {
@@ -1285,88 +2130,120 @@ class _FundScreenState extends ConsumerState<FundScreen> {
   }
 
   showBottomSheetbank(TranctionProvider fund, ThemesProvider theme) {
-    showModalBottomSheet(
-      enableDrag: false,
-      useSafeArea: true,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      backgroundColor: const Color(0xffffffff),
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              border: Border(
-                top: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark.withOpacity(0.5)
-                      : colors.colorWhite,
-                ),
-                left: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark.withOpacity(0.5)
-                      : colors.colorWhite,
-                ),
-                right: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark.withOpacity(0.5)
-                      : colors.colorWhite,
-                ),
-              ),
-            ),
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+          ),
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.cardDark,
+            light: MyntColors.card,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const CustomDragHandler(),
-                const SizedBox(height: 10),
                 Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 10),
-                  child: TextWidget.titleText(
-                    text: 'Choose an bank',
-                    theme: false,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
+                  padding: const EdgeInsets.fromLTRB(20, 20, 12, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextWidget.titleText(
+                        text: 'Select Bank',
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 1,
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                Divider(
+                  height: 1,
+                  color: theme.isDarkMode
+                      ? MyntColors.cardBorderDark
+                      : MyntColors.cardBorder,
                 ),
                 ListView.builder(
                   shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: fund.bankdetails!.dATA!.length,
                   itemBuilder: (BuildContext context, int index) {
+                    final isSelected =
+                        fund.bankdetails!.dATA![index][1] == fund.bankname;
                     return InkWell(
                       onTap: () {
                         fund.bankselection(index);
                         fund.setAccountslist(
                             fund.bankdetails!.dATA![index][2].toString());
-          
                         Navigator.pop(context);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 15),
-                        color: fund.bankdetails!.dATA![index][1] == fund.bankname
-                            ? theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : colors.textSecondaryLight.withOpacity(0.2)
+                            horizontal: 20, vertical: 14),
+                        color: isSelected
+                            ? (theme.isDarkMode
+                                ? MyntColors.primaryDark.withValues(alpha: 0.15)
+                                : const Color(0xFFE8F0FE))
                             : Colors.transparent,
-                        child: TextWidget.subText(
-                          text:
-                              '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
-                          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 0,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextWidget.subText(
+                                    text: '${fund.bankdetails!.dATA![index][1]}',
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: isSelected ? 1 : 0,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  TextWidget.paraText(
+                                    text: hideAccountNumber(
+                                        fund.bankdetails!.dATA![index][2]),
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle,
+                                size: 20,
+                                color: theme.isDarkMode
+                                    ? MyntColors.primaryDark
+                                    : MyntColors.primary,
+                              ),
+                          ],
                         ),
                       ),
                     );
                   },
                 ),
-                const SizedBox(
-                  height: 10,
-                )
+                const SizedBox(height: 8),
               ],
             ),
           ),
@@ -1375,56 +2252,46 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     );
   }
 
-  handlePaymentErrorResponse(
-    PaymentFailureResponse response,
-  ) {
-    showModalBottomSheet(
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        backgroundColor: const Color(0xffffffff),
-        isDismissible: false,
-        enableDrag: false,
-        showDragHandle: false,
-        useSafeArea: false,
-        isScrollControlled: true,
-        context: context,
-        builder: (BuildContext context) {
-          return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
-              child: RazorpayFailedUi(
-                  acco: widget.dd.accno,
-                  ifsc: widget.dd.ifsc,
-                  amount: ref.read(transcationProvider).amount.text,
-                  bankname: widget.dd.bankname));
-        });
+  void _handleWebPaymentError() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: RazorpayFailedUi(
+            amount: ref.read(transcationProvider).amount.text,
+            upiAddress: ref.read(transcationProvider).upiid.text,
+            orderId: ref.read(transcationProvider).hdfcUPIStatus?.data?.orderNumber,
+            upiTransactionId: ref.read(transcationProvider).hdfcUPIStatus?.data?.upiTransactionNo,
+            statusDescription: ref.read(transcationProvider).hdfcUPIStatus?.data?.statusDescription,
+            status: ref.read(transcationProvider).hdfcUPIStatus?.data?.status,
+          ),
+        ),
+      ),
+    ).then((_) {
+      ref.read(fundProvider).fetchFunds(context);
+    });
   }
 
-  handlePaymentSuccessResponse(PaymentSuccessResponse response) {
-    ref.read(transcationProvider).fetchrazorpayStatus("${response.paymentId}");
-    print("sent payment id razor pay: ${response.paymentId}");
-    showModalBottomSheet(
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        backgroundColor: const Color(0xffffffff),
-        isDismissible: true,
-        enableDrag: true,
-        showDragHandle: false,
-        useSafeArea: false,
-        isScrollControlled: true,
-        context: context,
-        builder: (BuildContext context) {
-          return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
-              child: RazorpaySuccessUi(
-                amount: ref.read(transcationProvider).amount.text,
-              ));
-        });
-    ref.read(transcationProvider).amount.clear();
+  Future<void> _handleWebPaymentSuccess(String paymentId) async {
+    final capturedAmount = ref.read(transcationProvider).amount.text;
+    if (paymentId.isNotEmpty) {
+      await ref.read(transcationProvider).fetchrazorpayStatus(paymentId);
+    }
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: RazorpaySuccessUi(amount: capturedAmount),
+        ),
+      ),
+    ).then((_) {
+      ref.read(fundProvider).fetchFunds(context);
+    });
   }
 }
