@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../res/mynt_web_text_styles.dart';
 
@@ -29,14 +27,6 @@ class RazorpayFailedUi extends StatefulWidget {
 }
 
 class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
-  String time = '';
-
-  @override
-  void initState() {
-    time = convDateWithTime();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -47,7 +37,7 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
       child: Consumer(
         builder: (context, ref, child) {
           return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: resolveThemeColor(
@@ -98,56 +88,10 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "₹${widget.amount}",
-                        style: MyntWebTextStyles.head(
-                          context,
-                          color: resolveThemeColor(
-                            context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary,
-                          ),
-                          fontWeight: MyntFonts.semiBold,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        time,
-                        style: MyntWebTextStyles.bodySmall(
-                          context,
-                          color: resolveThemeColor(
-                            context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-                const ListDivider(),
-
-                // Details
-                if (widget.upiAddress != null && widget.upiAddress!.isNotEmpty) ...[
-                  _dataRow(context, "UPI Address", widget.upiAddress!),
-                  const ListDivider(),
-                ],
-                if (widget.orderId != null && widget.orderId!.isNotEmpty) ...[
-                  _dataRow(context, "Order ID", widget.orderId!),
-                  const ListDivider(),
-                ],
-                if (widget.upiTransactionId != null && widget.upiTransactionId!.isNotEmpty) ...[
-                  _dataRow(context, "UPI Transaction ID", widget.upiTransactionId!),
-                  const ListDivider(),
-                ],
-                _dataRow(
-                  context,
-                  "Status Description",
-                  widget.statusDescription ?? "Transaction fail",
-                ),
-                const SizedBox(height: 24),
 
                 // Close button
                 SizedBox(
@@ -155,9 +99,9 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                   height: 46,
                   child: ElevatedButton(
                     onPressed: () {
-                      final fund = ref.read(transcationProvider);
-                      fund.amount.clear();
-                      fund.textFiledonChange('');
+                      // final fund = ref.read(transcationProvider);
+                      // fund.amount.clear();
+                      // fund.textFiledonChange('');
                       Navigator.pop(context);
                       FocusScope.of(context).unfocus();
                     },
@@ -190,43 +134,4 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
     );
   }
 
-  Widget _dataRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              fontWeight: MyntFonts.medium,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                fontWeight: MyntFonts.semiBold,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

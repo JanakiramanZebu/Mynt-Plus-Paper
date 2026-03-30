@@ -55,7 +55,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     final trancation = ref.read(transcationProvider);
     // Ensure bank details and client data are fetched
     if (trancation.bankdetails == null) {
-      trancation.fetchfundbank(context);
+      trancation.fetchfundbanks(context);
     }
     if (trancation.decryptclientcheck == null) {
       trancation.fetchc(context);
@@ -69,7 +69,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     final trancation = ref.read(transcationProvider);
     // Ensure bank details and client data are fetched
     if (trancation.bankdetails == null) {
-      trancation.fetchfundbank(context);
+      trancation.fetchfundbanks(context);
     }
     if (trancation.decryptclientcheck == null) {
       trancation.fetchc(context);

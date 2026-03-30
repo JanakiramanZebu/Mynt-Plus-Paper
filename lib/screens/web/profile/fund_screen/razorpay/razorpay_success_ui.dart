@@ -40,9 +40,8 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
           builder: (context, ref, child) {
             final fund = ref.watch(transcationProvider);
 
-            final amount = fund.razorpayTranstationRes?.amount;
-            final amountString =
-                amount != null ? (amount / 100).toStringAsFixed(2) : "0.00";
+            final checkData = fund.qrCheckStatusResponse?.data;
+            final amountString = checkData?.amount ?? widget.amount;
             return TransparentLoaderScreen(
               isLoading: fund.fundLoading,
               child: Container(
@@ -131,23 +130,20 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                     // Details
                     _dataRow(
                       context,
-                      "Bank Name",
-                      fund.razorpayTranstationRes?.notes?.bankname
-                              ?.toString() ??
-                          "",
+                      "UPI ID",
+                      checkData?.clientVPA ?? "",
                     ),
                     const ListDivider(),
                     _dataRow(
                       context,
-                      "A/c No",
-                      fund.razorpayTranstationRes?.notes?.accNo?.toString() ??
-                          "",
+                      "Payment ID",
+                      checkData?.orderNumber ?? "",
                     ),
                     const ListDivider(),
                     _dataRow(
                       context,
-                      "Payment Id",
-                      fund.razorpayTranstationRes?.id?.toString() ?? "",
+                      "UPI Transaction ID",
+                      checkData?.upiTransactionNo ?? "",
                     ),
                     const SizedBox(height: 24),
 
@@ -157,7 +153,10 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                       height: 46,
                       child: ElevatedButton(
                         onPressed: () {
-                          ref.read(transcationProvider).amount.clear();
+                          // ref.read(transcationProvider).amount.clear();
+                          final fund = ref.read(transcationProvider);
+                          fund.amount.clear();
+                          fund.textFiledonChange('');
                           Navigator.pop(context);
                           FocusScope.of(context).unfocus();
                         },
@@ -165,7 +164,7 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                           elevation: 0,
                           backgroundColor: resolveThemeColor(
                             context,
-                            dark: MyntColors.primaryDark,
+                            dark: MyntColors.secondary,
                             light: MyntColors.primary,
                           ),
                           shape: RoundedRectangleBorder(
@@ -195,9 +194,8 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
   Widget _dataRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
@@ -211,19 +209,16 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: MyntWebTextStyles.bodySmall(
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              fontWeight: MyntFonts.semiBold,
+              color: resolveThemeColor(
                 context,
-                fontWeight: MyntFonts.semiBold,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
               ),
             ),
           ),

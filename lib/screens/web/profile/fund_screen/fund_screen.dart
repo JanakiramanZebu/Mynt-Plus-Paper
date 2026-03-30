@@ -413,8 +413,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         if (!mounted) return;
         fund.focusNode.unfocus();
 
-        // Step 3: Show awaiting confirmation dialog and poll status
-        showDialog(
+        // Step 3: Start polling for payment status via wrapper/check_status
+        fund.startUpiCollectStatusPolling(context, onStatusUpdate: (status) {
+          if (!mounted) return;
+          // Close the awaiting dialog with the status
+          Navigator.of(context, rootNavigator: true).pop(status);
+        });
+
+        // Step 4: Show awaiting confirmation dialog and wait for result
+        final upiIdStatus = await showDialog<String>(
             barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
@@ -468,9 +475,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     ),
                                   ),
                                   MyntCloseButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      fund.focusNode.unfocus();
+                                    onPressed: () async {
+                                      fund.stopUpiCollectStatusPolling();
+                                      final result = await fund.checkUpiCollectStatusOnce();
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop(result?.data?.status ?? 'CANCELLED');
+                                        fund.focusNode.unfocus();
+                                      }
                                     },
                                   ),
                                 ],
@@ -521,9 +532,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                         dark: MyntColors.secondary,
                                         light: MyntColors.primary,
                                       ),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        fund.focusNode.unfocus();
+                                      onPressed: () async {
+                                        fund.stopUpiCollectStatusPolling();
+                                        final result = await fund.checkUpiCollectStatusOnce();
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop(result?.data?.status ?? 'CANCELLED');
+                                          fund.focusNode.unfocus();
+                                        }
                                       },
                                     ),
                                   ],
@@ -535,52 +550,54 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                       ),
                     ),
                   ));
-            }).whenComplete(() {
-          fund.stopUpiCollectStatusPolling();
-        });
-
-        // Step 4: Start polling for payment status via wrapper/check_status
-        fund.startUpiCollectStatusPolling(context, onStatusUpdate: (status) {
-          if (!mounted) return;
-          // Close the awaiting dialog
-          Navigator.of(context, rootNavigator: true).pop();
-
-          if (status == "SUCCESS") {
-            showDialog(
-              context: context,
-              builder: (context) => Dialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: RazorpaySuccessUi(amount: fund.amount.text),
-                ),
-              ),
-            ).then((_) {
-              fund.amount.clear();
             });
-          } else {
-            showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (context) => Dialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: RazorpayFailedUi(
-                    amount: fund.amount.text,
-                    upiAddress: fund.upiid.text,
-                    orderId: fund.hdfcUPIStatus?.data?.orderNumber,
-                    upiTransactionId: fund.hdfcUPIStatus?.data?.upiTransactionNo,
-                    statusDescription: fund.hdfcUPIStatus?.data?.statusDescription,
-                    status: fund.hdfcUPIStatus?.data?.status,
-                  ),
+
+        fund.stopUpiCollectStatusPolling();
+        if (!mounted) return;
+
+        // Step 5: Handle the result status and refresh balance
+        if (upiIdStatus == "SUCCESS") {
+          showDialog(
+            context: context,
+            builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: RazorpaySuccessUi(amount: fund.amount.text),
+              ),
+            ),
+          ).then((_) {
+            fund.amount.clear();
+            ref.read(fundProvider).fetchFunds(context);
+          });
+          ref.read(fundProvider).fetchFunds(context);
+        } else if (upiIdStatus != null) {
+          final collectData = await fund.checkUpiCollectStatusOnce();
+          if (!mounted) return;
+          showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: RazorpayFailedUi(
+                  amount: fund.amount.text,
+                  upiAddress: fund.upiid.text,
+                  orderId: collectData?.data?.orderNumber ?? fund.upiCollectResponse?.data?.orderNumber,
+                  upiTransactionId: collectData?.data?.upiTransactionNo ?? fund.upiCollectResponse?.data?.upiTransactionNo,
+                  statusDescription: collectData?.data?.statusDescription ?? upiIdStatus,
+                  status: collectData?.data?.status ?? upiIdStatus,
                 ),
               ),
-            );
-          }
-        });
+            ),
+          ).then((_) {
+            ref.read(fundProvider).fetchFunds(context);
+          });
+          ref.read(fundProvider).fetchFunds(context);
+        }
       }
     } catch (e) {
       // Ensure loading state is reset on any error
@@ -653,14 +670,21 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     if (!mounted) return;
 
     if (status == "SUCCESS") {
+      ref.read(fundProvider).fetchFunds(context);
       showDialog(
         context: context,
         builder: (context) => Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: RazorpaySuccessUi(amount: fund.amount.text),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: RazorpaySuccessUi(amount: fund.amount.text),
+          ),
         ),
-      );
+      ).then((_) {
+        ref.read(fundProvider).fetchFunds(context);
+      });
     } else if (status != null && status != 'CANCELLED') {
+      ref.read(fundProvider).fetchFunds(context);
       final qrData = fund.qrCheckStatusResponse?.data;
       showDialog(
         barrierDismissible: false,
@@ -679,7 +703,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             ),
           ),
         ),
-      );
+      ).then((_) {
+        ref.read(fundProvider).fetchFunds(context);
+      });
     }
   }
 
@@ -818,7 +844,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}",
+                                    "₹ ${formatIndianCurrency(((double.tryParse(funds.fundDetailModel?.cash ?? '0') ?? 0) + (double.tryParse(funds.fundDetailModel?.payin ?? '0') ?? 0)).toStringAsFixed(2))}",
                                     style: MyntWebTextStyles.head(
                                       context,
                                       color: resolveThemeColor(
@@ -2244,14 +2270,17 @@ class _FundScreenState extends ConsumerState<FundScreen> {
           ),
         ),
       ),
-    );
+    ).then((_) {
+      ref.read(fundProvider).fetchFunds(context);
+    });
   }
 
-  void _handleWebPaymentSuccess(String paymentId) {
+  Future<void> _handleWebPaymentSuccess(String paymentId) async {
     final capturedAmount = ref.read(transcationProvider).amount.text;
     if (paymentId.isNotEmpty) {
-      ref.read(transcationProvider).fetchrazorpayStatus(paymentId);
+      await ref.read(transcationProvider).fetchrazorpayStatus(paymentId);
     }
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -2261,6 +2290,8 @@ class _FundScreenState extends ConsumerState<FundScreen> {
           child: RazorpaySuccessUi(amount: capturedAmount),
         ),
       ),
-    );
+    ).then((_) {
+      ref.read(fundProvider).fetchFunds(context);
+    });
   }
 }

@@ -28,6 +28,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   final ScrollController _verticalScrollController = ScrollController();
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   final TextEditingController _searchController = TextEditingController();
+   final ValueNotifier<String> _selectedFilter = ValueNotifier<String>('All');
   final _assets = Assets();
 
   @override
@@ -47,21 +48,31 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     _verticalScrollController.dispose();
     _searchQuery.dispose();
     _searchController.dispose();
+    _selectedFilter.dispose();
     super.dispose();
   }
 
   List<ClientHistoryItem> _getFilteredTransactions() {
     final query = _searchQuery.value.toLowerCase().trim();
-    if (query.isEmpty) return _transactions;
+    final filter = _selectedFilter.value;
     return _transactions.where((item) {
-      final date = _formatDate(item.dateTime).toLowerCase();
-      final order = (item.orderNumber ?? '').toLowerCase();
-      final type = (item.transtype ?? '').toLowerCase();
-      final amount = (item.amount ?? '').toLowerCase();
-      return date.contains(query) ||
-          order.contains(query) ||
-          type.contains(query) ||
-          amount.contains(query);
+      // Status filter
+      if (filter != 'All') {
+        final status = (item.status ?? '').toUpperCase();
+        if (status != filter.toUpperCase()) return false;
+      }
+      // Search filter
+      if (query.isNotEmpty) {
+        final date = _formatDate(item.dateTime).toLowerCase();
+        final order = (item.orderNumber ?? '').toLowerCase();
+        final type = (item.transtype ?? '').toLowerCase();
+        final amount = (item.amount ?? '').toLowerCase();
+        return date.contains(query) ||
+            order.contains(query) ||
+            type.contains(query) ||
+            amount.contains(query);
+      }
+      return true;
     }).toList();
   }
 
@@ -172,7 +183,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 onClear: () => _searchController.clear(),
               ),
             ),
-          ),
+          ),  
+          _buildFilterButton(),
+          const SizedBox(width: 15)
         ],
       ),
       body: _isLoading
@@ -266,8 +279,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         // Scrollable body
         Expanded(
           child: ValueListenableBuilder<String>(
-            valueListenable: _searchQuery,
-            builder: (context, query, _) {
+            valueListenable: _selectedFilter,
+            builder: (context, filter, _) {
+              return ValueListenableBuilder<String>(
+                valueListenable: _searchQuery,
+                builder: (context, query, _) {
               final filtered = _getFilteredTransactions();
               if (filtered.isEmpty) {
                 return Center(
@@ -372,11 +388,176 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               },
             ),
               );
+                },
+              );
             },
           ),
         ),
       ],
       ),
+    );
+  }
+
+  // Filter button matching positions page
+  Widget _buildFilterButton() {
+    final buttonSize = context.responsiveValue<double>(
+      mobile: 32,
+      smallTablet: 34,
+      tablet: 36,
+      desktop: 40,
+      largeDesktop: 40,
+      widescreen: 40,
+    );
+    final iconSize = context.responsiveValue<double>(
+      mobile: 16,
+      smallTablet: 17,
+      tablet: 18,
+      desktop: 20,
+      largeDesktop: 20,
+      widescreen: 20,
+    );
+
+    return Builder(
+      builder: (buttonContext) {
+        return MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () => _showFilterPopup(buttonContext),
+            child: Container(
+              width: buttonSize,
+              height: buttonSize,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  _assets.searchFilter,
+                  width: iconSize,
+                  colorFilter: ColorFilter.mode(
+                    resolveThemeColor(
+                      context,
+                      dark: MyntColors.iconSecondaryDark,
+                      light: MyntColors.iconSecondary,
+                    ),
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFilterPopup(BuildContext context) {
+    shadcn.showPopover(
+      context: context,
+      alignment: Alignment.topCenter,
+      offset: const Offset(0, 8),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+      ),
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              width: 160,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildFilterMenuItem('All'),
+                  _buildFilterMenuItem('Success'),
+                  _buildFilterMenuItem('Failed'),
+                  _buildFilterMenuItem('Pending'),
+                  _buildFilterMenuItem('Initiated'),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterMenuItem(String value) {
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedFilter,
+      builder: (context, currentFilter, child) {
+        final isSelected = currentFilter == value;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              _selectedFilter.value = value;
+              shadcn.closeOverlay(context);
+            },
+            splashColor: resolveThemeColor(
+              context,
+              dark: MyntColors.rippleDark,
+              light: MyntColors.rippleLight,
+            ),
+            highlightColor: resolveThemeColor(
+              context,
+              dark: MyntColors.highlightDark,
+              light: MyntColors.highlightLight,
+            ),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: isSelected
+                    ? resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark.withValues(alpha: 0.12),
+                        light: const Color(0xFFE8F0FE),
+                      )
+                    : Colors.transparent,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight: isSelected
+                            ? MyntFonts.semiBold
+                            : MyntFonts.medium,
+                        color: isSelected
+                            ? resolveThemeColor(
+                                context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary,
+                              )
+                            : resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

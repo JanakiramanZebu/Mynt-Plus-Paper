@@ -261,7 +261,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
 
   String get mainfund => 'https://fundapi.mynt.in/api';
   String get clientcheck => '$mainfund/client_check';
-  // String get bankcheck => '$mainfund/bank_check';
+  String get bankcheck => '$mainfund/bank_check';
 
   ///withdraw
   String get fundUpiIdView => 'https://fundapi.mynt.in/withdraw/upi_id_view';

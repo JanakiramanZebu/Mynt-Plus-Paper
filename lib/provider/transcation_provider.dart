@@ -568,6 +568,22 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
   }
 
+ Future fetchfundbanks(BuildContext context) async {
+    try {
+      toggleLoadingOn(true);
+      _bankdetails = await api.getbankDetails();
+    } catch (e) {
+      print("Failed to fetch client bank details: $e");
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "fetchfundbanks", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
   void selectClientBank(int index) {
     if (_clientBankDetails?.data == null ||
         index >= _clientBankDetails!.data!.length) return;
@@ -835,6 +851,21 @@ class TranctionProvider extends DefaultChangeNotifier {
     _upiCollectPollTimer?.cancel();
     _upiCollectPollTimer = null;
     notifyListeners();
+  }
+
+  Future<WrapperCheckStatusResponse?> checkUpiCollectStatusOnce() async {
+    try {
+      final response = await api.wrapperCheckStatus(
+        orderNo: _upiCollectResponse!.data!.orderNumber!,
+        upiTranID: _upiCollectResponse!.data!.upiTransactionNo!,
+        clientID: _decryptclientcheck!.clientCheck!.dATA![_indexss][0],
+        gateway: _upiCollectResponse!.gateway ?? '',
+      );
+      notifyListeners();
+      return response;
+    } catch (e) {
+      return null;
+    }
   }
 
   void startQrStatusPolling(BuildContext context, {Function(String status)? onStatusUpdate}) {
