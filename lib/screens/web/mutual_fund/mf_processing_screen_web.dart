@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../provider/mf_provider.dart';
 import '../../../../../provider/thems.dart';
-import '../../../../../res/res.dart';
+import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../res/mynt_web_text_styles.dart';
 import '../../../../../sharedWidget/payment_loader.dart';
 import '../../../../../sharedWidget/snack_bar.dart';
@@ -115,54 +115,129 @@ class _MfUPIProcessingScreenWebState extends ConsumerState<MfUPIProcessingScreen
           elevation: 0,
           insetPadding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 300),
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+            constraints: const BoxConstraints(maxWidth: 350),
             decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
+              color: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
+              border: Border.all(
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark, light: MyntColors.divider),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Awaiting ${mfprovider.paymentName} confirmation',
-                  style: MyntWebTextStyles.title(
-                    context,
-                    darkColor: colors.textPrimaryDark,
-                    lightColor: colors.textPrimaryLight,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const ProgressiveDotsLoader(),
-                const SizedBox(height: 24),
-                Text(
-                  'This will take a few seconds.',
-                  style: MyntWebTextStyles.para(
-                    context,
-                    darkColor: colors.textSecondaryDark,
-                    lightColor: colors.textSecondaryLight,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _triggerButtonAction,
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      minimumSize: const Size(0, 48),
-                      backgroundColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                // Header
+                Container(
+                  height: 50,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(8)),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
+                        width: 1,
                       ),
                     ),
-                    child: Text(
-                      "Cancel Transaction",
-                      style: MyntWebTextStyles.buttonMd(
-                        context,
-                        color: colors.colorWhite,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Processing',
+                        style: MyntWebTextStyles.title(
+                          context,
+                          fontWeight: MyntFonts.semiBold,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _triggerButtonAction,
+                        icon: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.iconSecondaryDark,
+                              light: MyntColors.iconSecondary),
+                        ),
+                        splashRadius: 20,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 32),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Awaiting ${mfprovider.paymentName} confirmation',
+                        style: MyntWebTextStyles.body(
+                          context,
+                          fontWeight: MyntFonts.medium,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const ProgressiveDotsLoader(),
+                      const SizedBox(height: 24),
+                      Text(
+                        'This will take a few seconds.',
+                        style: MyntWebTextStyles.para(
+                          context,
+                          darkColor: MyntColors.textSecondaryDark,
+                          lightColor: MyntColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Footer
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: _triggerButtonAction,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.isDarkMode
+                            ? MyntColors.secondary
+                            : MyntColors.primary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 24),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Cancel Transaction',
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          fontWeight: MyntFonts.semiBold,
+                          color: MyntColors.backgroundColor,
+                        ),
                       ),
                     ),
                   ),

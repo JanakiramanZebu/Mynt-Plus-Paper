@@ -31,6 +31,7 @@ import '../models/fund_model_testing_copy/fund_validation_token.dart';
 import '../models/fund_model_testing_copy/fund_withdraw_model.dart';
 import '../models/fund_model_testing_copy/fund_withdraw_status_model.dart';
 import '../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
+import '../models/mf_model/client_bank_details_model.dart';
 import '../models/fund_model_testing_copy/secured_client_data_model.dart';
 import '../models/fund_model_testing_copy/view_upi_id.dart';
 import '../res/res.dart';
@@ -345,6 +346,10 @@ class TranctionProvider extends DefaultChangeNotifier {
   BankDetails? _bankdetails;
   BankDetails? get bankdetails => _bankdetails;
 
+  ClientBankDetailsResponse? _clientBankDetails;
+  ClientBankDetailsResponse? get clientBankDetails => _clientBankDetails;
+  List<ClientBankDetail> get clientBankList => _clientBankDetails?.data ?? [];
+
   Razorpays? _razorpay;
   Razorpays? get razorpay => _razorpay;
 
@@ -536,13 +541,18 @@ class TranctionProvider extends DefaultChangeNotifier {
   }
 
   Future fetchfundbank(BuildContext context) async {
-    //final localstorage = await SharedPreferences.getInstance();
     try {
       toggleLoadingOn(true);
-      _bankdetails = await api.getbankDetails();
-      // print("------------ ${_bankdetails!}");
+      _clientBankDetails = await api.getAllClientBankDetails();
+      if (_clientBankDetails?.stat == "Ok" &&
+          _clientBankDetails!.data != null &&
+          _clientBankDetails!.data!.isNotEmpty) {
+        // Auto-select default bank or first bank
+        final defaultIndex = _clientBankDetails!.data!
+            .indexWhere((b) => b.defaultBankFlag == "Y");
+        selectClientBank(defaultIndex >= 0 ? defaultIndex : 0);
+      }
     } catch (e) {
-      //log("Failed to fetch bank Data:: ${e.toString()}");
       ref
           .read(indexListProvider)
           .logError
@@ -551,6 +561,31 @@ class TranctionProvider extends DefaultChangeNotifier {
     } finally {
       toggleLoadingOn(false);
     }
+  }
+
+  void selectClientBank(int index) {
+    if (_clientBankDetails?.data == null ||
+        index >= _clientBankDetails!.data!.length) return;
+    final bank = _clientBankDetails!.data![index];
+    _bankname = bank.bankName ?? '';
+    _accno = bank.accountNo ?? '';
+    _ifsc = bank.ifscCode ?? '';
+    _initbank = '$_bankname-${hideAccountNumber(_accno)}';
+    upiAppsAccnoFormat(_accno);
+    _setClientAccountsList(_accno);
+    notifyListeners();
+  }
+
+  void _setClientAccountsList(String accno) {
+    List<AccountItem> items = [];
+    for (var bank in _clientBankDetails?.data ?? []) {
+      if (accno != bank.accountNo) {
+        items.add(AccountItem(
+            accno: bank.accountNo ?? '', ifsc: bank.ifscCode ?? ''));
+      }
+    }
+    _allacc =
+        "$accno${items.isNotEmpty ? '!' : ''}${getFormattedAccountNumbers(items)}";
   }
 
   Future fetcUPIIDPayment(

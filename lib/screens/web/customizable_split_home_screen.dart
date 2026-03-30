@@ -4255,7 +4255,7 @@ class _CustomizableSplitHomeScreenState
 
         // Call MF API methods to fetch data
         ref.read(mfProvider).fetchnewMFBestList();
-        ref.read(mfProvider).fetchMFCategoryList("Z", "Z");
+        // ref.read(mfProvider).fetchMFCategoryList("Z", "Z");
         ref.read(mfProvider).fetchmfallcatnew();
         ref.read(mfProvider).fetchmfNFO(context);
       });

@@ -989,25 +989,22 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreenWeb>
     mfData.chngOrderType(orderType);
     mfData.orderchangetitle(orderType);
 
-    // Get screen dimensions
     final screenSize = MediaQuery.of(context).size;
-    // Use minimum width of 380 or 30% of screen width, whichever is larger
     final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
-    final dialogHeight = screenSize.height * 0.65; // 65% height
+    final isDark = ref.read(themeProvider).isDarkMode;
 
-    // Show dialog immediately - data will load inside MFOrderScreen's initState
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        backgroundColor: isDark
+            ? MyntColors.backgroundColorDark
+            : MyntColors.backgroundColor,
+        elevation: 0,
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: SizedBox(
           width: dialogWidth,
-          height: dialogHeight,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: MFOrderScreenWeb(mfData: mfItem),
-          ),
+          child: MFOrderScreenWeb(mfData: mfItem),
         ),
       ),
     );
