@@ -470,6 +470,65 @@ class Preferences {
     await _prefInstance?.remove(_socialRefreshToken);
     await _prefInstance?.remove(_socialUserId);
   }
+
+  // ── Scalper Settings ──────────────────────────────────────────────
+
+  // Setters — called when user clicks Apply in scalper settings dialog
+  Future setScalperStrikeMode(String mode) async =>
+      await _prefInstance!.setString(_scalperStrikeMode, mode);
+
+  Future setScalperCallOffset(int offset) async =>
+      await _prefInstance!.setInt(_scalperCallOffset, offset);
+
+  Future setScalperPutOffset(int offset) async =>
+      await _prefInstance!.setInt(_scalperPutOffset, offset);
+
+  Future setScalperCallPremium(double premium) async =>
+      await _prefInstance!.setDouble(_scalperCallPremium, premium);
+
+  Future setScalperPutPremium(double premium) async =>
+      await _prefInstance!.setDouble(_scalperPutPremium, premium);
+
+  Future setScalperDefaultSymbol(int index) async =>
+      await _prefInstance!.setInt(_scalperDefaultSymbol, index);
+
+  Future setScalperMktProtEnabled(bool enabled) async =>
+      await _prefInstance!.setBool(_scalperMktProtEnabled, enabled);
+
+  Future setScalperMktProtPoints(int points) async =>
+      await _prefInstance!.setInt(_scalperMktProtPoints, points);
+
+  Future setScalperPosFilter(String filter) async =>
+      await _prefInstance!.setString(_scalperPosFilter, filter);
+
+  // Getters — called when ScalperProvider is created to restore saved values
+  String get scalperStrikeMode =>
+      _prefInstance?.getString(_scalperStrikeMode) ?? 'offset';
+
+  int get scalperCallOffset =>
+      _prefInstance?.getInt(_scalperCallOffset) ?? 0;
+
+  int get scalperPutOffset =>
+      _prefInstance?.getInt(_scalperPutOffset) ?? 0;
+
+  double get scalperCallPremium =>
+      _prefInstance?.getDouble(_scalperCallPremium) ?? 100.0;
+
+  double get scalperPutPremium =>
+      _prefInstance?.getDouble(_scalperPutPremium) ?? 100.0;
+
+  int get scalperDefaultSymbol =>
+      _prefInstance?.getInt(_scalperDefaultSymbol) ?? 0;
+
+  bool get scalperMktProtEnabled =>
+      _prefInstance?.getBool(_scalperMktProtEnabled) ?? false;
+
+  int get scalperMktProtPoints =>
+      _prefInstance?.getInt(_scalperMktProtPoints) ?? 5;
+
+  String get scalperPosFilter =>
+      _prefInstance?.getString(_scalperPosFilter) ?? 'all';
+
 }
 
 const String _userTheme = 'userTheme';
@@ -582,3 +641,14 @@ const String _watchlistOCSymbol = "watchlistOCSymbol";
 const String _socialAccessToken = "socialAccessToken";
 const String _socialRefreshToken = "socialRefreshToken";
 const String _socialUserId = "socialUserId";
+
+//// SCALPER SETTINGS
+const String _scalperStrikeMode = "scalperStrikeMode";
+const String _scalperCallOffset = "scalperCallOffset";
+const String _scalperPutOffset = "scalperPutOffset";
+const String _scalperCallPremium = "scalperCallPremium";
+const String _scalperPutPremium = "scalperPutPremium";
+const String _scalperDefaultSymbol = "scalperDefaultSymbol";
+const String _scalperMktProtEnabled = "scalperMktProtEnabled";
+const String _scalperMktProtPoints = "scalperMktProtPoints";
+const String _scalperPosFilter = "scalperPosFilter";

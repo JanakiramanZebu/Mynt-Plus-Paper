@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../api/core/api_export.dart';
 import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 import '../../../models/marketwatch_model/linked_scrips.dart';
 import '../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../models/marketwatch_model/search_scrip_model.dart';
@@ -39,8 +40,24 @@ class ScalperIndex {
 class ScalperProvider extends ChangeNotifier {
   final Ref ref;
   final ApiExporter _api = locator<ApiExporter>();
+  final Preferences _pref = locator<Preferences>();
 
-  ScalperProvider(this.ref);
+  ScalperProvider(this.ref) {
+    _loadSavedSettings();
+  }
+
+  /// Load saved scalper settings from SharedPreferences on startup.
+  void _loadSavedSettings() {
+    _strikeSelectionMode = _pref.scalperStrikeMode;
+    _defaultCallOffset = _pref.scalperCallOffset;
+    _defaultPutOffset = _pref.scalperPutOffset;
+    _callPremiumTarget = _pref.scalperCallPremium;
+    _putPremiumTarget = _pref.scalperPutPremium;
+    _defaultSymbolIndex = _pref.scalperDefaultSymbol;
+    _isMktProtectionEnabled = _pref.scalperMktProtEnabled;
+    _mktProtectionPoints = _pref.scalperMktProtPoints;
+    _positionFilter = _pref.scalperPosFilter;
+  }
 
   // Index configurations (stable tokens)
   static const List<ScalperIndex> indices = [
@@ -308,6 +325,17 @@ class ScalperProvider extends ChangeNotifier {
     _mktProtectionPoints = mktProtectionPoints.clamp(1, 20);
     _positionFilter = positionFilter;
     _isShortcutsEnabled = isShortcutsEnabled;
+
+    // Persist all settings to SharedPreferences
+    _pref.setScalperStrikeMode(_strikeSelectionMode);
+    _pref.setScalperCallOffset(_defaultCallOffset);
+    _pref.setScalperPutOffset(_defaultPutOffset);
+    _pref.setScalperCallPremium(_callPremiumTarget);
+    _pref.setScalperPutPremium(_putPremiumTarget);
+    _pref.setScalperDefaultSymbol(_defaultSymbolIndex);
+    _pref.setScalperMktProtEnabled(_isMktProtectionEnabled);
+    _pref.setScalperMktProtPoints(_mktProtectionPoints);
+    _pref.setScalperPosFilter(_positionFilter);
 
     if (_atmStrike.isNotEmpty) {
       _applyStrikeSelection();
