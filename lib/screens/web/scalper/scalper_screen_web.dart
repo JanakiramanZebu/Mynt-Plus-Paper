@@ -15,6 +15,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/res.dart';
+import '../../../utils/responsive_snackbar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/common_search_fields_web.dart';
 import '../../../sharedWidget/common_text_fields_web.dart';
@@ -581,6 +582,15 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
             onPressed: () async {
               _hasLoadedOptionChain = false;
               await _loadOptionChain();
+              // Re-apply preference-based strikes (user may have manually changed them)
+              if (mounted) {
+                final scalper = ref.read(scalperProvider);
+                scalper.reapplyPreferenceStrikes();
+                ResponsiveSnackBar.showInfo(
+                  context,
+                  'Strikes reset to preference defaults',
+                );
+              }
             },
             icon: Icon(
               Icons.refresh,

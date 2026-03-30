@@ -837,6 +837,14 @@ class ScalperProvider extends ChangeNotifier {
   // Legacy alias
   void _applyDefaultStrikeOffset() => _applyStrikeSelection();
 
+  /// Re-apply preference-based strike selection (called on refresh to reset manual picks).
+  void reapplyPreferenceStrikes() {
+    if (_atmStrike.isNotEmpty) {
+      _applyStrikeSelection();
+      notifyListeners();
+    }
+  }
+
   /// Set call chart to a specific strike (independent of put chart)
   void setCallStrike(String strike) {
     _callStrike = strike;
