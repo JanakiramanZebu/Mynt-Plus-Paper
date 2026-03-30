@@ -122,8 +122,8 @@ class _MtfTransferScreenState extends ConsumerState<MtfTransferScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
-              dark: const Color(0xFF2D1111),
-              light: const Color(0xFFFFF3F3)),
+              dark: MyntColors.errorDark.withOpacity(0.1),
+              light: MyntColors.error.withOpacity(0.1)),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: resolveThemeColor(
