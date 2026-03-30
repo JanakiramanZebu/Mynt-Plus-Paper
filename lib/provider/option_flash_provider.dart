@@ -49,6 +49,7 @@ class FormattedStrike {
   final double strike;
   final String optionType;
   final String moneyness;
+  final int moneynessDepth; // How many strikes away from ATM (0 for ATM)
   final double ltp;
 
   FormattedStrike({
@@ -58,8 +59,12 @@ class FormattedStrike {
     required this.strike,
     required this.optionType,
     required this.moneyness,
+    this.moneynessDepth = 0,
     required this.ltp,
   });
+
+  /// Moneyness with depth number (e.g., "ITM 2", "OTM 3", "ATM")
+  String get moneynessLabel => isATM ? moneyness : '$moneyness $moneynessDepth';
 
   FormattedStrike copyWith({
     String? label,
@@ -68,6 +73,7 @@ class FormattedStrike {
     double? strike,
     String? optionType,
     String? moneyness,
+    int? moneynessDepth,
     double? ltp,
   }) {
     return FormattedStrike(
@@ -77,6 +83,7 @@ class FormattedStrike {
       strike: strike ?? this.strike,
       optionType: optionType ?? this.optionType,
       moneyness: moneyness ?? this.moneyness,
+      moneynessDepth: moneynessDepth ?? this.moneynessDepth,
       ltp: ltp ?? this.ltp,
     );
   }
@@ -253,6 +260,18 @@ class OptionFlashProvider extends DefaultChangeNotifier {
       final isOpen = netqtyVal != 0;
       return matchesSymbol && isOpen;
     });
+  }
+
+  /// Get total net quantity across all positions for the selected symbol
+  int get symbolNetQty {
+    if (_selectedSymbol == null || _positionsData.isEmpty) return 0;
+    int total = 0;
+    for (var pos in _positionsData) {
+      if (_matchesSymbol(pos.tsym, _selectedSymbol!.symname)) {
+        total += int.tryParse(pos.netqty ?? '0') ?? 0;
+      }
+    }
+    return total;
   }
 
   // WebSocket subscription tracking
@@ -643,11 +662,33 @@ class OptionFlashProvider extends DefaultChangeNotifier {
         (double.tryParse(a.strprc ?? '0') ?? 0)
             .compareTo(double.tryParse(b.strprc ?? '0') ?? 0));
 
+    // Get unique sorted strike prices to compute depth
+    final uniqueStrikes = sortedOptions
+        .map((o) => double.tryParse(o.strprc ?? '0') ?? 0)
+        .toSet()
+        .toList()
+      ..sort();
+
+    // Find ATM strike index (closest to spot)
+    int atmIndex = 0;
+    double minDiff = double.infinity;
+    for (int i = 0; i < uniqueStrikes.length; i++) {
+      final diff = (uniqueStrikes[i] - spotPrice).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        atmIndex = i;
+      }
+    }
+
     for (var option in sortedOptions) {
       final strike = double.tryParse(option.strprc ?? '0') ?? 0;
       final diff = (strike - spotPrice).abs();
       String moneyness = '';
       bool isATM = false;
+
+      // Find this strike's index in unique strikes to compute depth
+      final strikeIndex = uniqueStrikes.indexOf(strike);
+      final depth = (strikeIndex - atmIndex).abs();
 
       if (diff < 25) {
         moneyness = 'ATM';
@@ -658,9 +699,10 @@ class OptionFlashProvider extends DefaultChangeNotifier {
         moneyness = strike < spotPrice ? 'OTM' : 'ITM';
       }
 
+      final moneynessLabel = isATM ? moneyness : '$moneyness $depth';
       final currentLTP = double.tryParse(option.lp ?? '0') ?? 0;
       final label =
-          '${option.strprc} | ${option.optt == 'CE' ? 'CALL' : 'PUT'} | $moneyness | ₹${currentLTP.toStringAsFixed(2)}';
+          '${option.strprc} | ${option.optt == 'CE' ? 'CALL' : 'PUT'} | $moneynessLabel | ₹${currentLTP.toStringAsFixed(2)}';
 
       strikes.add(FormattedStrike(
         label: label,
@@ -669,6 +711,7 @@ class OptionFlashProvider extends DefaultChangeNotifier {
         strike: strike,
         optionType: option.optt ?? 'CE',
         moneyness: moneyness,
+        moneynessDepth: depth,
         ltp: currentLTP,
       ));
     }

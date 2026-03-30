@@ -291,67 +291,80 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
             topRight: Radius.circular(5),
           ),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Symbol selector
-            _buildSymbolSelector(context, optionFlash, isDark),
-            const SizedBox(width: 12),
+            Row(
+              children: [
+                // Symbol selector
+                _buildSymbolSelector(context, optionFlash, isDark),
+                const SizedBox(width: 12),
 
-            // Index price and change
-            _buildIndexPrice(context, optionFlash, isDark),
-            const SizedBox(width: 12),
+                // Index price and change
+                _buildIndexPrice(context, optionFlash, isDark),
+                const SizedBox(width: 12),
 
-            // Strike LTP info
-            Expanded(
-              child: _buildStrikeLTP(context, optionFlash, isDark),
-            ),
+                // Strike LTP info
+                Expanded(
+                  child: _buildStrikeLTP(context, optionFlash, isDark),
+                ),
 
-            // P&L (fixed width to prevent dancing) - only show if positions exist
-            if (optionFlash.hasSymbolPositions) ...[
-              SizedBox(
-                width: 140,
-                child: _buildPnL(context, optionFlash, isDark),
-              ),
+                // Exit button (only when positions exist)
+                if (optionFlash.hasSymbolPositions)
+                  Tooltip(
+                    message: 'Exit All ${optionFlash.selectedSymbol?.display ?? ''} Positions',
+                    child: IconButton(
+                      onPressed: () => optionFlash.exitAllPositions(context),
+                      icon: Icon(
+                        Icons.output,
+                        size: 20,
+                        color: isDark ? MyntColors.iconDark : MyntColors.icon,
+                      ),
+                    ),
+                  ),
 
-              // Exit button with icon
-              Tooltip(
-                message: 'Exit All ${optionFlash.selectedSymbol?.display ?? ''} Positions',
-                child: IconButton(
-                  onPressed: () => optionFlash.exitAllPositions(context),
-                  icon: Icon(
-                    Icons.output,
-                    size: 20,
-                    color: isDark ? MyntColors.iconDark : MyntColors.icon,
+                // Refresh button
+                Tooltip(
+                  message: 'Refresh',
+                  child: IconButton(
+                    onPressed: () => optionFlash.refreshData(context),
+                    icon: Icon(
+                      Icons.refresh,
+                      size: 20,
+                      color: isDark ? MyntColors.iconDark : MyntColors.icon,
+                    ),
                   ),
                 ),
-              ),
-            ],
 
-            // Refresh button
-            Tooltip(
-              message: 'Refresh',
-              child: IconButton(
-                onPressed: () => optionFlash.refreshData(context),
-                icon: Icon(
-                  Icons.refresh,
-                  size: 20,
-                  color: isDark ? MyntColors.iconDark : MyntColors.icon,
+                // Close button
+                Tooltip(
+                  message: 'Close',
+                  child: IconButton(
+                    onPressed: () => optionFlash.closePanel(),
+                    icon: Icon(
+                      Icons.close,
+                      size: 20,
+                      color: isDark ? MyntColors.iconDark : MyntColors.icon,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Net Qty & P&L row (only when positions exist)
+            if (optionFlash.hasSymbolPositions)
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Row(
+                  children: [
+                    // TODO: Net Qty display - commented out pending clarification
+                    // on how to handle mixed long/short positions (e.g. sold = -75)
+                    // Text('Net Qty ', ...),
+                    // Text(optionFlash.symbolNetQty.toString(), ...),
+                    // const SizedBox(width: 24),
+                    _buildPnL(context, optionFlash, isDark),
+                  ],
                 ),
               ),
-            ),
-
-            // Close button
-            Tooltip(
-              message: 'Close',
-              child: IconButton(
-                onPressed: () => optionFlash.closePanel(),
-                icon: Icon(
-                  Icons.close,
-                  size: 20,
-                  color: isDark ? MyntColors.iconDark : MyntColors.icon,
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -1166,11 +1179,11 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      // Moneyness
+                                      // Moneyness with depth
                                       SizedBox(
-                                        width: 40,
+                                        width: 55,
                                         child: Text(
-                                          strike.moneyness,
+                                          strike.moneynessLabel,
                                           style: MyntWebTextStyles.caption(
                                             context,
                                             color: resolveThemeColor(
