@@ -18,6 +18,7 @@ import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/no_data_found_web.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
+import '../../../../utils/rupee_convert_format.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../ordersbook/basket/create_basket_web.dart';
 
@@ -266,7 +267,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : orderProv.bsktOrderMargin!.basketMargin.toStringAsFixed(2),
+                    : orderProv.bsktOrderMargin!.basketMargin.toIndianFormat(),
                 style: MyntWebTextStyles.body(
                   context,
                   fontWeight: MyntFonts.semiBold,
@@ -291,7 +292,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : orderProv.bsktOrderMargin!.postTradeMargin.toStringAsFixed(2),
+                    : orderProv.bsktOrderMargin!.postTradeMargin.toIndianFormat(),
                 style: MyntWebTextStyles.body(
                   context,
                   fontWeight: MyntFonts.semiBold,

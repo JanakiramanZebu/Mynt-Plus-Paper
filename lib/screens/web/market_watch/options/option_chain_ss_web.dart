@@ -23,6 +23,7 @@ import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import '../../../../utils/rupee_convert_format.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
@@ -2034,7 +2035,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : orderProv.bsktOrderMargin!.basketMargin.toStringAsFixed(2),
+                    : orderProv.bsktOrderMargin!.basketMargin.toIndianFormat(),
                 style: TextStyle(
                   fontFamily: 'Geist',
                   fontSize: 13,
@@ -2061,7 +2062,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : orderProv.bsktOrderMargin!.postTradeMargin.toStringAsFixed(2),
+                    : orderProv.bsktOrderMargin!.postTradeMargin.toIndianFormat(),
                 style: TextStyle(
                   fontFamily: 'Geist',
                   fontSize: 16,
