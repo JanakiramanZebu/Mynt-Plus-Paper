@@ -51,12 +51,10 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
   late ScrollController _horizontalScrollController; // Added for Table
   late ScrollController _tableScrollController; // For lazy loading
   int selectedTab = 0;
-  // String selectedReturn = '3Y Returns'; // Removed as we show all columns
 
   // Lazy loading state
-  static const int _itemsPerPage = 10;
-  int _displayedItemCount = 10;
-  bool _isLoadingMore = false;
+  static const int _itemsPerPage = 20;
+  int _displayedItemCount = 20;
 
   // Sorting state
   int? _sortColumnIndex;
@@ -99,8 +97,6 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
     _scrollController = ScrollController();
     _horizontalScrollController = ScrollController();
     _tableScrollController = ScrollController();
-
-    // Add scroll listener for lazy loading
     _tableScrollController.addListener(_onScroll);
 
     selectedTab = initialIndex;
@@ -110,7 +106,6 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
       if (selectedTab != newIndex) {
         setState(() {
           selectedTab = newIndex;
-          // Reset pagination when tab changes
           _displayedItemCount = _itemsPerPage;
         });
         // Scroll to center the active tab
@@ -139,26 +134,17 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
     super.dispose();
   }
 
-  // Scroll listener for lazy loading
   void _onScroll() {
-    if (_isLoadingMore) return;
-
+    if (!_tableScrollController.hasClients) return;
     final maxScroll = _tableScrollController.position.maxScrollExtent;
     final currentScroll = _tableScrollController.position.pixels;
-    final threshold = maxScroll * 0.8; // Load more when 80% scrolled
-
-    if (currentScroll >= threshold) {
-      _loadMoreItems();
+    if (currentScroll >= maxScroll * 0.8) {
+      setState(() {
+        _displayedItemCount += _itemsPerPage;
+      });
     }
   }
 
-  void _loadMoreItems() {
-    setState(() {
-      _isLoadingMore = true;
-      _displayedItemCount += _itemsPerPage;
-      _isLoadingMore = false;
-    });
-  }
 
   void _onHoverChanged(int rowIndex, bool isHovered) {
     if (isHovered) {
@@ -310,7 +296,6 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value;
-                  // Reset pagination when search changes
                   _displayedItemCount = _itemsPerPage;
                 });
               },
@@ -612,7 +597,7 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
                           ),
                         ],
                       ),
-                      // Scrollable Body with lazy loading or No Data
+                      // Scrollable Body or No Data
                       Expanded(
                         child: hasData
                             ? SingleChildScrollView(
@@ -633,7 +618,6 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
                                             otherColumnWidth), // Min. Invest
                                       },
                                       rows: [
-                                        // Only display items up to _displayedItemCount for lazy loading
                                         ...sortedList!.take(_displayedItemCount).toList().asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final item = entry.value;
@@ -755,21 +739,6 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
                                 }),
                                       ],
                                     ),
-                                    // Loading indicator when more items available
-                                    if (_displayedItemCount < sortedList!.length)
-                                      Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Center(
-                                          child: SizedBox(
-                                            width: 24,
-                                            height: 24,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Theme.of(context).primaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
                                   ],
                                 ),
                               )
@@ -1054,21 +1023,20 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
     final screenSize = MediaQuery.of(context).size;
     // Use minimum width of 380 or 30% of screen width, whichever is larger
     final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
-    final dialogHeight = screenSize.height * 0.65; // 65% height
 
     // Show dialog immediately - data will load inside MFOrderScreen's initState
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        backgroundColor: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
+        elevation: 0,
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: SizedBox(
           width: dialogWidth,
-          height: dialogHeight,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: MFOrderScreenWeb(mfData: mfItem),
-          ),
+          child: MFOrderScreenWeb(mfData: mfItem),
         ),
       ),
     );

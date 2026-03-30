@@ -51,19 +51,26 @@ import 'package:flutter/material.dart'
         ValueListenableBuilder,
         RawScrollbar,
         Radius,
-        Builder;
+        Builder,
+        Dialog,
+        RoundedRectangleBorder,
+        ClipRRect,
+        FontWeight;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
+import '../../../../provider/thems.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
+import '../../../models/mf_model/mutual_fundmodel.dart';
+import '../mutual_fund/mf_order_screen_web.dart';
 
 // Shadcn Table for Mutual Funds Holdings
 class MfTableExample extends ConsumerStatefulWidget {
@@ -564,6 +571,55 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     );
   }
 
+  // Handler: Add (place order) for mutual fund
+  Future<void> _handleAdd(dynamic holding) async {
+    final mf = ref.read(mfProvider);
+
+    // Build MutualFundList directly from holding fields
+    // Holdings model keys don't align with MutualFundList.fromJson keys
+    MutualFundList mfItem = MutualFundList(
+      iSIN: holding.iSIN,
+      schemeCode: holding.sCHEMECODE,
+      schemeName: holding.name,
+      name: holding.name,
+      minimumPurchaseAmount: holding.minimumPurchaseAmount,
+      sIPFLAG: 'Y',
+    );
+
+    // Pre-fill amount from holding's minimum purchase amount
+    String amt = holding.minimumPurchaseAmount ?? '500';
+    mf.invAmt.text = amt.split('.').first;
+    mf.installmentAmt.text = amt.split('.').first;
+
+    // Set order type
+    mf.chngOrderType('One-time');
+    mf.orderchangetitle('One-time');
+
+    // Get screen dimensions
+    final screenSize = MediaQuery.of(context).size;
+    final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+
+    // Show order dialog
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = ref.read(themeProvider).isDarkMode;
+        return Dialog(
+          backgroundColor: isDark
+              ? MyntColors.backgroundColorDark
+              : MyntColors.backgroundColor,
+          elevation: 0,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: SizedBox(
+            width: dialogWidth,
+            child: MFOrderScreenWeb(mfData: mfItem, isAdditional: true),
+          ),
+        );
+      },
+    );
+  }
+
   // Build styled menu button matching profile dropdown
   shadcn.MenuButton _buildMenuButton({
     required IconData icon,
@@ -633,6 +689,21 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 ),
               );
             }
+
+            // Add (place order) option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.add,
+                title: 'Add',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _hoveredRowIndex.value = null;
+                  _handleAdd(holding);
+                },
+              ),
+            );
 
             // Add divider if we have action items
             if (menuItems.isNotEmpty) {

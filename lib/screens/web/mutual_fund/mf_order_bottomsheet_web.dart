@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
-import '../../../../sharedWidget/cust_text_formfield.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/transcation_provider.dart';
 // import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/fund_function.dart';
-import '../../../sharedWidget/list_divider.dart';
 import '../../Mobile/mutual_fund_old/create_mandate_daialogue.dart';
 import '../../Mobile/profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
 import 'mandate_selection_screen_web.dart';
@@ -133,105 +133,122 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
           },
           child: SafeArea(
             child: Container(
-              width: screenWidth * 0.2,
-               decoration: BoxDecoration(
-                  color: theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
-                  borderRadius: BorderRadius.circular(16),
-            
-                   border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                  ),
-                  
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
+                border: Border.all(
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark, light: MyntColors.divider),
                 ),
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: EdgeInsets.only(
-                  top: 22.0,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
-                  left: 16.0,
-                  right: 16.0,
-                ),
-                child: Stack(
-                  children: [
-                      mfOrder.investloader
-                          ? Positioned(
-                              child: SizedBox(
-                              height: screenheight * 0.5,
-                              width: screenWidth,
-                              child: Material(
-                                color: theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
-                                child: Theme(
-                                  data: Theme.of(context),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        AnimatedSwitcher(
-                                          duration: const Duration(milliseconds: 650),
-                                          transitionBuilder: (child, animation) =>
-                                              ScaleTransition(
-                                                  scale: animation, child: child),
-                                          child: mfOrder.loadingMessage ==
-                                                  "Order Initiated"
-                                              ?  Icon(
-                                                  Icons.check_circle,
-                                                  key: const ValueKey("verified"),
-                                                  size: 50,
-                                                  color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
-                                                )
-                                              : SizedBox(
-                                                  key: const ValueKey("loading"),
-                                                  height: 25,
-                                                  width: 25,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 3.0,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                            Color>(
-                                                      theme.isDarkMode
-                                                          ? MyntColors.primaryDark
-                                                          : MyntColors.primary,
-                                                    ),
-                                                    backgroundColor:
-                                                        Colors.transparent,
-                                                  ),
-                                                ),
+              ),
+              child: mfOrder.investloader
+                  ? SizedBox(
+                      height: screenheight * 0.5,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 650),
+                              transitionBuilder: (child, animation) =>
+                                  ScaleTransition(
+                                      scale: animation, child: child),
+                              child: mfOrder.loadingMessage == "Order Initiated"
+                                  ? Icon(
+                                      Icons.check_circle,
+                                      key: const ValueKey("verified"),
+                                      size: 50,
+                                      color: theme.isDarkMode
+                                          ? colors.profitDark
+                                          : colors.profitLight,
+                                    )
+                                  : SizedBox(
+                                      key: const ValueKey("loading"),
+                                      height: 25,
+                                      width: 25,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 3.0,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          theme.isDarkMode
+                                              ? MyntColors.primaryDark
+                                              : MyntColors.primary,
                                         ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          mfOrder.loadingMessage ?? "",
-                                          style: MyntWebTextStyles.bodySmall(
-                                            context,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                          ),
-                                        ),
-                                      ],
+                                        backgroundColor: Colors.transparent,
+                                      ),
                                     ),
-                                  ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              mfOrder.loadingMessage ?? "",
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header
+                        Container(
+                          height: 50,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(8)),
+                            border: Border(
+                              bottom: BorderSide(
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.dividerDark,
+                                    light: MyntColors.divider),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                mfOrder.mfOrderTpye == "SIP"
+                                    ? "Setup SIP"
+                                    : "Pay With",
+                                style: MyntWebTextStyles.title(
+                                  context,
+                                  fontWeight: MyntFonts.semiBold,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
                                 ),
                               ),
-                            ))
-                          : Column(
-                              mainAxisSize: MainAxisSize.min,
+                              IconButton(
+                                onPressed: () => Navigator.pop(context),
+                                icon: Icon(
+                                  Icons.close,
+                                  size: 20,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.iconSecondaryDark,
+                                      light: MyntColors.iconSecondary),
+                                ),
+                                splashRadius: 20,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Content
+                        Flexible(
+                          child: SingleChildScrollView(
+                            physics: const ClampingScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (mfOrder.mfOrderTpye == "SIP") ...[
@@ -443,604 +460,566 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                   //             FontWeight.w500))),
                                 ],
                                 if (mfOrder.mfOrderTpye != "SIP") ...[
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    "Pay With",
-                                    style: MyntWebTextStyles.title(
-                                      context,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
+                                  // Bank selection
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: Text(
+                                      "Bank Account",
+                                      style: MyntWebTextStyles.body(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary),
+                                      ),
                                     ),
                                   ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 16),
-                                    child: Column(
-                                      children: [
-                                        Column(
+                                  Builder(
+                                    builder: (btnContext) => GestureDetector(
+                                      onTap: () => _showBankPopover(btnContext, fund, theme),
+                                      child: Container(
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.transparent,
+                                              light: const Color(0xffF1F3F8)),
+                                          borderRadius: BorderRadius.circular(5),
+                                          border: Border.all(
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.textSecondaryDark,
+                                                light: MyntColors.outlinedBorder),
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                        child: Row(
                                           children: [
-                                            const ListDivider(),
-                                            InkWell(
-                                              onTap: () async {
-                                                await Future.delayed(const Duration(
-                                                    milliseconds: 150));
-                                                showBottomSheetbank(fund, theme);
-                                              },
-                                              child: ListTile(
-                                                contentPadding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 16,
+                                            Expanded(
+                                              child: Text(
+                                                "${fund.bankname}  -  ${hideAccountNumber(fund.accno)}",
+                                                style: MyntWebTextStyles.body(
+                                                  context,
+                                                  fontWeight: MyntFonts.medium,
+                                                  darkColor: MyntColors.textPrimaryDark,
+                                                  lightColor: MyntColors.textPrimary,
                                                 ),
-                                                // minVerticalPadding: 16,
-                                                title: Padding(
-                                                  padding: const EdgeInsets.only(
-                                                      bottom: 4),
-                                                  child: Text(
-                                                    fund.bankname,
-                                                    style: MyntWebTextStyles.bodySmall(
-                                                      context,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors.textPrimaryLight,
-                                                    ),
-                                                  ),
-                                                ),
-                                                subtitle: Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(top: 4),
-                                                  child: Text(
-                                                    hideAccountNumber(fund.accno),
-                                                    style: MyntWebTextStyles.para(
-                                                      context,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
-                                                    ),
-                                                  ),
-                                                ),
-                                                trailing: Material(
-                                                  color: Colors.transparent,
-                                                  shape: const CircleBorder(),
-                                                  clipBehavior: Clip.hardEdge,
-                                                  child: InkWell(
-                                                    customBorder:
-                                                        const CircleBorder(),
-                                                    splashColor: theme.isDarkMode
-                                                        ? colors.splashColorDark
-                                                        : colors.splashColorLight,
-                                                    highlightColor: theme.isDarkMode
-                                                        ? colors.highlightDark
-                                                        : colors.highlightLight,
-                                                    onTap: () async {
-                                                      // Add delay for visual feedback
-                                                      await Future.delayed(
-                                                          const Duration(
-                                                              milliseconds: 150));
-              
-                                                      await showBottomSheetbank(
-                                                          fund, theme);
-                                                    },
-                                                    child: SizedBox(
-                                                      height: 32,
-                                                      width: 32,
-                                                      child:  Center(
-                                                        child: Icon(Icons.more_vert,
-                                                            size: 22,
-                                                            color: theme.isDarkMode
-                                                                ? colors.textSecondaryDark
-                                                                : colors.textSecondaryLight,),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
-                                            const ListDivider(),
+                                            Icon(
+                                              Icons.keyboard_arrow_down,
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.textSecondaryDark,
+                                                  light: MyntColors.textSecondary),
+                                              size: 20,
+                                            ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-              
-                                  Text(
-                                    "Payment method",
-                                    style: MyntWebTextStyles.bodyMedium(
-                                      context,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fontWeight: MyntFonts.medium,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-                                  const ListDivider(),
+                                  // Payment method label
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                                    child: Text(
+                                      "Payment method",
+                                      style: MyntWebTextStyles.bodyMedium(
+                                        context,
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                        fontWeight: MyntFonts.medium,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
                                   ListView.separated(
-                                    padding: const EdgeInsets.all(0),
+                                    padding: EdgeInsets.zero,
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
                                     itemCount: mfOrder.paymentMethod.length,
                                     separatorBuilder: (context, index) =>
-                                        const ListDivider(),
+                                        const SizedBox(height: 8),
                                     itemBuilder: (context, index) {
-                                      String paymentMethodName =
+                                      final paymentMethodName =
                                           mfOrder.paymentMethod[index];
-                                      String paymentMethodImage =
+                                      final paymentMethodImage =
                                           paymentMethodName == "UPI"
                                               ? 'assets/icon/paymentIcon/upi.svg'
                                               : 'assets/icon/netbanking_icon.svg';
-                                      bool isSelected =
+                                      final isSelected =
                                           mfOrder.paymentName == paymentMethodName;
-              
-                                      return Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 16),
-                                        child: Column(
-                                          children: [
-                                            InkWell(
-                                              onTap: () {
-                                                mfOrder
-                                                    .chngPayName(paymentMethodName);
-                                              },
-                                              child: Row(
+
+                                      return GestureDetector(
+                                        onTap: () {
+                                          mfOrder.chngPayName(paymentMethodName);
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(5),
+                                            color: null,
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? resolveThemeColor(context,
+                                                      dark: MyntColors.primaryDark,
+                                                      light: MyntColors.primary)
+                                                  : resolveThemeColor(context,
+                                                      dark: MyntColors.dividerDark,
+                                                      light: MyntColors.divider),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
                                                 children: [
                                                   SvgPicture.asset(
                                                     paymentMethodImage,
-                                                    width: 40,
-                                                    height: 40,
-                                                    color: index == 1 ? theme.isDarkMode
-                                                        ? colors.textSecondaryDark
-                                                        : colors.textSecondaryLight : null,
+                                                    width: 24,
+                                                    height: 24,
+                                                    colorFilter: index == 1
+                                                        ? ColorFilter.mode(
+                                                            theme.isDarkMode
+                                                                ? colors.textSecondaryDark
+                                                                : colors.textSecondaryLight,
+                                                            BlendMode.srcIn)
+                                                        : null,
                                                   ),
-                                                  const SizedBox(width: 20),
+                                                  const SizedBox(width: 10),
                                                   Expanded(
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Text(
-                                                          paymentMethodName == "UPI"
-                                                              ? "UPI ID"
-                                                              : "Net Banking",
-                                                          style: MyntWebTextStyles.bodySmall(
-                                                            context,
-                                                            color: theme.isDarkMode
-                                                                ? colors.textPrimaryDark
-                                                                : colors.textPrimaryLight,
-                                                          ),
-                                                        ),
-                                                        if (isSelected)
-                                                          Icon(
-                                                            Icons.check_circle,
-                                                            color: theme.isDarkMode
-                                                                ? MyntColors.primaryDark
-                                                                : MyntColors.primary,
-                                                            size: 20,
-                                                          )
-                                                        else
-                                                          const SizedBox()
-                                                        // SvgPicture.asset(
-                                                        //   assets.leftArrow,
-                                                        //   width: 16,
-                                                        //   height: 16,
-                                                        //   color: colors.iconColor,
-                                                        // )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            if (mfOrder.paymentName == "UPI" &&
-                                                index == 0) ...[
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  const SizedBox(height: 8),
-                                                  SizedBox(
-                                                    width: MediaQuery.of(context)
-                                                            .size
-                                                            .width *
-                                                        0.8,
-                                                    child: CustomTextFormField(
-                                                      textAlign: TextAlign.start,
-                                                      fillColor: theme.isDarkMode ? colors.darkGrey : colors.btnBg,
-                                                      hintText: 'Enter UPI ID',
-                                                      
-                                                     hintStyle: webText(
-                                        context,
-                                        size: 14,
-                                        color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                      ),
-                                                      style: webText(
-                                        context,
-                                        size: 16,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                      ),
-                                                      textCtrl: mfOrder.upiId,
-                                                      onChanged: (value) {
-                                                        mfOrder.isValidUpiId(
-                                                            mfOrder.upiId.text,
-                                                            'reinitiatefromportfolio');
-                                                      },
-                                                    ),
-                                                  ),
-                                                  // Only show error when there's actually an error
-                                                  if (mfOrder.upiError != null && mfOrder.upiError!.isNotEmpty)
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(
-                                                        top: 10),
                                                     child: Text(
-                                                      "${mfOrder.upiError}",
-                                                      style: MyntWebTextStyles.caption(
+                                                      paymentMethodName == "UPI"
+                                                          ? "UPI ID"
+                                                          : "Net Banking",
+                                                      style: MyntWebTextStyles.body(
                                                         context,
-                                                        color: theme.isDarkMode
-                                                            ? colors.lossDark
-                                                            : colors.lossLight,
+                                                        fontWeight: isSelected
+                                                            ? MyntFonts.semiBold
+                                                            : MyntFonts.medium,
+                                                        color: isSelected
+                                                            ? resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .primaryDark,
+                                                                light: MyntColors
+                                                                    .primary)
+                                                            : resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .textPrimaryDark,
+                                                                light: MyntColors
+                                                                    .textPrimary),
                                                       ),
                                                     ),
                                                   ),
+                                                  if (isSelected)
+                                                    Icon(
+                                                      Icons.check_circle,
+                                                      color: resolveThemeColor(
+                                                          context,
+                                                          dark: MyntColors.primaryDark,
+                                                          light: MyntColors.primary),
+                                                      size: 18,
+                                                    ),
                                                 ],
                                               ),
+                                              // UPI input field
+                                              if (isSelected &&
+                                                  paymentMethodName == "UPI") ...[
+                                                const SizedBox(height: 10),
+                                                MyntFormTextField(
+                                                  controller: mfOrder.upiId,
+                                                  placeholder: 'Enter UPI ID',
+                                                  height: 40,
+                                                  textStyle:
+                                                      MyntWebTextStyles.body(
+                                                    context,
+                                                    fontWeight: MyntFonts.medium,
+                                                    darkColor: MyntColors
+                                                        .textPrimaryDark,
+                                                    lightColor:
+                                                        MyntColors.textPrimary,
+                                                  ),
+                                                  onChanged: (value) {
+                                                    mfOrder.isValidUpiId(
+                                                        mfOrder.upiId.text,
+                                                        'reinitiatefromportfolio');
+                                                  },
+                                                ),
+                                                if (mfOrder.upiError != null &&
+                                                    mfOrder
+                                                        .upiError!.isNotEmpty)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 8),
+                                                    child: Text(
+                                                      "${mfOrder.upiError}",
+                                                      style: MyntWebTextStyles
+                                                          .para(
+                                                        context,
+                                                        color:
+                                                            resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .lossDark,
+                                                                light:
+                                                                    MyntColors
+                                                                        .loss),
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
                                             ],
-                                          ],
+                                          ),
                                         ),
                                       );
                                     },
                                   ),
-                                  const SizedBox(height: 20),
-                                  // Text(
-                                  //   "Bank account ",
-                                  //   style: textStyle(
-                                  //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                  //     16,
-                                  //     FontWeight.w600,
-                                  //   ),
-                                  // ),
-                                  // const SizedBox(height: 12),
-                                  // DropdownButtonHideUnderline(
-                                  //   child: DropdownButton2(
-                                  //     menuItemStyleData: MenuItemStyleData(
-                                  //       customHeights: mfOrder.getBankCustItemsHeight(),
-                                  //     ),
-                                  //     buttonStyleData: ButtonStyleData(
-                                  //       padding: const EdgeInsets.only(top: 10, left: 16),
-                                  //       height: 50,
-                                  //       width: MediaQuery.of(context).size.width,
-                                  //       decoration: BoxDecoration(
-                                  //         color: theme.isDarkMode
-                                  //             ? colors.darkGrey
-                                  //             : const Color(0xffF1F3F8),
-                                  //         borderRadius: const BorderRadius.all(Radius.circular(32)),
-                                  //       ),
-                                  //     ),
-                                  //     dropdownStyleData: DropdownStyleData(
-                                  //       decoration: BoxDecoration(
-                                  //         borderRadius: BorderRadius.circular(4),
-                                  //       ),
-                                  //       offset: const Offset(0, 1),
-                                  //     ),
-                                  //     isExpanded: true,
-                                  //     style: textStyle(
-                                  //       theme.isDarkMode
-                                  //           ? colors.colorWhite
-                                  //           : const Color(0XFF000000),
-                                  //       13,
-                                  //       FontWeight.w500,
-                                  //     ),
-                                  //     hint: Text(
-                                  //       mfOrder.accNum,
-                                  //       style: textStyle(
-                                  //         theme.isDarkMode
-                                  //             ? colors.colorWhite
-                                  //             : const Color(0XFF000000),
-                                  //         13,
-                                  //         FontWeight.w500,
-                                  //       ),
-                                  //     ),
-                                  //     items: mfOrder.addBankDividers(),
-                                  //     value: mfOrder.accNum,
-                                  //     onChanged: (value) async {
-                                  //       mfOrder.chngBankAcc("$value");
-                                  //     },
-                                  //   ),
-                                  // ),
-              
-                                  // Conditional UPI section
                                 ],
-                                // Show Setup-SIP button only when mandates exist and are approved
-                                if ((mfOrder.mfOrderTpye == "SIP" &&
-                                        mfOrder.mandateData != null &&
-                                        mfOrder.mandateData!.isNotEmpty) ||
-                                    (mfOrder.mfOrderTpye != "SIP")) ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 4),
-                                    width: MediaQuery.of(context).size.width,
-                                    child: OutlinedButton(
-                                      onPressed: () async {
-                                        // mfOrder.chngPayName("UPI");
-                                        if (mfOrder.mfOrderTpye != "SIP") {
-                                          final isUpi =
-                                              mfOrder.paymentName == 'UPI';
-                                          final isNetBanking =
-                                              mfOrder.paymentName == 'NET BANKING';
-                                          final isUpiValid =
-                                              isUpi ? mfOrder.upiError == '' : true;
-              
-                                          mfOrder.isValidUpiId(
-                                              widget.data, // Use the correct value
-                                              widget.condval.toString());
-              
-                                          if ((isUpiValid &&
-                                                  mfOrder.upiId.text.isNotEmpty) ||
-                                              isNetBanking) {
-                                            // Show loading
-                                            mfOrder.setInvestLoader(true);
-                                            mfOrder.setLoadingMessage(
-                                                "Processing payment...");
-                                            mfOrder.IsPaymentCalled(true);
-              
-                                            // Call UPI Payment trigger
-                                            await mfOrder.upipaymenttrigger(
-                                              context,
-                                              widget.condval ==
-                                                      'reinitiatefromportfolio'
-                                                  ? widget.data.orderId
-                                                  : mfOrder.mfPlaceOrderResponces!
-                                                      .orderId,
-                                              widget.condval ==
-                                                      'reinitiatefromportfolio'
-                                                  ? widget.data.orderVal
-                                                  : mfOrder.mfPlaceOrderResponces!
-                                                      .orderVal,
-                                              mfOrder.upiId.text,
-                                              mfOrder.paymentName,
-                                            );
-              
-                                            final upiResponse =
-                                                mfOrder.upiApiresponse;
-              
-                                            if (upiResponse != null) {
-                                              if (upiResponse.stat == "Ok") {
-                                                // ✅ Success Case
-                                                if (isUpi) {
-                                                  // UPI Success – close bottom sheet and show processing dialog
-                                                  Navigator.pop(context);
-                                                  showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (context) => MfUPIProcessingScreenWeb(
-                                                      data: widget.condval == 'reinitiatefromportfolio'
-                                                          ? widget.data.orderId
-                                                          : mfOrder.mfPlaceOrderResponces!.orderId,
-                                                    ),
-                                                  );
-                                                } else if (isNetBanking) {
-                                                  // Net Banking – open in new tab and show status polling dialog
-                                                  final url = Uri.parse(
-                                                      'https://v3.mynt.in/mfapi${upiResponse.file!}');
-                                                  // Open net banking page in a new browser tab
-                                                  await launchUrl(url, mode: LaunchMode.platformDefault, webOnlyWindowName: '_blank');
-                                                  // Close the order bottom sheet
-                                                  Navigator.pop(context);
-                                                  // Show processing dialog that polls for payment status
-                                                  showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (context) => MfUPIProcessingScreenWeb(
-                                                      data: widget.condval == 'reinitiatefromportfolio'
-                                                          ? widget.data.orderId
-                                                          : mfOrder.mfPlaceOrderResponces!.orderId,
-                                                    ),
-                                                  );
-                                                }
-                                              } else {
-                                                // ❌ Failure Case – show error bottom sheet
-                                                showDialog(
-                                                  context: context,
-                                                  barrierDismissible: false,
-                                                  builder: (context) =>
-                                                      Dialog(
-                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                                                        child: SizedBox(
-                                                          width: MediaQuery.of(context).size.width >= 1100
-                                                              ? MediaQuery.of(context).size.width * 0.30
-                                                              : MediaQuery.of(context).size.width >= 800
-                                                                  ? MediaQuery.of(context).size.width * 0.50
-                                                                  : 420,
-                                                          child: WillPopScope(
-                                                            onWillPop: () async => !mfOrder.ispaymentcalled,
-                                                            child: MfPaymentRespAlert(
-                                                              upiData: upiResponse.data!.toJson(),
-                                                              conditionval: 'reinitiateerror',
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                );
-                                              }
-                                            }
-                                          }
-                                        } else {
-                                          if (mfOrder.mandateStatus == "APPROVED") {
-                                            // Set loading state immediately when button is pressed
-                                            // mfOrder.setLoadingMessage(
-                                            //     "Processing SIP order...");
-                                            await mfOrder.fetchXsipPlaceOrder(
-                                                context,
-                                                "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.data.schemeCode}-L1" : widget.data.schemeCode}",
-                                                mfOrder.freqName == "Daily"
-                                                    ? "0"
-                                                    : mfOrder.dates,
-                                                mfOrder.freqName,
-                                                mfOrder.installmentAmt.text,
-                                                mfOrder.invDuration.text,
-                                                mfOrder.freqName == "Daily"
-                                                    ? "0"
-                                                    : mfOrder.endDate,
-                                                mfOrder.mandateId);
-                                            if (mfOrder.xsipOrderResponces?.stat ==
-                                                    "Ok" ||
-                                                mfOrder.xsipOrderResponces?.stat ==
-                                                    "Not_Ok") {
-                                              showDialog(
-                                                context: context,
-                                                barrierDismissible: false,
-                                                builder: (context) =>
-                                                    Dialog(
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                                                      child: SizedBox(
-                                                        width: MediaQuery.of(context).size.width >= 1100
-                                                            ? MediaQuery.of(context).size.width * 0.30
-                                                            : MediaQuery.of(context).size.width >= 800
-                                                                ? MediaQuery.of(context).size.width * 0.50
-                                                                : 420,
-                                                        child: MfPaymentRespAlert(
-                                                          upiData: mfOrder.xsipOrderResponces?.toJson(),
-                                                          conditionval: ''
-                                                        ),
-                                                      ),
-                                                    ),
-                                              );
-                                            }
-                                          }
-                                        }
-                                      },
-                                      style: OutlinedButton.styleFrom(
-                                        minimumSize: const Size(0, 45),
-                                        side: BorderSide(
-                                            color: colors.btnOutlinedBorder),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                        backgroundColor:resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
-                                        // mfOrder.mandateStatus == "APPROVED"
-                                        //     ? (theme.isDarkMode
-                                        //         ? colors.primaryDark
-                                        //         : colors.primaryLight)
-                                        //     : const Color(0xffE7EAF4),
-                                        // mfOrder.invAmtError == null &&
-                                        //         mfOrder.upiError == null
-                                        //     ? (theme.isDarkMode
-                                        //         ? colors.colorbluegrey
-                                        //         : colors.colorBlack)
-                                        //     :
-                                      ),
-                                      child: mfOrder.investloader == true
-                                          ? SizedBox(
-                                              height: 15,
-                                              width: 15,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2.0,
-                                                valueColor: AlwaysStoppedAnimation<
-                                                        Color>(
-                                                    theme.isDarkMode
-                                                        ? MyntColors.primaryDark
-                                                        : MyntColors.primary),
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                              ),
-                                            )
-                                          : Text(
-                                              mfOrder.mfOrderTpye == "SIP"
-                                                  ? "Setup - SIP"
-                                                  : "Pay - One Time",
-                                              style: MyntWebTextStyles.bodySmall(
-                                                context,
-                                                color: colors.colorWhite,
-                                                fontWeight: MyntFonts.semiBold,
-                                              ),
-                                            ),
-                                    ),
-                                  ),
-                                ]
                               ],
                             ),
-                  ],
-                ),
-              ),
+                          ),
+                        ),
+
+                        // Footer
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.dividerDark,
+                                    light: MyntColors.divider),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 40,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (mfOrder.mfOrderTpye != "SIP") {
+                                  final isUpi = mfOrder.paymentName == 'UPI';
+                                  final isNetBanking =
+                                      mfOrder.paymentName == 'NET BANKING';
+                                  final isUpiValid =
+                                      isUpi ? mfOrder.upiError == '' : true;
+
+                                  mfOrder.isValidUpiId(
+                                      widget.data, widget.condval.toString());
+
+                                  if ((isUpiValid &&
+                                          mfOrder.upiId.text.isNotEmpty) ||
+                                      isNetBanking) {
+                                    mfOrder.setInvestLoader(true);
+                                    mfOrder.setLoadingMessage(
+                                        "Processing payment...");
+                                    mfOrder.IsPaymentCalled(true);
+
+                                    await mfOrder.upipaymenttrigger(
+                                      context,
+                                      widget.condval == 'reinitiatefromportfolio'
+                                          ? widget.data.orderId
+                                          : mfOrder.mfPlaceOrderResponces!.orderId,
+                                      widget.condval == 'reinitiatefromportfolio'
+                                          ? widget.data.orderVal
+                                          : mfOrder.mfPlaceOrderResponces!.orderVal,
+                                      mfOrder.upiId.text,
+                                      mfOrder.paymentName,
+                                    );
+
+                                    final upiResponse = mfOrder.upiApiresponse;
+
+                                    if (upiResponse != null) {
+                                      if (upiResponse.stat == "Ok") {
+                                        if (isUpi) {
+                                          Navigator.pop(context);
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (context) =>
+                                                MfUPIProcessingScreenWeb(
+                                              data: widget.condval ==
+                                                      'reinitiatefromportfolio'
+                                                  ? widget.data.orderId
+                                                  : mfOrder
+                                                      .mfPlaceOrderResponces!
+                                                      .orderId,
+                                            ),
+                                          );
+                                        } else if (isNetBanking) {
+                                          final url = Uri.parse(
+                                              'https://v3.mynt.in/mfapi${upiResponse.file!}');
+                                          await launchUrl(url,
+                                              mode: LaunchMode.platformDefault,
+                                              webOnlyWindowName: '_blank');
+                                          Navigator.pop(context);
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (context) =>
+                                                MfUPIProcessingScreenWeb(
+                                              data: widget.condval ==
+                                                      'reinitiatefromportfolio'
+                                                  ? widget.data.orderId
+                                                  : mfOrder
+                                                      .mfPlaceOrderResponces!
+                                                      .orderId,
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (context) => Dialog(
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(15)),
+                                            child: SizedBox(
+                                              width: MediaQuery.of(context)
+                                                          .size
+                                                          .width >=
+                                                      1100
+                                                  ? MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.30
+                                                  : MediaQuery.of(context)
+                                                              .size
+                                                              .width >=
+                                                          800
+                                                      ? MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                          0.50
+                                                      : 420,
+                                              child: WillPopScope(
+                                                onWillPop: () async =>
+                                                    !mfOrder.ispaymentcalled,
+                                                child: MfPaymentRespAlert(
+                                                  upiData: upiResponse
+                                                      .data!
+                                                      .toJson(),
+                                                  conditionval:
+                                                      'reinitiateerror',
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                } else {
+                                  if (mfOrder.mandateStatus == "APPROVED") {
+                                    await mfOrder.fetchXsipPlaceOrder(
+                                        context,
+                                        "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${widget.data.schemeCode}-L1" : widget.data.schemeCode}",
+                                        mfOrder.freqName == "Daily"
+                                            ? "0"
+                                            : mfOrder.dates,
+                                        mfOrder.freqName,
+                                        mfOrder.installmentAmt.text,
+                                        mfOrder.invDuration.text,
+                                        mfOrder.freqName == "Daily"
+                                            ? "0"
+                                            : mfOrder.endDate,
+                                        mfOrder.mandateId);
+                                    if (mfOrder.xsipOrderResponces?.stat ==
+                                            "Ok" ||
+                                        mfOrder.xsipOrderResponces?.stat ==
+                                            "Not_Ok") {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) => Dialog(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(15)),
+                                          child: SizedBox(
+                                            width: MediaQuery.of(context)
+                                                        .size
+                                                        .width >=
+                                                    1100
+                                                ? MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.30
+                                                : MediaQuery.of(context)
+                                                            .size
+                                                            .width >=
+                                                        800
+                                                    ? MediaQuery.of(context)
+                                                            .size
+                                                            .width *
+                                                        0.50
+                                                    : 420,
+                                            child: MfPaymentRespAlert(
+                                                upiData: mfOrder
+                                                    .xsipOrderResponces
+                                                    ?.toJson(),
+                                                conditionval: ''),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.isDarkMode
+                                    ? MyntColors.secondary
+                                    : MyntColors.primary,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                mfOrder.mfOrderTpye == "SIP"
+                                    ? "Setup - SIP"
+                                    : "Pay - One Time",
+                                style: MyntWebTextStyles.bodySmall(
+                                  context,
+                                  fontWeight: MyntFonts.semiBold,
+                                  color: MyntColors.backgroundColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ));
     });
   }
 
-  showBottomSheetbank(TranctionProvider fund, ThemesProvider theme) {
-    // Guard clause - don't show dialog if bank data is not available
-    if (fund.bankdetails == null || fund.bankdetails!.dATA == null || fund.bankdetails!.dATA!.isEmpty) {
+  void _showBankPopover(
+      BuildContext btnContext, TranctionProvider fund, ThemesProvider theme) {
+    if (fund.clientBankList.isEmpty) {
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          backgroundColor: theme.isDarkMode ? MyntColors.overlayBgDark : MyntColors.backgroundColor,
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.25,
-            decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(14),
-             color: theme.isDarkMode ? MyntColors.overlayBgDark : MyntColors.backgroundColor,
-             border: Border.all(color: theme.isDarkMode ? MyntColors.textSecondaryDark.withOpacity(0.2) : MyntColors.transparent),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 10),
-                  child: Text(
-                    'Choose an bank',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    ),
-                  ),
-                ),
-                ListView.builder(
+    final btnWidth = (btnContext.findRenderObject() as RenderBox).size.width;
+
+    shadcn.showPopover(
+      context: btnContext,
+      alignment: Alignment.topCenter,
+      offset: const Offset(0, 4),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(btnContext).borderRadiusLg,
+      ),
+      builder: (popoverContext) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(popoverContext).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(4),
+            child: SizedBox(
+              width: btnWidth - 8,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: fund.bankdetails!.dATA!.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final bankData = fund.bankdetails!.dATA![index];
-                    final bankName = bankData[1]?.toString() ?? '';
-                    final accountNo = bankData[2]?.toString() ?? '';
+                  itemCount: fund.clientBankList.length,
+                  itemBuilder: (context, index) {
+                    final bank = fund.clientBankList[index];
+                    final bankName = bank.bankName ?? '';
+                    final accountNo = bank.accountNo ?? '';
+                    final isSelected = bankName == fund.bankname &&
+                        accountNo == fund.accno;
 
-                    return InkWell(
-                      onTap: () {
-                        fund.bankselection(index);
-                        fund.setAccountslist(accountNo);
-
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 15),
-                        color: bankName == fund.bankname
-                            ? const Color(0xff999999).withOpacity(0.2)
-                            : Colors.transparent,
-                        child: Text(
-                          '$bankName-${hideAccountNumber(accountNo)}',
-                          style: MyntWebTextStyles.bodySmall(
-                            context,
-                            color: theme.isDarkMode
-                                ? MyntColors.textPrimaryDark
-                                : MyntColors.textPrimary,
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          shadcn.closeOverlay(popoverContext);
+                          fund.selectClientBank(index);
+                          setState(() {});
+                        },
+                        splashColor: resolveThemeColor(context,
+                            dark: MyntColors.rippleDark,
+                            light: MyntColors.rippleLight),
+                        highlightColor: resolveThemeColor(context,
+                            dark: MyntColors.highlightDark,
+                            light: MyntColors.highlightLight),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.primary
+                                        .withValues(alpha: 0.1),
+                                    light: MyntColors.primary
+                                        .withValues(alpha: 0.06))
+                                : null,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      bankName,
+                                      style: MyntWebTextStyles.body(
+                                        context,
+                                        fontWeight: isSelected
+                                            ? MyntFonts.semiBold
+                                            : MyntFonts.medium,
+                                        color: isSelected
+                                            ? resolveThemeColor(context,
+                                                dark: MyntColors.primaryDark,
+                                                light: MyntColors.primary)
+                                            : resolveThemeColor(context,
+                                                dark: MyntColors
+                                                    .textPrimaryDark,
+                                                light:
+                                                    MyntColors.textPrimary),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      hideAccountNumber(accountNo),
+                                      style: MyntWebTextStyles.para(
+                                        context,
+                                        darkColor:
+                                            MyntColors.textSecondaryDark,
+                                        lightColor:
+                                            MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     );
                   },
                 ),
-                const SizedBox(
-                  height: 10,
-                )
-              ],
+              ),
             ),
           ),
         );
