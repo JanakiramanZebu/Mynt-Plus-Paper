@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
-import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
+import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../res/mynt_web_text_styles.dart';
 import '../../../../../sharedWidget/common_buttons_web.dart';
@@ -77,7 +77,6 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
   Widget build(BuildContext context) {
     final fund = ref.watch(transcationProvider);
 
-    // Loading state
     if (!_isInitialized ||
         fund.bankdetails == null ||
         fund.decryptclientcheck == null ||
@@ -89,9 +88,20 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
           light: MyntColors.backgroundColor,
         ),
         appBar: _buildAppBar(context),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: resolveThemeColor(context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary),
+          ),
+        ),
       );
     }
+
+    final withdrawAmount =
+        widget.withdarw.payoutdetails!.withdrawAmount ?? "0.00";
+    final hasAmount = double.tryParse(withdrawAmount) != null &&
+        double.parse(withdrawAmount) > 0;
 
     return Scaffold(
       backgroundColor: resolveThemeColor(
@@ -105,45 +115,21 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Row(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left col: Withdraw form
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildWithdrawableHeader(context),
-                      const SizedBox(height: 15),
-                      _buildAmountInput(context),
-                      const SizedBox(height: 4),
-                      if (withdarwerror.isNotEmpty)
-                        Text(
-                          withdarwerror,
-                          style: MyntWebTextStyles.para(
-                            context,
-                            color: resolveThemeColor(
-                              context,
-                              dark: MyntColors.errorDark,
-                              light: MyntColors.error,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-                      _buildWithdrawButton(context),
-                      const SizedBox(height: 20),
-                      if (_isVisible) _buildOpenRequest(context),
-                      if (_isVisible) const SizedBox(height: 16),
-                      _buildInfoAlert(context),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 24),
-                // Right col: Break up
-                Expanded(
-                  child: _buildBreakUpCard(context),
-                ),
+                // ── Top bar card ──────────────────────────────────
+                _buildTopBar(context, withdrawAmount, hasAmount),
+                const SizedBox(height: 16),
+
+                // ── Main content card (two columns) ──────────────
+                _buildMainCard(context),
+
+                if (_isVisible) ...[
+                  const SizedBox(height: 16),
+                  _buildOpenRequest(context),
+                ],
               ],
             ),
           ),
@@ -151,126 +137,223 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       ),
     );
   }
-
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    
     return AppBar(
       centerTitle: false,
       leadingWidth: 48,
       titleSpacing: 6,
-      backgroundColor: resolveThemeColor(
-        context,
-        dark: MyntColors.backgroundColorDark,
-        light: MyntColors.backgroundColor,
-      ),
-      elevation: 0,
-      leading: IconButton(
-        icon: Icon(
-          Icons.arrow_back_ios_outlined,
-          size: 18,
-          color: resolveThemeColor(
-            context,
-            dark: MyntColors.textSecondaryDark,
-            light: MyntColors.textSecondary,
-          ),
-        ),
-        onPressed: widget.onBack ?? () => Navigator.pop(context),
+      backgroundColor: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
+      elevation: .2,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: CustomBackBtn(onBack: widget.onBack),
       ),
       title: Text(
         'Withdraw Fund',
         style: MyntWebTextStyles.title(
           context,
-          color: resolveThemeColor(
-            context,
-            dark: MyntColors.textPrimaryDark,
-            light: MyntColors.textPrimary,
-          ),
           fontWeight: MyntFonts.semiBold,
+          darkColor: MyntColors.textPrimaryDark,
+          lightColor: MyntColors.textPrimary,
         ),
       ),
     );
   }
 
-  Widget _buildWithdrawableHeader(BuildContext context) {
-    final withdrawAmount =
-        widget.withdarw.payoutdetails!.withdrawAmount ?? "0.00";
-    final hasAmount = double.tryParse(withdrawAmount) != null &&
-        double.parse(withdrawAmount) > 0;
+  // ── Top bar: Withdrawable amount + actions ─────────────────────
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Expanded(
-          child: Column(
+  Widget _buildTopBar(
+      BuildContext context, String withdrawAmount, bool hasAmount) {
+    return shadcn.Theme(
+      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+      child: shadcn.Card(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          child: Row(
+        children: [
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 "Withdrawable Amount",
-                style: MyntWebTextStyles.title(
-                context,
-                color: resolveThemeColor(
+                style: MyntWebTextStyles.bodySmall(
                   context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
+                  fontWeight: MyntFonts.medium,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
                 ),
-                fontWeight: MyntFonts.semiBold,
               ),
-              ),
-              const SizedBox(height: 7),
-              Text(
-                "₹ $withdrawAmount",
-                style: MyntWebTextStyles.title(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                  fontWeight: MyntFonts.semiBold,
-                ),
+              const SizedBox(height: 4),
+              Builder(
+                builder: (context) {
+                  final amountValue =
+                      double.tryParse(withdrawAmount) ?? 0.00;
+                  final Color amountColor = amountValue > 0
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.profitDark,
+                          light: MyntColors.profit,
+                        )
+                      : amountValue < 0
+                          ? resolveThemeColor(
+                              context,
+                              dark: MyntColors.errorDark,
+                              light: MyntColors.tertiary,
+                            )
+                          : resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            );
+                  return Text(
+                    "₹ $withdrawAmount",
+                    style: MyntWebTextStyles.head(
+                      context,
+                      color: amountColor,
+                      fontWeight: MyntFonts.medium,
+                    ),
+                  );
+                },
               ),
             ],
           ),
-        ),
-        if (hasAmount)
-          InkWell(
-            borderRadius: BorderRadius.circular(6),
-            onTap: () {
-              setState(() {
-                widget.withdarw.withdrawamount.text = withdrawAmount;
-                widget.withdarw.withdrawamount.selection =
-                    TextSelection.fromPosition(
-                  TextPosition(
-                      offset: widget.withdarw.withdrawamount.text.length),
-                );
-                disable = false;
-                withdarwerror = "";
-              });
-            },
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.primaryDark.withOpacity(0.1),
-                  light: MyntColors.primary.withOpacity(0.1),
-                ),
+          const Spacer(),
+          if (hasAmount)
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
                 borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                "Withdraw All",
-                style: MyntWebTextStyles.bodySmall(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary,
+                onTap: () {
+                  setState(() {
+                    widget.withdarw.withdrawamount.text = withdrawAmount;
+                    widget.withdarw.withdrawamount.selection =
+                        TextSelection.fromPosition(
+                      TextPosition(
+                          offset:
+                              widget.withdarw.withdrawamount.text.length),
+                    );
+                    disable = false;
+                    withdarwerror = "";
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary)),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  fontWeight: MyntFonts.semiBold,
+                  child: Text(
+                    "Withdraw All",
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary),
+                    ),
+                  ),
                 ),
               ),
             ),
+        ],
+      ),
+    ),
+      ),
+    );
+  }
+
+  // ── Main card: form (left) + summary (right) ───────────────────
+
+  Widget _buildMainCard(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: resolveThemeColor(context,
+            dark: MyntColors.transparent, light: MyntColors.card),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(
+            color: resolveThemeColor(context,
+                dark: MyntColors.cardBorderDark,
+                light: MyntColors.cardBorder)),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left column: form
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: _buildWithdrawForm(context),
+              ),
+            ),
+            // Vertical divider
+            Container(
+              width: 1,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.cardBorderDark,
+                  light: MyntColors.cardBorder),
+            ),
+            // Right column: summary
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: _buildSummaryColumn(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Left column: form ──────────────────────────────────────
+
+  Widget _buildWithdrawForm(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Enter Amount",
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            fontWeight: MyntFonts.medium,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
           ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(child: _buildAmountInput(context)),
+            const SizedBox(width: 12),
+            _buildWithdrawButton(context),
+          ],
+        ),
+        if (withdarwerror.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              withdarwerror,
+              style: MyntWebTextStyles.caption(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.errorDark,
+                    light: MyntColors.error),
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        _buildInfoAlert(context),
       ],
     );
   }
@@ -279,42 +362,28 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     return MyntTextField(
       controller: widget.withdarw.withdrawamount,
       focusNode: widget.foucs,
-      placeholder: "Enter amount",
-      enabled:
-          widget.withdarw.payoutdetails!.withdrawAmount != '0.00',
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
+      enabled: widget.withdarw.payoutdetails!.withdrawAmount != '0.00',
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
         FilteringTextInputFormatter.deny(RegExp(r'^0$')),
       ],
-      textStyle: MyntWebTextStyles.title(
-        context,
-        color: resolveThemeColor(
-          context,
-          dark: MyntColors.textPrimaryDark,
-          light: MyntColors.textPrimary,
-        ),
-        fontWeight: MyntFonts.medium,
-      ),
-      leadingWidget: SizedBox(
-        width: 36,
-        child: Center(
+      placeholder: "0.00",
+      leadingWidget: Center(
+        widthFactor: 1,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12),
           child: Text(
             "₹",
-            style: MyntWebTextStyles.title(
+            style: MyntWebTextStyles.body(
               context,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary,
-              ),
               fontWeight: MyntFonts.medium,
+              darkColor: MyntColors.textSecondaryDark,
+              lightColor: MyntColors.textSecondary,
             ),
           ),
         ),
       ),
-      height: 46,
       onChanged: (value) {
         setState(() {
           if (value.isNotEmpty) {
@@ -343,7 +412,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
   Widget _buildWithdrawButton(BuildContext context) {
     return MyntPrimaryButton(
       label: "Withdraw",
-      isFullWidth: true,
+      isFullWidth: false,
       isLoading: _withdrawLoading,
       onPressed: disable
           ? () {
@@ -384,242 +453,174 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     );
   }
 
-  Widget _buildBreakUpCard(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: resolveThemeColor(
-            context,
-            dark: MyntColors.cardBorderDark,
-            light: MyntColors.cardBorder,
-          ),
-        ),
-        color: resolveThemeColor(
-          context,
-          dark: MyntColors.cardDark,
-          light: MyntColors.card,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Text(
-              "Withdraw Summary",
-              style: MyntWebTextStyles.title(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-                fontWeight: MyntFonts.semiBold,
-              ),
-            ),
-          ),
-          Divider(
-            height: 1,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.dividerDark,
-              light: MyntColors.divider,
-            ),
-          ),
-          _buildBreakUpContent(context),
-        ],
-      ),
-    );
-  }
+  // ── Right column: summary ──────────────────────────────────
 
-  Widget _buildBreakUpContent(BuildContext context) {
+  Widget _buildSummaryColumn(BuildContext context) {
     final payout = widget.withdarw.payoutdetails!;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Column(
-        children: [
-          _dataRow(context, "Available Cash", payout.totalLedger ?? "0.00"),
-          if (double.tryParse(payout.brkcollamt ?? '0') != null &&
-              double.parse(payout.brkcollamt ?? '0') > 0)
-            _dataRow(
-                context, "Collateral Value", payout.brkcollamt ?? "0.00"),
-          if (double.tryParse(payout.fD ?? '0') != null &&
-              double.parse(payout.fD ?? '0') > 0)
-            _dataRow(context, "Fixed Deposit", payout.fD ?? "0.00"),
-          _dataRow(context, "Margin Used", payout.margin ?? "0.00"),
-          _dataRow(
-              context, "Withdrawable Amount", payout.withdrawAmount ?? "0.00",
-              isLast: true),
-        ],
-      ),
-    );
-  }
 
-  Widget _dataRow(BuildContext context, String label, String value,
-      {bool isLast = false}) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: MyntWebTextStyles.body(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary,
-                  ),
-                  fontWeight: MyntFonts.regular,
-                ),
-              ),
-              Text(
-                "₹ $value",
-                style: MyntWebTextStyles.body(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                  fontWeight: MyntFonts.semiBold,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.dividerDark,
-              light: MyntColors.divider,
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildOpenRequest(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Open Request",
+          "Withdraw Summary",
           style: MyntWebTextStyles.bodySmall(
             context,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
-            ),
-            fontWeight: MyntFonts.semiBold,
+            fontWeight: MyntFonts.medium,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
           ),
         ),
+        const SizedBox(height: 4),
+              Builder(
+                builder: (context) {
+                  final amountValue =
+                      double.tryParse(payout.withdrawAmount ?? '0') ?? 0.00;
+                  return Text(
+                     "₹ ${payout.withdrawAmount ?? "0.00"}",
+                    style: MyntWebTextStyles.head(
+                      context,
+                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                      fontWeight: MyntFonts.medium,
+                    ),
+                  );
+                },
+              ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: resolveThemeColor(
-              context,
-              dark: const Color(0xFF2D2200),
-              light: const Color(0xFFFFF3E0),
-            ),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.av_timer,
-                color: Color(0xFFFB8C00),
-                size: 28,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
-                      style: MyntWebTextStyles.body(
-                        context,
-                        color: resolveThemeColor(
-                          context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary,
-                        ),
-                        fontWeight: MyntFonts.semiBold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Request on : ${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        color: resolveThemeColor(
-                          context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary,
-                        ),
-                        fontWeight: MyntFonts.regular,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        const ListDivider(),
+        _summaryRow(context, "Available Cash", payout.totalLedger ?? "0.00"),
+        const ListDivider(),
+        if (double.tryParse(payout.brkcollamt ?? '0') != null &&
+            double.parse(payout.brkcollamt ?? '0') > 0) ...[
+          _summaryRow(
+              context, "Collateral Value", payout.brkcollamt ?? "0.00"),
+          const ListDivider(),
+        ],
+        if (double.tryParse(payout.fD ?? '0') != null &&
+            double.parse(payout.fD ?? '0') > 0) ...[
+          _summaryRow(context, "Fixed Deposit", payout.fD ?? "0.00"),
+          const ListDivider(),
+        ],
+        _summaryRow(context, "Margin Used", payout.margin ?? "0.00",
+            valueColor: (payout.margin != null && payout.margin != "0.00")
+                ? resolveThemeColor(context,
+                    dark: MyntColors.errorDark,
+                    light: MyntColors.error)
+                : null),
       ],
+    );
+  }
+
+  Widget _summaryRow(BuildContext context, String label, String value,
+      {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              fontWeight: MyntFonts.medium,
+              darkColor: MyntColors.textSecondaryDark,
+              lightColor: MyntColors.textSecondary,
+            ),
+          ),
+          Text(
+            value,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              fontWeight: MyntFonts.semiBold,
+              color: valueColor ??
+                  resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Alerts & status ─────────────────────────────────────────────
+
+  Widget _buildOpenRequest(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: resolveThemeColor(context,
+            dark: const Color(0xFF2D2200),
+            light: const Color(0xFFFFF8E1)),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(
+          color: resolveThemeColor(context,
+              dark: const Color(0xFF5C4400),
+              light: const Color(0xFFFFE082)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Pending Request",
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    fontWeight: MyntFonts.medium,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              fontWeight: MyntFonts.medium,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildInfoAlert(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: resolveThemeColor(
-          context,
-          dark: const Color(0xFF2D2200),
-          light: const Color(0xFFFFF3E0),
-        ),
-        borderRadius: BorderRadius.circular(8),
-        border: Border(
-          left: BorderSide(
-            color: const Color(0xFFFB8C00),
-            width: 3,
-          ),
-        ),
+        color: resolveThemeColor(context,
+            dark: MyntColors.listItemBgDark,
+            light: MyntColors.listItemBg),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(
+            color: resolveThemeColor(context,
+                dark: MyntColors.borderMutedDark,
+                light: MyntColors.borderMuted)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.info_outline,
-            color: Color(0xFFFB8C00),
-            size: 18,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              "Payout requests submitted before 8:30 AM on any working day will be processed on the same day. Requests received after 8:30 AM will be processed on the next working day. Please note that in case of multiple payout requests, the latest request received will be considered for processing.",
-              style: MyntWebTextStyles.para(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: const Color(0xFF333333),
-                ),
-                fontWeight: MyntFonts.regular,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        "Payout requests submitted before 8:30 AM on any working day will be processed on the same day. Requests received after 8:30 AM will be processed on the next working day. In case of multiple requests, the latest one will be considered.",
+        style: MyntWebTextStyles.para(
+          context,
+          fontWeight: MyntFonts.medium,
+          darkColor: MyntColors.textSecondaryDark,
+          lightColor: MyntColors.textSecondary,
+        ),
       ),
     );
   }
