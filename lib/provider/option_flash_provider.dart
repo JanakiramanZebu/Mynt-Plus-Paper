@@ -262,6 +262,29 @@ class OptionFlashProvider extends DefaultChangeNotifier {
     });
   }
 
+  /// Check if there is an open position for the currently selected strike
+  bool get hasStrikePosition {
+    if (_selectedStrike == null || _positionsData.isEmpty) return false;
+    final strikeToken = _selectedStrike!.option.token;
+    return _positionsData.any((pos) {
+      final netqtyVal = int.tryParse(pos.netqty ?? '0') ?? 0;
+      return pos.token == strikeToken && netqtyVal != 0;
+    });
+  }
+
+  /// Get net quantity for the currently selected strike
+  int get strikeNetQty {
+    if (_selectedStrike == null || _positionsData.isEmpty) return 0;
+    final strikeToken = _selectedStrike!.option.token;
+    int total = 0;
+    for (var pos in _positionsData) {
+      if (pos.token == strikeToken) {
+        total += int.tryParse(pos.netqty ?? '0') ?? 0;
+      }
+    }
+    return total;
+  }
+
   /// Get total net quantity across all positions for the selected symbol
   int get symbolNetQty {
     if (_selectedSymbol == null || _positionsData.isEmpty) return 0;
@@ -995,23 +1018,22 @@ class OptionFlashProvider extends DefaultChangeNotifier {
     _subscribedPositions.clear();
   }
 
-  /// Calculate P&L for selected index using live WebSocket LTP
+  /// Calculate P&L for selected strike using live WebSocket LTP
   void _calculateIndexPnL() {
     _pnlDebugInfo = []; // Clear previous debug info
 
-    if (_selectedSymbol == null || _positionsData.isEmpty) {
+    if (_selectedStrike == null || _positionsData.isEmpty) {
       _indexPnL = '0.00';
       return;
     }
 
+    final strikeToken = _selectedStrike!.option.token;
     final websocketProv = ref.read(websocketProvider);
     final socketData = websocketProv.socketDatas;
 
     double totalPnL = 0;
     for (var pos in _positionsData) {
-      final matchesSymbol = _matchesSymbol(pos.tsym, _selectedSymbol!.symname);
-
-      if (matchesSymbol) {
+      if (pos.token == strikeToken) {
         // Parse all required values (same as Position calculation)
         final netQty = int.tryParse(pos.netqty ?? '0') ?? 0;
         final prcFtr = double.tryParse(pos.prcftr ?? '1.0') ?? 1.0;
@@ -1077,82 +1099,70 @@ class OptionFlashProvider extends DefaultChangeNotifier {
     _indexPnL = totalPnL.toStringAsFixed(2);
   }
 
-  /// Exit all positions for selected index
-  Future<void> exitAllPositions(BuildContext context) async {
-    if (_selectedSymbol == null || _positionsData.isEmpty) {
-      _showSnackbar(context, 'No open positions to exit', isError: true);
+  /// Exit position for the currently selected strike
+  Future<void> exitStrikePosition(BuildContext context) async {
+    if (_selectedStrike == null || _positionsData.isEmpty) {
+      _showSnackbar(context, 'No open position to exit', isError: true);
       return;
     }
 
-    // Get all open positions for the selected index
-    final indexPositions = _positionsData.where((pos) {
-      final matchesSymbol = _matchesSymbol(pos.tsym, _selectedSymbol!.symname);
-      final netqtyVal = int.tryParse(pos.netqty ?? '0') ?? 0;
-      final isOpen = netqtyVal != 0;
-      return matchesSymbol && isOpen;
-    }).toList();
+    final strikeToken = _selectedStrike!.option.token;
+    final position = _positionsData.cast<PositionBookModel?>().firstWhere(
+      (pos) {
+        final netqtyVal = int.tryParse(pos!.netqty ?? '0') ?? 0;
+        return pos.token == strikeToken && netqtyVal != 0;
+      },
+      orElse: () => null,
+    );
 
-    if (indexPositions.isEmpty) {
-      _showSnackbar(context, 'No open positions to exit', isError: true);
+    if (position == null) {
+      _showSnackbar(context, 'No open position to exit', isError: true);
       return;
     }
 
-    int successCount = 0;
-    int failCount = 0;
+    try {
+      final netqtyVal = int.tryParse(position.netqty ?? '0') ?? 0;
+      final exitTransType = netqtyVal > 0 ? 'S' : 'B';
+      final exitQty = netqtyVal.abs();
 
-    // Place exit orders for all positions
-    for (var position in indexPositions) {
-      try {
-        final netqtyVal = int.tryParse(position.netqty ?? '0') ?? 0;
-        final exitTransType = netqtyVal > 0 ? 'S' : 'B';
-        final exitQty = netqtyVal.abs();
+      final orderPayload = PlaceOrderInput(
+        exch: position.exch ?? 'NFO',
+        tsym: position.tsym ?? '',
+        qty: exitQty.toString(),
+        prc: '0',
+        prd: position.prd ?? 'M',
+        trantype: exitTransType,
+        prctype: 'MKT',
+        ret: 'DAY',
+        amo: '',
+        trgprc: '',
+        trailprc: '',
+        blprc: '',
+        bpprc: '',
+        dscqty: '',
+        mktProt: '',
+        channel: 'WEB',
+      );
 
-        final orderPayload = PlaceOrderInput(
-          exch: position.exch ?? 'NFO',
-          tsym: position.tsym ?? '',
-          qty: exitQty.toString(),
-          prc: '0',
-          prd: position.prd ?? 'M',
-          trantype: exitTransType,
-          prctype: 'MKT',
-          ret: 'DAY',
-          amo: '',
-          trgprc: '',
-          trailprc: '',
-          blprc: '',
-          bpprc: '',
-          dscqty: '',
-          mktProt: '',
-          channel: 'WEB',
-        );
+      final result = await api.getPlaceOrder(orderPayload, '');
 
-        final result = await api.getPlaceOrder(orderPayload, '');
-
-        // Check for session expiry
-        if (_isSessionExpired(result.stat, result.emsg)) {
-          _handleSessionExpiry(context);
-          return;
-        }
-
-        if (result.stat == 'Ok') {
-          successCount++;
-        } else {
-          failCount++;
-          log('[OptionFlash] Exit order failed: ${position.tsym} - ${result.emsg}');
-        }
-      } catch (error) {
-        failCount++;
-        log('[OptionFlash] Exit order error: ${position.tsym} - $error');
+      // Check for session expiry
+      if (_isSessionExpired(result.stat, result.emsg)) {
+        _handleSessionExpiry(context);
+        return;
       }
-    }
 
-    if (successCount > 0) {
-      _showSnackbar(context, '$successCount exit order(s) triggered successfully', isError: false);
-      // Refresh positions after exit
-      Future.delayed(const Duration(seconds: 1), () => fetchPositions(context));
-    }
-    if (failCount > 0) {
-      _showSnackbar(context, '$failCount exit order(s) failed', isError: true);
+      if (result.stat == 'Ok') {
+        _showSnackbar(context, 'Exit order placed for ${position.tsym}', isError: false);
+        // Refresh positions after exit
+        Future.delayed(const Duration(seconds: 1), () => fetchPositions(context));
+      } else {
+        _showSnackbar(context, 'Exit failed: ${result.emsg}', isError: true);
+        log('[OptionFlash] Exit order failed: ${position.tsym} - ${result.emsg}');
+      }
+    } catch (error) {
+      _showSnackbar(context, 'Exit order error', isError: true);
+      log('[OptionFlash] Exit order error: ${position.tsym} - $error');
     }
   }
 
