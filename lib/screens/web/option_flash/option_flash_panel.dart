@@ -463,72 +463,93 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               left: buttonPosition.dx,
               top: showAbove ? null : buttonPosition.dy + buttonSize.height + 4,
               bottom: showAbove ? screenSize.height - buttonPosition.dy + 4 : null,
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(6),
-                color: isDark ? MyntColors.overlayBgDark : Colors.white,
-                child: Container(
-                  width: 140,
-                  constraints: BoxConstraints(
-                    maxHeight: (showAbove ? spaceAbove : spaceBelow).clamp(100.0, 300.0),
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(4),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: optionFlash.symbolsList.map((symbol) {
-                          final isSelected = symbol == optionFlash.selectedSymbol;
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                _removeSymbolOverlay();
-                                optionFlash.onSymbolChange(symbol, context);
-                              },
-                              splashColor: resolveThemeColor(
-                                context,
-                                dark: MyntColors.rippleDark,
-                                light: MyntColors.rippleLight,
-                              ),
-                              highlightColor: resolveThemeColor(
-                                context,
-                                dark: MyntColors.highlightDark,
-                                light: MyntColors.highlightLight,
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                child: Text(
-                                  symbol.display,
-                                  style: MyntWebTextStyles.body(
-                                    context,
-                                    fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
-                                    color: isSelected
-                                        ? resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.primaryDark,
-                                            light: MyntColors.primary,
-                                          )
-                                        : resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.textPrimaryDark,
-                                            light: MyntColors.textPrimary,
-                                          ),
+              child: PointerInterceptor(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.basic,
+                  onEnter: (_) {
+                    ChartIframeGuard.acquire();
+                    _disableAllChartIframes();
+                  },
+                  onHover: (_) {
+                    _disableAllChartIframes();
+                  },
+                  onExit: (_) {
+                    ChartIframeGuard.release();
+                    _enableAllChartIframes();
+                  },
+                  child: Listener(
+                    onPointerMove: (_) {
+                      _disableAllChartIframes();
+                    },
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(6),
+                      color: isDark ? MyntColors.overlayBgDark : Colors.white,
+                      child: Container(
+                        width: 140,
+                        constraints: BoxConstraints(
+                          maxHeight: (showAbove ? spaceAbove : spaceBelow).clamp(100.0, 300.0),
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: optionFlash.symbolsList.map((symbol) {
+                                final isSelected = symbol == optionFlash.selectedSymbol;
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      _removeSymbolOverlay();
+                                      optionFlash.onSymbolChange(symbol, context);
+                                    },
+                                    splashColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.rippleDark,
+                                      light: MyntColors.rippleLight,
+                                    ),
+                                    highlightColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.highlightDark,
+                                      light: MyntColors.highlightLight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      child: Text(
+                                        symbol.display,
+                                        style: MyntWebTextStyles.body(
+                                          context,
+                                          fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                                          color: isSelected
+                                              ? resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.primaryDark,
+                                                  light: MyntColors.primary,
+                                                )
+                                              : resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.textPrimaryDark,
+                                                  light: MyntColors.textPrimary,
+                                                ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                              }).toList(),
                             ),
-                          );
-                        }).toList(),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -914,72 +935,93 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               left: buttonPosition.dx,
               top: showAbove ? null : buttonPosition.dy + buttonSize.height + 4,
               bottom: showAbove ? screenSize.height - buttonPosition.dy + 4 : null,
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(6),
-                color: isDark ? MyntColors.overlayBgDark : Colors.white,
-                child: Container(
-                  width: 160,
-                  constraints: BoxConstraints(
-                    maxHeight: (showAbove ? spaceAbove : spaceBelow).clamp(100.0, 300.0),
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(4),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: optionFlash.expiryList.map((expiry) {
-                          final isSelected = expiry == optionFlash.selectedExpiry;
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                _removeExpiryOverlay();
-                                optionFlash.onExpiryChange(expiry, context);
-                              },
-                              splashColor: resolveThemeColor(
-                                context,
-                                dark: MyntColors.rippleDark,
-                                light: MyntColors.rippleLight,
-                              ),
-                              highlightColor: resolveThemeColor(
-                                context,
-                                dark: MyntColors.highlightDark,
-                                light: MyntColors.highlightLight,
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                child: Text(
-                                  expiry,
-                                  style: MyntWebTextStyles.body(
-                                    context,
-                                    fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
-                                    color: isSelected
-                                        ? resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.primaryDark,
-                                            light: MyntColors.primary,
-                                          )
-                                        : resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.textPrimaryDark,
-                                            light: MyntColors.textPrimary,
-                                          ),
+              child: PointerInterceptor(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.basic,
+                  onEnter: (_) {
+                    ChartIframeGuard.acquire();
+                    _disableAllChartIframes();
+                  },
+                  onHover: (_) {
+                    _disableAllChartIframes();
+                  },
+                  onExit: (_) {
+                    ChartIframeGuard.release();
+                    _enableAllChartIframes();
+                  },
+                  child: Listener(
+                    onPointerMove: (_) {
+                      _disableAllChartIframes();
+                    },
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(6),
+                      color: isDark ? MyntColors.overlayBgDark : Colors.white,
+                      child: Container(
+                        width: 160,
+                        constraints: BoxConstraints(
+                          maxHeight: (showAbove ? spaceAbove : spaceBelow).clamp(100.0, 300.0),
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: optionFlash.expiryList.map((expiry) {
+                                final isSelected = expiry == optionFlash.selectedExpiry;
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      _removeExpiryOverlay();
+                                      optionFlash.onExpiryChange(expiry, context);
+                                    },
+                                    splashColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.rippleDark,
+                                      light: MyntColors.rippleLight,
+                                    ),
+                                    highlightColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.highlightDark,
+                                      light: MyntColors.highlightLight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      child: Text(
+                                        expiry,
+                                        style: MyntWebTextStyles.body(
+                                          context,
+                                          fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                                          color: isSelected
+                                              ? resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.primaryDark,
+                                                  light: MyntColors.primary,
+                                                )
+                                              : resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.textPrimaryDark,
+                                                  light: MyntColors.textPrimary,
+                                                ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                              }).toList(),
                             ),
-                          );
-                        }).toList(),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1089,23 +1131,41 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               left: buttonPosition.dx,
               top: showAbove ? null : buttonPosition.dy + buttonSize.height + 4,
               bottom: showAbove ? screenSize.height - buttonPosition.dy + 4 : null,
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(6),
-                color: isDark ? MyntColors.overlayBgDark : Colors.white,
-                child: Container(
-                  width: 300,
-                  constraints: BoxConstraints(
-                    maxHeight: (showAbove ? spaceAbove : spaceBelow).clamp(100.0, 350.0),
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
-                    ),
-                  ),
-                  // Use Consumer to watch provider for live LTP updates
-                  child: Consumer(
+              child: PointerInterceptor(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.basic,
+                  onEnter: (_) {
+                    ChartIframeGuard.acquire();
+                    _disableAllChartIframes();
+                  },
+                  onHover: (_) {
+                    _disableAllChartIframes();
+                  },
+                  onExit: (_) {
+                    ChartIframeGuard.release();
+                    _enableAllChartIframes();
+                  },
+                  child: Listener(
+                    onPointerMove: (_) {
+                      _disableAllChartIframes();
+                    },
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(6),
+                      color: isDark ? MyntColors.overlayBgDark : Colors.white,
+                      child: Container(
+                        width: 300,
+                        constraints: BoxConstraints(
+                          maxHeight: (showAbove ? spaceAbove : spaceBelow).clamp(100.0, 350.0),
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                          ),
+                        ),
+                        // Use Consumer to watch provider for live LTP updates
+                        child: Consumer(
                     builder: (context, ref, _) {
                       final optionFlash = ref.watch(optionFlashProvider);
                       final formattedStrikes = optionFlash.formattedStrikes;
@@ -1235,6 +1295,9 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                         ),
                       );
                     },
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
