@@ -212,7 +212,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                 elevation: 8,
                 borderRadius: BorderRadius.circular(5),
                 child: Container(
-                  width: 840,
+                  width: 740,
                   decoration: BoxDecoration(
                     color: isDark ? MyntColors.dialogDark : MyntColors.dialog,
                     borderRadius: BorderRadius.circular(5),
@@ -273,7 +273,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
           final newPosition = details.globalPosition - _initialPosition;
           // Constrain to viewport
           final screenSize = MediaQuery.of(context).size;
-          final constrainedX = newPosition.dx.clamp(0.0, screenSize.width - 920);
+          final constrainedX = newPosition.dx.clamp(0.0, screenSize.width - 820);
           final constrainedY = newPosition.dy.clamp(0.0, screenSize.height - 150);
           optionFlash.updateDialogPosition(Offset(constrainedX, constrainedY));
           setState(() {});
@@ -725,36 +725,40 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
 
   Widget _buildControls(BuildContext context, OptionFlashProvider optionFlash, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Row(
         children: [
           // Buy/Sell toggle
           _buildBuySellToggle(optionFlash, isDark),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
           // Product type toggle (MIS/NRML)
           _buildProductToggle(optionFlash, isDark),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
           // Expiry dropdown
           _buildExpiryDropdown(context, optionFlash, isDark),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
+
+          // CE/PE toggle
+          _buildOptionTypeToggle(optionFlash, isDark),
+          const SizedBox(width: 6),
 
           // Strike dropdown
           _buildStrikeDropdown(context, optionFlash, isDark),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
           // Price type toggle (MKT/LMT)
           _buildPriceTypeToggle(optionFlash, isDark),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
           // Quantity input
           _buildQtyInput(optionFlash, isDark),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
           // Price input
           _buildPriceInput(optionFlash, isDark),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
 
           // Submit button
           _buildSubmitButton(context, optionFlash),
@@ -785,6 +789,35 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
             fontWeight: MyntFonts.bold,
           ),
         ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionTypeToggle(OptionFlashProvider optionFlash, bool isDark) {
+    final isCE = optionFlash.selectedOptionType == 'CE';
+    return Tooltip(
+      message: isCE ? 'Change to Put' : 'Change to Call',
+      child: InkWell(
+        onTap: () => optionFlash.toggleOptionType(context),
+        child: Container(
+          width: 40,
+          height: 35,
+          decoration: BoxDecoration(
+            color: isCE
+                ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
+                : resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            isCE ? 'CE' : 'PE',
+            style: MyntWebTextStyles.body(
+              context,
+              color: Colors.white,
+              fontWeight: MyntFonts.bold,
+            ),
+          ),
         ),
       ),
     );
@@ -844,7 +877,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
       key: _expiryButtonKey,
       onTap: () => _showExpiryOverlay(context, optionFlash, isDark),
       child: Container(
-        width: 140,
+        width: 110,
         height: 35,
         decoration: BoxDecoration(
           color: resolveThemeColor(
@@ -1041,7 +1074,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
       key: _strikeButtonKey,
       onTap: () => _showStrikeOverlay(context, optionFlash, isDark),
       child: Container(
-        width: 195,
+        width: 120,
         height: 35,
         decoration: BoxDecoration(
           color: resolveThemeColor(
@@ -1058,22 +1091,39 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
             ),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Text(
-                optionFlash.selectedStrike != null
-                    ? '${optionFlash.selectedStrike!.strike.toStringAsFixed(0)} ${optionFlash.selectedStrike!.optionType}'
-                    : 'Select Strike',
-                style: MyntWebTextStyles.bodySmall(
-                  context,
-                  darkColor: MyntColors.textWhite,
-                  lightColor: MyntColors.textBlack,
-                  fontWeight: MyntFonts.medium,
-                ),
-                overflow: TextOverflow.ellipsis,
+              child: Row(
+                children: [
+                  Text(
+                    optionFlash.selectedStrike != null
+                        ? optionFlash.selectedStrike!.strike.toStringAsFixed(0)
+                        : 'Select',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textWhite,
+                      lightColor: MyntColors.textBlack,
+                      fontWeight: MyntFonts.medium,
+                    ),
+                  ),
+                  if (optionFlash.selectedStrike != null) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      '(${optionFlash.selectedStrike!.moneynessLabel})',
+                      style: MyntWebTextStyles.caption(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             Icon(
@@ -1088,7 +1138,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
   }
 
   void _showStrikeOverlay(BuildContext context, OptionFlashProvider optionFlash, bool isDark) {
-    if (optionFlash.formattedStrikes.isEmpty) return;
+    if (optionFlash.filteredStrikes.isEmpty) return;
 
     // Toggle behavior - close if already open
     if (_strikeOverlay != null) {
@@ -1105,7 +1155,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
     final screenSize = MediaQuery.of(context).size;
 
     // Calculate dropdown height (estimate: ~42px per item, max 350px)
-    final dropdownHeight = (optionFlash.formattedStrikes.length * 42.0).clamp(0.0, 350.0);
+    final dropdownHeight = (optionFlash.filteredStrikes.length * 42.0).clamp(0.0, 350.0);
 
     // Check if there's enough space below the button
     final spaceBelow = screenSize.height - (buttonPosition.dy + buttonSize.height + 4);
@@ -1154,7 +1204,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                       borderRadius: BorderRadius.circular(6),
                       color: isDark ? MyntColors.overlayBgDark : Colors.white,
                       child: Container(
-                        width: 300,
+                        width: 240,
                         constraints: BoxConstraints(
                           maxHeight: (showAbove ? spaceAbove : spaceBelow).clamp(100.0, 350.0),
                         ),
@@ -1168,18 +1218,18 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                         child: Consumer(
                     builder: (context, ref, _) {
                       final optionFlash = ref.watch(optionFlashProvider);
-                      final formattedStrikes = optionFlash.formattedStrikes;
+                      final filteredStrikes = optionFlash.filteredStrikes;
+                      final isCall = optionFlash.selectedOptionType == 'CE';
 
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: ListView.builder(
                           shrinkWrap: true,
                           padding: const EdgeInsets.all(4),
-                          itemCount: formattedStrikes.length,
+                          itemCount: filteredStrikes.length,
                           itemBuilder: (context, index) {
-                            final strike = formattedStrikes[index];
+                            final strike = filteredStrikes[index];
                             final isSelected = optionFlash.selectedStrike?.option.token == strike.option.token;
-                            final isCall = strike.optionType == 'CE';
 
                             return Material(
                               color: Colors.transparent,
@@ -1203,7 +1253,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                                   decoration: BoxDecoration(
                                     border: Border(
                                       left: BorderSide(
-                                        color: isCall ? MyntColors.profit :resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
+                                        color: isCall ? MyntColors.profit : resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                                         width: 4,
                                       ),
                                     ),
@@ -1240,23 +1290,6 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                                           ),
                                         ),
                                       ),
-                                      // CALL/PUT indicator
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: (isCall ? MyntColors.profit : resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary)).withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          isCall ? 'CE' : 'PE',
-                                          style: MyntWebTextStyles.caption(
-                                            context,
-                                            color: isCall ? (isDarkMode(context) ? MyntColors.profitDark : MyntColors.profit) : (isDarkMode(context) ? MyntColors.lossDark : MyntColors.loss),
-                                            fontWeight: MyntFonts.semiBold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
                                       // Moneyness with depth
                                       SizedBox(
                                         width: 55,
@@ -1362,7 +1395,7 @@ dark:MyntColors.textSecondaryDark,
           ? 'Freeze limit: ${optionFlash.freezeQty ~/ optionFlash.lotSize} lots (${optionFlash.freezeQty} qty)'
           : '',
       child: SizedBox(
-        width: 75,
+        width: 65,
         child: MyntTextField(
           controller: (_qtyController ??= TextEditingController(text: optionFlash.qtyLots.toString())),
           height: 35,
@@ -1442,7 +1475,7 @@ dark:MyntColors.textSecondaryDark,
     return Tooltip(
       message: tooltipMessage,
       child: SizedBox(
-        width: 100,
+        width: 80,
         child: MyntTextField(
           controller: _priceController,
           enabled: !isDisabled,

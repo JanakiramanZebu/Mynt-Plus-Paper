@@ -240,6 +240,10 @@ class OptionFlashProvider extends DefaultChangeNotifier {
   bool _isBuy = true;
   bool get isBuy => _isBuy;
 
+  // Option type (CE/PE)
+  String _selectedOptionType = 'CE';
+  String get selectedOptionType => _selectedOptionType;
+
   // Positions data
   List<PositionBookModel> _positionsData = [];
   List<PositionBookModel> get positionsData => _positionsData;
@@ -443,6 +447,42 @@ class OptionFlashProvider extends DefaultChangeNotifier {
   void toggleBuySell() {
     _isBuy = !_isBuy;
     notifyListeners();
+  }
+
+  /// Toggle option type (CE/PE) and auto-select matching ATM strike
+  void toggleOptionType(BuildContext context) {
+    _selectedOptionType = _selectedOptionType == 'CE' ? 'PE' : 'CE';
+    // Auto-select ATM strike for the new option type
+    _autoSelectOptionTypeATM(context);
+    notifyListeners();
+  }
+
+  /// Set option type directly
+  void setOptionType(String type, BuildContext context) {
+    if (_selectedOptionType == type) return;
+    _selectedOptionType = type;
+    _autoSelectOptionTypeATM(context);
+    notifyListeners();
+  }
+
+  /// Get formatted strikes filtered by current option type
+  List<FormattedStrike> get filteredStrikes =>
+      _formattedStrikes.where((s) => s.optionType == _selectedOptionType).toList();
+
+  /// Auto-select ATM strike for current option type
+  void _autoSelectOptionTypeATM(BuildContext context) {
+    final filtered = filteredStrikes;
+    if (filtered.isEmpty) return;
+
+    final atm = filtered.cast<FormattedStrike?>().firstWhere(
+      (s) => s!.isATM,
+      orElse: () => filtered[filtered.length ~/ 2],
+    );
+
+    if (atm != null) {
+      _selectedStrike = atm;
+      _onStrikeChangeInternal(context);
+    }
   }
 
   /// Toggle product type (MIS/NRML)
@@ -770,29 +810,21 @@ class OptionFlashProvider extends DefaultChangeNotifier {
     }
   }
 
-  /// Auto select ATM strike
+  /// Auto select ATM strike based on selected option type
   Future<void> _autoSelectATM(BuildContext context) async {
-    final atmCE = _formattedStrikes.firstWhere(
-      (s) => s.isATM && s.optionType == 'CE',
+    final filtered = _formattedStrikes.where((s) => s.optionType == _selectedOptionType).toList();
+    final atmStrike = filtered.cast<FormattedStrike?>().firstWhere(
+      (s) => s!.isATM,
       orElse: () {
-        final ceOptions = _formattedStrikes.where((s) => s.optionType == 'CE').toList();
-        if (ceOptions.isNotEmpty) {
-          return ceOptions[ceOptions.length ~/ 2];
+        if (filtered.isNotEmpty) {
+          return filtered[filtered.length ~/ 2];
         }
-        return _formattedStrikes.isNotEmpty ? _formattedStrikes.first : FormattedStrike(
-          label: '',
-          option: OptionValues(),
-          isATM: false,
-          strike: 0,
-          optionType: 'CE',
-          moneyness: '',
-          ltp: 0,
-        );
+        return _formattedStrikes.isNotEmpty ? _formattedStrikes.first : null;
       },
     );
 
-    if (atmCE.label.isNotEmpty) {
-      _selectedStrike = atmCE;
+    if (atmStrike != null && atmStrike.label.isNotEmpty) {
+      _selectedStrike = atmStrike;
       await _onStrikeChangeInternal(context);
     }
   }
