@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -222,6 +221,24 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
     return double.tryParse(val) ?? 0;
   }
 
+  static const _filterToSegMap = <String, String>{
+    'Equities': 'eq',
+    'FNO': 'fno',
+    'Commodities': 'comm',
+    'Currencies': 'curr',
+  };
+
+  void _fetchExpensesForFilter(String filter) {
+    final ledger = ref.read(ledgerProvider);
+    final seg = _filterToSegMap[filter];
+    if (seg != null) {
+      ledger.chargesforpnlseg(context, seg);
+    } else {
+      // "All" — re-fetch full data to reset expenseAmt
+      _fetchData(force: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(themeProvider);
@@ -372,6 +389,57 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
                 ],
               ),
               const SizedBox(width: 16),
+              // Filter dropdown
+              SizedBox(
+                height: 36,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      elevation: 1,
+                      focusColor: Colors.transparent,
+                      value: _selectedFilter,
+                      icon: Icon(Icons.keyboard_arrow_down,
+                          size: 18,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary)),
+                      isDense: true,
+                      dropdownColor: resolveThemeColor(context,
+                          dark: MyntColors.cardDark,
+                          light: MyntColors.card),
+                      style: MyntWebTextStyles.bodySmall(context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                          fontWeight: MyntFonts.medium),
+                      items: ['All', 'Equities', 'FNO', 'Commodities', 'Currencies']
+                          .map((f) => DropdownMenuItem<String>(
+                                value: f,
+                                child: Text(f),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val == null || val == _selectedFilter) return;
+                        setState(() {
+                          _selectedFilter = val;
+                          displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+                        });
+                        _fetchExpensesForFilter(val);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               // Date range
               InkWell(
                 key: _datePickerButtonKey,
@@ -422,40 +490,8 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
                   }),
                 ),
               ),
-              const SizedBox(width: 8),
-              // Filter button
-              Builder(
-                builder: (buttonContext) {
-                  return SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: () => _showFilterPopover(buttonContext),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: SvgPicture.asset(
-                              'assets/icon/search-filter.svg',
-                              width: 18,
-                              height: 18,
-                              colorFilter: ColorFilter.mode(
-                                resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              const SizedBox(width: 4),
+              
             ],
           ),
           const SizedBox(height: 12),
@@ -464,84 +500,16 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
     );
   }
 
-  void _showFilterPopover(BuildContext buttonContext) {
-    final filters = ['All', 'NSE_CASH', 'BSE_CASH', 'NSE_FNO', /* 'COMM', */ 'CDS'];
-    shadcn.showPopover(
-      context: buttonContext,
-      alignment: Alignment.bottomCenter,
-      offset: const Offset(0, 8),
-      overlayBarrier: shadcn.OverlayBarrier(
-        borderRadius: shadcn.Theme.of(buttonContext).borderRadiusLg,
-      ),
-      builder: (popoverContext) {
-        return Container(
-          width: 160,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: resolveThemeColor(context,
-                dark: MyntColors.backgroundColorDark,
-                light: MyntColors.backgroundColor),
-            borderRadius: BorderRadius.circular(8),
-           boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 12,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: filters.map((f) {
-              final isSelected = _selectedFilter == f;
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedFilter = f;
-                    displayedItemCount = ScrollToLoadMixin.itemsPerPage;
-                  });
-                  shadcn.closeOverlay(popoverContext);
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  color: isSelected
-                      ? resolveThemeColor(context,
-                              dark: MyntColors.primaryDark,
-                              light: MyntColors.primary)
-                          .withValues(alpha: 0.1)
-                      : null,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          f,
-                          style: MyntWebTextStyles.bodySmall(context,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.textPrimaryDark,
-                                  light: MyntColors.textPrimary),
-                              fontWeight: isSelected
-                                  ? MyntFonts.semiBold
-                                  : MyntFonts.medium),
-                        ),
-                      ),
-                      if (isSelected)
-                        Icon(Icons.check,
-                            size: 16,
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.primaryDark,
-                                light: MyntColors.primary)),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        );
-      },
-    );
+  static const _filterToCodesMap = <String, List<String>>{
+    'All': [],
+    'Equities': ['NSE_CASH', 'BSE_CASH'],
+    'FNO': ['NSE_FNO', 'BSE_FNO'],
+    'Commodities': ['COMM'],
+    'Currencies': ['CDS'],
+  };
+
+  List<String> _getCodesForFilter(String filter) {
+    return _filterToCodesMap[filter] ?? [];
   }
 
   // ─── Body ────────────────────────────────────────────────────────────
@@ -553,7 +521,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Stat cards
-          _buildStatCards(context, pnlData),
+          _buildStatCards(context, pnlData, ledger),
           const SizedBox(height: 12),
           // With open balance checkbox
           Row(
@@ -597,14 +565,13 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
 
   // ─── Stat Cards ──────────────────────────────────────────────────────
 
-  Widget _buildStatCards(BuildContext context, PnlModel pnlData) {
+  Widget _buildStatCards(BuildContext context, PnlModel pnlData, LDProvider ledger) {
     final transactions = pnlData.transactions ?? [];
-    final expenses = pnlData.expenses ?? [];
 
     // Calculate segment totals
     double equityTotal = 0;
     double fnoTotal = 0;
-    // double commodityTotal = 0;
+    double commodityTotal = 0;
     double currencyTotal = 0;
 
     for (final t in transactions) {
@@ -614,48 +581,62 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
         equityTotal += pnl;
       } else if (code == 'NSE_FNO' || code == 'BSE_FNO') {
         fnoTotal += pnl;
-      // } else if (code == 'COMM') {
-      //   commodityTotal += pnl;
+      } else if (code == 'COMM') {
+        commodityTotal += pnl;
       } else if (code == 'CDS') {
         currencyTotal += pnl;
       }
     }
 
-    double chargesTotal = 0;
-    for (final e in expenses) {
-      chargesTotal += _parseDbl(e.nOTPROFIT);
-    }
+    // Use expenseAmt from API (updated by chargesforpnlseg on filter change)
+    final chargesTotal = _parseDbl(pnlData.expenseAmt);
+
+    // Charges card label based on filter
+    final chargesLabel = _selectedFilter == 'All'
+        ? 'All Charges & taxes'
+        : '$_selectedFilter Charges & taxes';
 
     final netNotional = _parseDbl(pnlData.netPnl);
 
+    final cards = [
+      _statCard(context, 'Net Notional', netNotional),
+      _statCard(context, 'Equity', equityTotal),
+      _statCard(context, 'FNO', fnoTotal),
+      _statCard(context, 'Commodity', commodityTotal),
+      _statCard(context, 'Currency', currencyTotal),
+      _statCard(context, chargesLabel, chargesTotal,
+          isCharges: true,
+          isLoading: ledger.reportsloadingforcharges),
+    ];
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 900 ? 5 : 3;
-        return GridView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            mainAxisExtent: 110,
-          ),
-          children: [
-            _statCard(context, 'Net Notional', netNotional),
-            _statCard(context, 'Equity', equityTotal),
-            _statCard(context, 'FNO', fnoTotal),
-            // _statCard(context, 'Commodity', commodityTotal),
-            _statCard(context, 'Currency', currencyTotal),
-            _statCard(context, 'All Charges & taxes', chargesTotal,
-                isCharges: true),
-          ],
+        final width = constraints.maxWidth;
+        final int columns;
+        if (width >= 1100) {
+          columns = 6;
+        } else if (width >= 750) {
+          columns = 3;
+        } else {
+          columns = 2;
+        }
+        const spacing = 12.0;
+        final cardWidth =
+            (width - spacing * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: cards
+              .map((card) => SizedBox(width: cardWidth, child: card))
+              .toList(),
         );
       },
     );
   }
 
   Widget _statCard(BuildContext context, String label, double value,
-      {bool isCharges = false}) {
+      {bool isCharges = false, bool isLoading = false}) {
     final valueColor = value == 0
         ? resolveThemeColor(context,
             dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)
@@ -663,7 +644,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
             ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
             : resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success);
 
-    return MouseRegion(
+    Widget card = MouseRegion(
       cursor: isCharges ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
         onTap: isCharges
@@ -673,7 +654,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
           data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
           child: shadcn.Card(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -697,9 +678,16 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text(value.toStringAsFixed(2).toIndianRupee(),
-                      style: MyntWebTextStyles.head(context,
-                          color: valueColor, fontWeight: MyntFonts.medium)),
+                  if (isLoading)
+                    const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else
+                    Text(value.toStringAsFixed(2).toIndianRupee(),
+                        style: MyntWebTextStyles.head(context,
+                            color: valueColor, fontWeight: MyntFonts.medium)),
                 ],
               ),
             ),
@@ -707,6 +695,14 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
         ),
       ),
     );
+
+    if (isCharges) {
+      return Tooltip(
+        message: 'Click here to see your breakups',
+        child: card,
+      );
+    }
+    return card;
   }
 
   // ─── Table ───────────────────────────────────────────────────────────
@@ -715,8 +711,9 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
     var filtered = transactions;
 
     if (_selectedFilter != 'All') {
+      final codes = _getCodesForFilter(_selectedFilter);
       filtered = filtered
-          .where((t) => t.companyCode == _selectedFilter)
+          .where((t) => codes.contains(t.companyCode))
           .toList();
     }
 
@@ -1227,202 +1224,203 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
   // ─── Charges Dialog ─────────────────────────────────────────────────
 
   void _showChargesDialog(BuildContext context) {
-    final ledger = ref.read(ledgerProvider);
-    final pnlData = ledger.pnlAllData;
-    final expenses = pnlData?.expenses ?? [];
-
-    final secondaryColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark,
-        light: MyntColors.textSecondary);
-    final borderColor = resolveThemeColor(context,
-        dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-
-    double totalCharges = 0;
-    for (final e in expenses) {
-      totalCharges += _parseDbl(e.nOTPROFIT);
-    }
+    final dialogTitle = _selectedFilter == 'All'
+        ? 'Charges and Taxes'
+        : '$_selectedFilter Charges and Taxes';
 
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return Dialog(
-          backgroundColor: resolveThemeColor(context,
-              dark: MyntColors.cardDark, light: MyntColors.card),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Container(
-            width: 600,
-            padding: const EdgeInsets.all(0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  child: Row(
-                    children: [
-                      Text('All Charges & Taxes',
-                          style: MyntWebTextStyles.head(context,
-                              darkColor: MyntColors.textPrimaryDark,
-                              lightColor: MyntColors.textPrimary,
-                              fontWeight: FontWeight.w600)),
-                      const Spacer(),
-                      InkWell(
-                        onTap: () => Navigator.pop(dialogContext),
-                        borderRadius: BorderRadius.circular(20),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: Icon(Icons.close,
-                              size: 24, color: secondaryColor),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Table
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: borderColor),
-                    ),
-                    child: Column(
-                      children: [
-                        // Table header
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(color: borderColor)),
+        return Consumer(
+          builder: (context, dialogRef, _) {
+            final ledger = dialogRef.watch(ledgerProvider);
+            final isLoading = ledger.reportsloadingforcharges;
+            // Use segCharge expenses for filtered view, pnlAllData expenses for "All"
+            final List<({String? symbol, String? profit})> expenses;
+            if (_selectedFilter == 'All') {
+              expenses = (ledger.pnlAllData?.expenses ?? [])
+                  .map((e) => (symbol: e.sCRIPSYMBOL, profit: e.nOTPROFIT))
+                  .toList();
+            } else {
+              expenses = (ledger.pnlsegCharge?.expenses ?? [])
+                  .map((e) => (symbol: e.sCRIPSYMBOL, profit: e.nOTPROFIT))
+                  .toList();
+            }
+
+            final secondaryColor = resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary);
+            final borderColor = resolveThemeColor(context,
+                dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+
+            return Dialog(
+              backgroundColor: resolveThemeColor(context,
+                  dark: MyntColors.cardDark, light: MyntColors.card),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              child: Container(
+                width: 600,
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(dialogTitle,
+                                    style: MyntWebTextStyles.head(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary,
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 2),
+                                Text('Breakups for your charges and taxes',
+                                    style: MyntWebTextStyles.caption(context,
+                                        color: secondaryColor)),
+                              ],
+                            ),
                           ),
-                          child: Row(
+                          InkWell(
+                            onTap: () => Navigator.pop(dialogContext),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(Icons.close,
+                                  size: 24, color: secondaryColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Content
+                    if (isLoading)
+                      const Padding(
+                        padding: EdgeInsets.all(40),
+                        child: Center(
+                          child: SizedBox(
+                            height: 28,
+                            width: 28,
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                          ),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: borderColor),
+                          ),
+                          child: Column(
                             children: [
-                              Expanded(
-                                flex: 3,
-                                child: Text('Charge Type',
-                                    style: MyntWebTextStyles.para(context,
-                                        darkColor:
-                                            MyntColors.textSecondaryDark,
-                                        lightColor: MyntColors.textSecondary,
-                                        fontWeight: FontWeight.w500)),
+                              // Table header
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                      bottom: BorderSide(color: borderColor)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: Text('Script symbol',
+                                          style: MyntWebTextStyles.para(context,
+                                              darkColor:
+                                                  MyntColors.textSecondaryDark,
+                                              lightColor: MyntColors.textSecondary,
+                                              fontWeight: FontWeight.w500)),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text('Net amount',
+                                          textAlign: TextAlign.right,
+                                          style: MyntWebTextStyles.para(context,
+                                              darkColor:
+                                                  MyntColors.textSecondaryDark,
+                                              lightColor: MyntColors.textSecondary,
+                                              fontWeight: FontWeight.w500)),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              Expanded(
-                                flex: 2,
-                                child: Text('Amount',
-                                    textAlign: TextAlign.right,
-                                    style: MyntWebTextStyles.para(context,
-                                        darkColor:
-                                            MyntColors.textSecondaryDark,
-                                        lightColor: MyntColors.textSecondary,
-                                        fontWeight: FontWeight.w500)),
-                              ),
+                              // Rows
+                              if (expenses.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Text('No data available',
+                                      style: MyntWebTextStyles.body(context,
+                                          color: secondaryColor)),
+                                )
+                              else
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxHeight: 450),
+                                  child: ListView.separated(
+                                    shrinkWrap: true,
+                                    itemCount: expenses.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(height: 1, color: borderColor),
+                                    itemBuilder: (context, index) {
+                                      final e = expenses[index];
+                                      final profit = _parseDbl(e.profit);
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 10),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(
+                                                  e.symbol ?? '',
+                                                  style: MyntWebTextStyles.body(
+                                                      context,
+                                                      darkColor: MyntColors
+                                                          .textPrimaryDark,
+                                                      lightColor:
+                                                          MyntColors.textPrimary,
+                                                      fontWeight:
+                                                          MyntFonts.medium)),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                  profit.toStringAsFixed(2),
+                                                  textAlign: TextAlign.right,
+                                                  style: MyntWebTextStyles.body(
+                                                      context,
+                                                      color: profit < 0
+                                                          ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
+                                                          : profit > 0
+                                                              ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
+                                                              : textColor,
+                                                      fontWeight:
+                                                          MyntFonts.medium)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                             ],
                           ),
                         ),
-                        // Rows
-                        if (expenses.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Text('No data available',
-                                style: MyntWebTextStyles.body(context,
-                                    color: secondaryColor)),
-                          )
-                        else
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxHeight: 450),
-                            child: ListView.separated(
-                              shrinkWrap: true,
-                              itemCount: expenses.length,
-                              separatorBuilder: (context, index) =>
-                                  Divider(height: 1, color: borderColor),
-                              itemBuilder: (context, index) {
-                                final e = expenses[index];
-                                final profit = _parseDbl(e.nOTPROFIT);
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 10),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 3,
-                                        child: Text(
-                                            e.sCRIPSYMBOL ?? '',
-                                            style: MyntWebTextStyles.body(
-                                                context,
-                                                darkColor: MyntColors
-                                                    .textPrimaryDark,
-                                                lightColor:
-                                                    MyntColors.textPrimary,
-                                                fontWeight:
-                                                    MyntFonts.medium)),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                            '${profit < 0 ? '- ' : ''}${profit.abs().toStringAsFixed(2)}',
-                                            textAlign: TextAlign.right,
-                                            style: MyntWebTextStyles.body(
-                                                context,
-                                                color: profit < 0
-                                                    ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
-                                                    : profit > 0
-                                                        ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
-                                                        : textColor,
-                                                fontWeight:
-                                                    MyntFonts.medium)),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        // Total row
-                        // Container(
-                        //   padding: const EdgeInsets.symmetric(
-                        //       horizontal: 16, vertical: 10),
-                        //   decoration: BoxDecoration(
-                        //     border: Border(
-                        //         top: BorderSide(color: borderColor)),
-                        //   ),
-                        //   child: Row(
-                        //     children: [
-                        //       Expanded(
-                        //         flex: 3,
-                        //         child: Text('Total',
-                        //             style: MyntWebTextStyles.body(context,
-                        //                 darkColor: MyntColors.textPrimaryDark,
-                        //                 lightColor: MyntColors.textPrimary,
-                        //                 fontWeight: MyntFonts.semiBold)),
-                        //       ),
-                        //       Expanded(
-                        //         flex: 2,
-                        //         child: Text(
-                        //             '${totalCharges < 0 ? '- ' : ''}${totalCharges.abs().toStringAsFixed(2)}',
-                        //             textAlign: TextAlign.right,
-                        //             style: MyntWebTextStyles.body(context,
-                        //                 color: totalCharges < 0
-                        //                     ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
-                        //                     : totalCharges > 0
-                        //                         ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
-                        //                         : textColor,
-                        //                 fontWeight: MyntFonts.semiBold)),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
