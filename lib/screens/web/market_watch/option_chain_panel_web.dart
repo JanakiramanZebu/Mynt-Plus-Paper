@@ -38,14 +38,26 @@ class _OptionChainPanelWebState extends ConsumerState<OptionChainPanelWeb> {
 
   bool _hasScrolledToATM = false;
 
+  /// Keeps the search overlay in sync with provider changes
+  /// (e.g. when fetchAvailableSymbols completes and isLoadingSymbols flips).
+  VoidCallback? _providerListener;
+
   @override
   void initState() {
     super.initState();
     _searchFocusNode.addListener(_onSearchFocusChange);
+
+    _providerListener = () {
+      _searchOverlay?.markNeedsBuild();
+    };
+    ref.read(watchlistOCProvider).addListener(_providerListener!);
   }
 
   @override
   void dispose() {
+    if (_providerListener != null) {
+      ref.read(watchlistOCProvider).removeListener(_providerListener!);
+    }
     _removeSearchOverlay();
     _removeExpiryOverlay();
     _scrollController.dispose();
