@@ -1,9 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../../../provider/ledger_provider.dart';
@@ -14,6 +16,7 @@ import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/scroll_to_load_mixin.dart';
+import '../../../../sharedWidget/snack_bar.dart';
 import 'charges_dialog_web.dart';
 import 'pnl_stats_summary_web.dart';
 
@@ -59,9 +62,11 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     initScrollToLoad();
     // Initialize dates from provider
     final lp = ref.read(ledgerProvider);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     _startDate = lp.startTaxDate;
-    _endDate = lp.endTaxDate;
-    _rightMonth = DateTime(_endDate.year, _endDate.month);
+    _endDate = today;
+    _rightMonth = DateTime(today.year, today.month);
     _leftMonth = DateTime(_startDate.year, _startDate.month);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeData();
@@ -71,13 +76,25 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
   void _initializeData() {
     if (!_isInitialized) {
       final ledgerprovider = ref.read(ledgerProvider);
+      final todayFormatted = DateFormat('dd/MM/yyyy').format(_endDate);
+
+      // Set end date to today in provider
+      ledgerprovider.endTaxDate = _endDate;
+      ledgerprovider.formattedendDate = todayFormatted;
+
       if (!ledgerprovider.hasDataForAllSegments) {
         ledgerprovider.fetchDataForAllSegmentsIfEmpty(
           context,
-          ledgerprovider.startDate,
-          ledgerprovider.today,
+          ledgerprovider.formattedStartDate,
+          todayFormatted,
         );
       }
+      ledgerprovider.fetchsharingdata(
+        ledgerprovider.formattedStartDate,
+        todayFormatted,
+        ledgerprovider.selectedSegment,
+        context,
+      );
       ledgerprovider.fetchChargesForAllCalendarSegments(context);
       // Sync selected segment index
       final idx = ledgerprovider.availableSegments
@@ -94,6 +111,16 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     _tableScrollController.dispose();
     _hoveredRowKey.dispose();
     super.dispose();
+  }
+
+  DateTime _getFinancialYearStart(DateTime date) {
+    final startYear = date.month < 4 ? date.year - 1 : date.year;
+    return DateTime(startYear, 4, 1);
+  }
+
+  DateTime _getFinancialYearEnd(DateTime date) {
+    final endYear = date.month < 4 ? date.year : date.year + 1;
+    return DateTime(endYear, 3, 31);
   }
 
   void _toggleDatePicker() {
@@ -160,16 +187,18 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     final from = DateFormat('dd/MM/yyyy').format(_startDate);
     final to = DateFormat('dd/MM/yyyy').format(_endDate);
 
-    // Update provider dates
+    // Clear existing data first (this resets dates internally)
+    lp.clearCalendarPnLData();
+
+    // Set provider dates AFTER clearing so they aren't overwritten
     lp.startTaxDate = _startDate;
     lp.endTaxDate = _endDate;
     lp.formattedStartDate = from;
     lp.formattedendDate = to;
 
-    // Clear existing data and refetch
-    lp.clearCalendarPnLData();
-    lp.calendarProvider();
-    lp.fetchDataForAllSegmentsIfEmpty(context, lp.startDate, lp.today);
+    // Refetch with the user-selected date range
+    lp.fetchDataForAllSegmentsIfEmpty(context, from, to);
+    lp.fetchsharingdata(from, to, lp.selectedSegment, context);
     lp.fetchChargesForAllCalendarSegments(context);
   }
 
@@ -185,6 +214,12 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
       selectedSegment,
       ledgerprovider.formattedStartDate,
       ledgerprovider.formattedendDate,
+    );
+    ledgerprovider.fetchsharingdata(
+      ledgerprovider.formattedStartDate,
+      ledgerprovider.formattedendDate,
+      selectedSegment,
+      context,
     );
   }
 
@@ -375,8 +410,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           // Segment tabs
           _buildSegmentTabs(context, ledgerprovider),
           const SizedBox(height: 12),
-          // Summary cards
-          _buildSummaryCards(context, data, netValue),
+          // Summary cards + share card
+          _buildSummaryCards(context, data, netValue, ledgerprovider),
           const SizedBox(height: 16),
           // Calendar section
           Padding(
@@ -389,8 +424,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   ? _buildMonthlyPnLForCommodity(ledgerprovider)
                   : ledgerprovider.monthlyPnL,
               isMonthly: ledgerprovider.isMonthly,
-              startFY: ledgerprovider.startTaxDate,
-              endFY: ledgerprovider.endTaxDate,
+              startFY: _getFinancialYearStart(ledgerprovider.startTaxDate),
+              endFY: _getFinancialYearEnd(ledgerprovider.startTaxDate),
               selectedMonth: ledgerprovider.selectedMonth,
               onTabChanged: (isMonthly) => ledgerprovider.setTab(isMonthly),
               onMonthSelected: (month) {
@@ -471,31 +506,56 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
 
   // --- Summary Cards ---
   Widget _buildSummaryCards(
-      BuildContext context, CalenderpnlModel? data, double netValue) {
+      BuildContext context, CalenderpnlModel? data, double netValue, LDProvider ledgerprovider) {
     final realized = data?.realized ?? 0.0;
     final unrealized = data?.unrealized ?? 0.0;
     final charges = data?.totalCharges ?? 0.0;
+    final hasData = data?.data != null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final columns = constraints.maxWidth >= 800 ? 4 : 2;
-          return GridView(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columns,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 115,
-            ),
+          final w = constraints.maxWidth;
+          // 5 columns for wide (>=1000), 3 for medium (>=600), 2 for narrow
+          final int columns;
+          if (hasData && w >= 1000) {
+            columns = 5;
+          } else if (w >= 600) {
+            columns = hasData ? 3 : 4;
+          } else {
+            columns = 2;
+          }
+          final spacing = 12.0;
+          final totalSpacing = spacing * (columns - 1);
+          final cardWidth = (w - totalSpacing) / columns;
+
+          return Wrap(
+            spacing: spacing,
+            runSpacing: spacing,
             children: [
-              _buildSummaryCard(context, 'Realised P&L', realized),
-              _buildSummaryCard(context, 'Unrealised P&L', unrealized),
-              _buildSummaryCard(context, 'Charges & Taxes', charges,
-                  isNeutral: true, onTap: () => showChargesDialog(context, ref: ref)),
-              _buildSummaryCard(context, 'Net Realised P&L', netValue),
+              SizedBox(
+                width: cardWidth, height: 115,
+                child: _buildSummaryCard(context, 'Realised P&L', realized),
+              ),
+              SizedBox(
+                width: cardWidth, height: 115,
+                child: _buildSummaryCard(context, 'Unrealised P&L', unrealized),
+              ),
+              SizedBox(
+                width: cardWidth, height: 115,
+                child: _buildSummaryCard(context, 'Charges & Taxes', charges,
+                    isNeutral: true, onTap: () => showChargesDialog(context, ref: ref)),
+              ),
+              SizedBox(
+                width: cardWidth, height: 115,
+                child: _buildSummaryCard(context, 'Net Realised P&L', netValue),
+              ),
+              if (hasData)
+                SizedBox(
+                  width: cardWidth, height: 115,
+                  child: _buildShareCard(context, ledgerprovider),
+                ),
             ],
           );
         },
@@ -572,6 +632,292 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           ),
         ),
       ),
+    );
+  }
+
+  // --- Share Card ---
+  Widget _buildShareCard(BuildContext context, LDProvider ledgerprovider) {
+    return shadcn.Theme(
+      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+      child: shadcn.Card(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green, size: 14),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      'P&L verified by Zebu',
+                      overflow: TextOverflow.ellipsis,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                        fontWeight: MyntFonts.medium,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Share to Everyone',
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      final value = !ledgerprovider.notsharing;
+                      ledgerprovider.sharingornotsharing(value);
+                      if (value == false && ledgerprovider.ucode == '') {
+                        ledgerprovider.sendsharing(
+                          "",
+                          ledgerprovider.formattedStartDate,
+                          ledgerprovider.formattedendDate,
+                          ledgerprovider.calenderpnlAllData!.fullresponse!,
+                          ledgerprovider.notsharing,
+                          ledgerprovider.selectedSegment,
+                          context,
+                        );
+                      } else {
+                        ledgerprovider.sendsharing(
+                          ledgerprovider.ucode,
+                          "",
+                          "",
+                          "",
+                          ledgerprovider.notsharing,
+                          "",
+                          context,
+                        );
+                      }
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: !ledgerprovider.notsharing
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.secondary,
+                                light: MyntColors.primary)
+                            : Colors.grey.withValues(alpha: 0.3),
+                      ),
+                      child: Stack(
+                        children: [
+                          AnimatedPositioned(
+                            duration: const Duration(milliseconds: 200),
+                            left: !ledgerprovider.notsharing ? 18 : 2,
+                            top: 2,
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () {
+                      if (ledgerprovider.notsharing == false) {
+                        _showSharingDialog(context, ledgerprovider);
+                      } else {
+                        warningMessage(context, 'Sharing is not on');
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(4),
+                    child: Icon(
+                      Icons.share_outlined,
+                      size: 20,
+                      color: ledgerprovider.notsharing == false
+                          ? resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary)
+                          : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSharingDialog(BuildContext context, LDProvider ledgerprovider) {
+    const sharingUrl = 'https://profile.mynt.in/dailypnl?ucode=';
+    final secondaryColor = resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+    final borderColor = resolveThemeColor(context,
+        dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.cardDark, light: MyntColors.card),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: Container(
+            width: 480,
+            padding: const EdgeInsets.all(0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Grab your URL',
+                                style: MyntWebTextStyles.head(context,
+                                    darkColor: MyntColors.textPrimaryDark,
+                                    lightColor: MyntColors.textPrimary,
+                                    fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 2),
+                            Text(
+                                'Click to share your triumphant journey.',
+                                style: MyntWebTextStyles.caption(context,
+                                    color: secondaryColor)),
+                          ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => Navigator.pop(dialogContext),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(Icons.close,
+                              size: 24, color: secondaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(height: 1, color: borderColor),
+                // Content
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Share this link Or copy link',
+                          style: MyntWebTextStyles.bodySmall(context,
+                              color: secondaryColor)),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 14),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: borderColor),
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.cardDark
+                                        .withValues(alpha: 0.5),
+                                    light: const Color(0xffF1F3F8)),
+                              ),
+                              child: Text(
+                                '$sharingUrl${ledgerprovider.ucode}',
+                                overflow: TextOverflow.ellipsis,
+                                style: MyntWebTextStyles.bodySmall(
+                                    context,
+                                    color: textColor),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          InkWell(
+                            onTap: () async {
+                              await Clipboard.setData(ClipboardData(
+                                  text:
+                                      '$sharingUrl${ledgerprovider.ucode}'));
+                              successMessage(
+                                  dialogContext, 'Text copied');
+                              Navigator.pop(dialogContext);
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: borderColor),
+                              ),
+                              child: Icon(Icons.copy_rounded,
+                                  size: 18, color: textColor),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap: () async {
+                              final twitterUrl =
+                                  "https://twitter.com/intent/tweet?text=Excited about my recent trading triumph using Zebu—profits surging! Skillful moves on the Zebu app have significantly boosted my success !&url=$sharingUrl${ledgerprovider.ucode}&hashtags=Traders #Traders via @zebuetrade ";
+                              if (await canLaunchUrl(
+                                  Uri.parse(twitterUrl))) {
+                                await launchUrl(Uri.parse(twitterUrl),
+                                    mode:
+                                        LaunchMode.externalApplication);
+                                Navigator.pop(dialogContext);
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: borderColor),
+                              ),
+                              child: Center(
+                                child: Text('X',
+                                    style: TextStyle(
+                                        color: textColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1226,9 +1572,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _buildPresetChip('Last 7 days', () => _applyQuickDate(7)),
-                    _buildPresetChip(
-                        'Last 30 days', () => _applyQuickDate(30)),
+                    // _buildPresetChip('Last 7 days', () => _applyQuickDate(7)),
+                    // _buildPresetChip(
+                    //     'Last 30 days', () => _applyQuickDate(30)),
                     _buildPresetChip(
                         'Current FY', () => _applyFYPreset(currentFYStart)),
                     _buildPresetChip(
