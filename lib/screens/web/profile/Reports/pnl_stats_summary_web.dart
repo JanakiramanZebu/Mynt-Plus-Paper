@@ -408,7 +408,7 @@ class _WebLineChart extends StatefulWidget {
 }
 
 class _WebLineChartState extends State<_WebLineChart> {
-  _ChartFilter _filter = _ChartFilter.month;
+  _ChartFilter _filter = _ChartFilter.threeMonths;
   late List<_DailyPnl> _filteredData;
 
   void _setFilter(_ChartFilter f) {
@@ -826,7 +826,7 @@ class _WebBarChartState extends State<_WebBarChart> {
   late int _endIdx;
   int? _crosshairIdx;
 
-  _ChartFilter _filter = _ChartFilter.month;
+  _ChartFilter _filter = _ChartFilter.threeMonths;
   late List<_DailyPnl> _filteredData;
 
   void _setFilter(_ChartFilter f) {
