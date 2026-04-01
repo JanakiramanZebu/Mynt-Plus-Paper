@@ -220,6 +220,19 @@ class LDProvider extends DefaultChangeNotifier {
   PnlSegCharge? _pnlsegCharge;
   PnlSegCharge? get pnlsegCharge => _pnlsegCharge;
 
+  // Calendar PnL — per-segment charges cache
+  final Map<String, PnlSegCharge?> _calendarChargesBySegment = {};
+  static String _calSegCode(String segment) => switch (segment) {
+        'FNO'       => 'fno',
+        'Commodity' => 'comm',
+        'Currency'  => 'curr',
+        _           => 'eq',
+      };
+  PnlSegCharge? get currentCalendarCharge =>
+      _calendarChargesBySegment[_calSegCode(selectedSegment)];
+  bool get calendarChargesLoading => _calendarChargesLoading;
+  bool _calendarChargesLoading = false;
+
   TaxPnlEqCharges? _taxpnleqCharge;
   TaxPnlEqCharges? get taxpnleqCharge => _taxpnleqCharge;
 
@@ -2156,6 +2169,31 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
+  /// Fetches charges for one segment using the calendar date range.
+  Future chargesforCalendarPnlSeg(BuildContext context, String seg) async {
+    if (_calendarChargesBySegment.containsKey(seg)) return;
+    try {
+      _calendarChargesLoading = true;
+      notifyListeners();
+      final charge = await api.getpnlsegcharge(
+          seg, formattedStartDate, formattedendDate, false);
+      _calendarChargesBySegment[seg] = charge;
+      _calendarChargesLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _calendarChargesLoading = false;
+      warningMessage(context, 'Error fetching charges');
+      debugPrint('$e');
+    }
+  }
+
+  /// Fetches charges for all four segments in the background on screen entry.
+  Future fetchChargesForAllCalendarSegments(BuildContext context) async {
+    for (final seg in ['eq', 'fno', 'comm', 'curr']) {
+      await chargesforCalendarPnlSeg(context, seg);
+    }
+  }
+
   Future chargesforeqtaxpnl(BuildContext context, int from) async {
     if (from <= _yearforTaxpnlDummy) {
       try {
@@ -4055,6 +4093,7 @@ class LDProvider extends DefaultChangeNotifier {
   void clearCalendarPnLData() {
     // Clear segment-based data storage
     _calenderpnlDataBySegment.clear();
+    _calendarChargesBySegment.clear();
     
     // Clear segment-specific loading states
     _calendarPnlLoadingBySegment.clear();

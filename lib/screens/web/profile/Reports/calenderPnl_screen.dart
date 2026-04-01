@@ -14,6 +14,8 @@ import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/scroll_to_load_mixin.dart';
+import 'charges_dialog_web.dart';
+import 'pnl_stats_summary_web.dart';
 
 class CalenderpnlScreen extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -76,6 +78,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           ledgerprovider.today,
         );
       }
+      ledgerprovider.fetchChargesForAllCalendarSegments(context);
       // Sync selected segment index
       final idx = ledgerprovider.availableSegments
           .indexOf(ledgerprovider.selectedSegment);
@@ -167,6 +170,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     lp.clearCalendarPnLData();
     lp.calendarProvider();
     lp.fetchDataForAllSegmentsIfEmpty(context, lp.startDate, lp.today);
+    lp.fetchChargesForAllCalendarSegments(context);
   }
 
   void _onSegmentTap(int index, LDProvider ledgerprovider) {
@@ -249,6 +253,52 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   fontWeight: MyntFonts.semiBold),
             ),
           ),
+          // P&L Stats button
+          if (ledgerprovider.calenderpnlAllData != null && ledgerprovider.selectedSegment != "Equity")
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: InkWell(
+                onTap: () => showPnlStatsSummaryDialog(
+                  context,
+                  data: ledgerprovider.calenderpnlAllData!,
+                  segment: ledgerprovider.selectedSegment,
+                ),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  // margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.cardBorderDark,
+                          light: MyntColors.cardBorder),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.bar_chart_rounded,
+                        size: 16,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Analyse',
+                        style: MyntWebTextStyles.para(context,
+                            darkColor: MyntColors.textPrimaryDark,
+                            lightColor: MyntColors.textPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
           // Date range button
           InkWell(
             onTap: _toggleDatePicker,
@@ -444,7 +494,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
               _buildSummaryCard(context, 'Realised P&L', realized),
               _buildSummaryCard(context, 'Unrealised P&L', unrealized),
               _buildSummaryCard(context, 'Charges & Taxes', charges,
-                  isNeutral: true),
+                  isNeutral: true, onTap: () => showChargesDialog(context, ref: ref)),
               _buildSummaryCard(context, 'Net Realised P&L', netValue),
             ],
           );
@@ -455,7 +505,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
 
   Widget _buildSummaryCard(
       BuildContext context, String label, double value,
-      {bool isNeutral = false}) {
+      {bool isNeutral = false, VoidCallback? onTap}) {
     final valueColor = isNeutral || value == 0
         ? resolveThemeColor(context,
             dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)
@@ -463,40 +513,62 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
 
     return shadcn.Theme(
       data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
-      child: shadcn.Card(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            children: [
-              const SizedBox(width: 1),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary),
-                        fontWeight: MyntFonts.medium,
-                      ),
+      child: MouseRegion(
+        cursor: onTap != null
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        child: GestureDetector(
+          onTap: onTap,
+          child: shadcn.Card(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                children: [
+                  const SizedBox(width: 1),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                label,
+                                style: MyntWebTextStyles.bodySmall(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                                  fontWeight: MyntFonts.medium,
+                                ),
+                              ),
+                            ),
+                            if (onTap != null)
+                              Icon(
+                                Icons.open_in_new,
+                                size: 13,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          _formatAmount(value),
+                          style: MyntWebTextStyles.head(
+                            context,
+                            color: valueColor,
+                            fontWeight: MyntFonts.medium,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 1),
-                    Text(
-                      _formatAmount(value),
-                      style: MyntWebTextStyles.head(
-                        context,
-                        color: valueColor,
-                        fontWeight: MyntFonts.medium,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
