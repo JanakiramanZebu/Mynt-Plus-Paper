@@ -12,6 +12,7 @@ import '../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../models/marketwatch_model/search_scrip_model.dart';
 import '../../../models/order_book_model/gtt_order_book.dart';
 import '../../../models/order_book_model/place_gtt_order.dart';
+import '../../../provider/auth_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/websocket_provider.dart';
 
@@ -46,18 +47,49 @@ class ScalperProvider extends ChangeNotifier {
     _loadSavedSettings();
   }
 
+  String get _userId => _pref.clientId ?? '';
+
   /// Load saved scalper settings from SharedPreferences on startup.
   void _loadSavedSettings() {
-    _strikeSelectionMode = _pref.scalperStrikeMode;
-    _defaultCallOffset = _pref.scalperCallOffset;
-    _defaultPutOffset = _pref.scalperPutOffset;
-    _callPremiumTarget = _pref.scalperCallPremium;
-    _putPremiumTarget = _pref.scalperPutPremium;
-    _defaultSymbolIndex = _pref.scalperDefaultSymbol;
+    final uid = _userId;
+    _strikeSelectionMode = _pref.getScalperStrikeMode(uid);
+    _defaultCallOffset = _pref.getScalperCallOffset(uid);
+    _defaultPutOffset = _pref.getScalperPutOffset(uid);
+    _callPremiumTarget = _pref.getScalperCallPremium(uid);
+    _putPremiumTarget = _pref.getScalperPutPremium(uid);
+    _defaultSymbolIndex = _pref.getScalperDefaultSymbol(uid);
     _selectedIndexType = _defaultSymbolIndex; // Start on the saved default symbol
-    _isMktProtectionEnabled = _pref.scalperMktProtEnabled;
-    _mktProtectionPoints = _pref.scalperMktProtPoints;
-    _positionFilter = _pref.scalperPosFilter;
+    _isMktProtectionEnabled = _pref.getScalperMktProtEnabled(uid);
+    _mktProtectionPoints = _pref.getScalperMktProtPoints(uid);
+    _positionFilter = _pref.getScalperPosFilter(uid);
+  }
+
+  /// Reload settings for the current user (call after login to pick up the new user's prefs).
+  /// Also clears all runtime state from the previous session so stale data is never shown.
+  void reloadUserSettings() {
+    _loadSavedSettings();
+    _isShortcutsEnabled = true;
+
+    // Clear runtime state from previous user's session
+    _currentIndexLTP = 0.0;
+    _atmStrike = '';
+    _selectedStrike = '';
+    _callStrike = '';
+    _putStrike = '';
+    _selectedCall = null;
+    _selectedPut = null;
+    _expiryDates = [];
+    _selectedExpiry = null;
+    _callOptions = [];
+    _putOptions = [];
+    _sortedStrikes = [];
+    _customIndex = null;
+    _lotSize = '1';
+    _lotQuantity = 1;
+    _limitPrices.clear();
+    _loadGeneration++;
+
+    notifyListeners();
   }
 
   // Index configurations (stable tokens)
@@ -327,16 +359,17 @@ class ScalperProvider extends ChangeNotifier {
     _positionFilter = positionFilter;
     _isShortcutsEnabled = isShortcutsEnabled;
 
-    // Persist all settings to SharedPreferences
-    _pref.setScalperStrikeMode(_strikeSelectionMode);
-    _pref.setScalperCallOffset(_defaultCallOffset);
-    _pref.setScalperPutOffset(_defaultPutOffset);
-    _pref.setScalperCallPremium(_callPremiumTarget);
-    _pref.setScalperPutPremium(_putPremiumTarget);
-    _pref.setScalperDefaultSymbol(_defaultSymbolIndex);
-    _pref.setScalperMktProtEnabled(_isMktProtectionEnabled);
-    _pref.setScalperMktProtPoints(_mktProtectionPoints);
-    _pref.setScalperPosFilter(_positionFilter);
+    // Persist all settings to SharedPreferences (per-user)
+    final uid = _userId;
+    _pref.setScalperStrikeMode(uid, _strikeSelectionMode);
+    _pref.setScalperCallOffset(uid, _defaultCallOffset);
+    _pref.setScalperPutOffset(uid, _defaultPutOffset);
+    _pref.setScalperCallPremium(uid, _callPremiumTarget);
+    _pref.setScalperPutPremium(uid, _putPremiumTarget);
+    _pref.setScalperDefaultSymbol(uid, _defaultSymbolIndex);
+    _pref.setScalperMktProtEnabled(uid, _isMktProtectionEnabled);
+    _pref.setScalperMktProtPoints(uid, _mktProtectionPoints);
+    _pref.setScalperPosFilter(uid, _positionFilter);
 
     if (_atmStrike.isNotEmpty) {
       _applyStrikeSelection();
@@ -558,7 +591,15 @@ class ScalperProvider extends ChangeNotifier {
         });
 
         _expiryDates = sortedExpiries;
-        _selectedExpiry = sortedExpiries.first;
+        // Preserve user's previous expiry selection if it still exists in the list
+        final previousExd = _selectedExpiry?.exd;
+        final matchingExpiry = previousExd != null
+            ? sortedExpiries.cast<OptionExp?>().firstWhere(
+                (e) => e?.exd == previousExd,
+                orElse: () => null,
+              )
+            : null;
+        _selectedExpiry = matchingExpiry ?? sortedExpiries.first;
         debugPrint('ScalperProvider: Got ${_expiryDates.length} expiries, selected: ${_selectedExpiry?.exd}');
       } else {
         debugPrint('ScalperProvider: No expiries found! stat=${linkedScrips.stat}');
@@ -693,6 +734,10 @@ class ScalperProvider extends ChangeNotifier {
         }
       } else {
         debugPrint('ScalperProvider: Option chain empty or failed. stat=${chainData?.stat}');
+        if (chainData?.emsg == "Session Expired :  Invalid Session Key" &&
+            chainData?.stat == "Not_Ok") {
+          ref.read(authProvider).ifSessionExpired(context);
+        }
       }
     } catch (e) {
       debugPrint('ScalperProvider: Error loading option chain: $e');
