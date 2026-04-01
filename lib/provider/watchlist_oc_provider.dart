@@ -54,6 +54,8 @@ class WatchlistOCProvider extends ChangeNotifier {
     // Don't send "ud" — it can unsubscribe tokens shared with the watchlist.
     // Just clear our tracking set; the websocket keeps connections alive.
     _subscribedOptionTokens.clear();
+    _indexLtpSubscription?.cancel();
+    _indexLtpSubscription = null;
     _isExpanded = false;
     notifyListeners();
   }
@@ -111,6 +113,7 @@ class WatchlistOCProvider extends ChangeNotifier {
   // ─── WebSocket tokens ───────────────────────────────────────
 
   Set<String> _subscribedOptionTokens = {};
+  StreamSubscription? _indexLtpSubscription;
 
   // ─── Initialization ─────────────────────────────────────────
 
@@ -358,15 +361,39 @@ class WatchlistOCProvider extends ChangeNotifier {
 
   // ─── WebSocket ──────────────────────────────────────────────
 
+  /// Update index LTP from WebSocket (matches ScalperProvider.updateIndexLTP)
+  void updateIndexLTP(double ltp) {
+    if (ltp == _currentIndexLTP) return;
+    _currentIndexLTP = ltp;
+    _calculateATM();
+    notifyListeners();
+  }
+
   void subscribeToWebSocket(BuildContext context) {
     final websocket = ref.read(websocketProvider);
+    final indexToken = _selectedSymbol.token;
 
     // Subscribe to index token
     websocket.establishConnection(
-      channelInput: "${_selectedSymbol.exch}|${_selectedSymbol.token}",
+      channelInput: "${_selectedSymbol.exch}|$indexToken",
       task: "d",
       context: context,
     );
+
+    // Listen for index LTP updates to keep the blue line position in sync
+    _indexLtpSubscription?.cancel();
+    _indexLtpSubscription =
+        websocket.socketDataStream.listen((socketDatas) {
+      if (socketDatas.containsKey(indexToken)) {
+        final wsLtp = socketDatas[indexToken]['lp']?.toString();
+        if (wsLtp != null && wsLtp != "null" && wsLtp != "0") {
+          final newLtp = double.tryParse(wsLtp) ?? 0.0;
+          if (newLtp > 0) {
+            updateIndexLTP(newLtp);
+          }
+        }
+      }
+    });
 
     // Build option tokens
     final tokens = <String>{};
@@ -388,6 +415,9 @@ class WatchlistOCProvider extends ChangeNotifier {
   }
 
   void unsubscribeFromWebSocket(BuildContext context) {
+    _indexLtpSubscription?.cancel();
+    _indexLtpSubscription = null;
+
     if (_subscribedOptionTokens.isEmpty) return;
 
     final websocket = ref.read(websocketProvider);
@@ -421,6 +451,8 @@ class WatchlistOCProvider extends ChangeNotifier {
 
   /// Reset all state (e.g. on logout).
   void reset() {
+    _indexLtpSubscription?.cancel();
+    _indexLtpSubscription = null;
     _isExpanded = false;
     _hasLoadedOnce = false;
     _selectedSymbol = ScalperProvider.indices[0];
