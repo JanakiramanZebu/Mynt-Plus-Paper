@@ -292,6 +292,8 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 // Call this method while clicking if the Change pass validation process is successful.
 
   submitChangePass(BuildContext context) {
+    validateOldPassword();
+    validateNewPassword();
     if (oldPasswordError == "" && newPasswordError == "") {
       fetchChangePassword(userIdController.text.toUpperCase(), oldPassword.text,
           newPassword.text, context);
