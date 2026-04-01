@@ -990,8 +990,10 @@ class AuthProvider extends DefaultChangeNotifier {
       print('║ [API 2] DeskLogoutModel.msg: ${deskLogoutModel?.msg}');
       print('╚════════════════════════════════════════════════════════════════╝');
 
-      if (_logoutModel!.stat == "Ok") {
-        print('✅ Both logout APIs called successfully! Cleaning up...');
+      // Treat session expired as successful logout — session is already gone on server
+      if (_logoutModel!.stat == "Ok" ||
+          _logoutModel!.emsg == "Session Expired :  Invalid Session Key") {
+        print('✅ Logout successful (or session already expired). Cleaning up...');
         // Close all open order/modify/GTT dialogs (web only)
         if (kIsWeb) {
           OverlayManager.closeAll();
@@ -1032,9 +1034,6 @@ class AuthProvider extends DefaultChangeNotifier {
 
         ref.read(optionFlashProvider).closePanel();
 
-        // Clear scalper settings on logout to prevent leaking between accounts
-        pref.clearScalperSettings();
-
         // Reset web auth provider state to ensure clean login on web
         if (kIsWeb) {
           ref.read(webAuthProvider).reset();
@@ -1066,8 +1065,6 @@ class AuthProvider extends DefaultChangeNotifier {
                 context, Routes.loginScreen, (route) => false);
           }
         }
-      }else if(_logoutModel!.emsg == "Session Expired :  Invalid Session Key"){
-        ref.read(authProvider).ifSessionExpired(context);
       }
     } catch (e) {
       ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
@@ -2240,9 +2237,6 @@ class AuthProvider extends DefaultChangeNotifier {
     // Clear pending watchlists on logout (network failure scenario)
     ref.read(marketWatchProvider).clearPendingWatchlists();
 
-    // Clear scalper settings on logout to prevent leaking between accounts
-    pref.clearScalperSettings();
-
     // Update UI state
     ref.read(indexListProvider).bottomMenu(0, context);
 
@@ -2374,9 +2368,6 @@ class AuthProvider extends DefaultChangeNotifier {
 
       // Clear pending watchlists on session expiry
       ref.read(marketWatchProvider).clearPendingWatchlists();
-
-      // Clear scalper settings on session expiry to prevent leaking between accounts
-      pref.clearScalperSettings();
 
       // Prefill the login field for convenience
       loginMethCtrl.text = pref.clientId ?? "";

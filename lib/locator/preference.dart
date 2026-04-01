@@ -473,74 +473,61 @@ class Preferences {
 
   // ── Scalper Settings ──────────────────────────────────────────────
 
-  // Setters — called when user clicks Apply in scalper settings dialog
-  Future setScalperStrikeMode(String mode) async =>
-      await _prefInstance!.setString(_scalperStrikeMode, mode);
+  // Setters — called when user clicks Apply in scalper settings dialog (per-user)
+  Future setScalperStrikeMode(String userId, String mode) async =>
+      await _prefInstance!.setString('${_scalperStrikeMode}_$userId', mode);
 
-  Future setScalperCallOffset(int offset) async =>
-      await _prefInstance!.setInt(_scalperCallOffset, offset);
+  Future setScalperCallOffset(String userId, int offset) async =>
+      await _prefInstance!.setInt('${_scalperCallOffset}_$userId', offset);
 
-  Future setScalperPutOffset(int offset) async =>
-      await _prefInstance!.setInt(_scalperPutOffset, offset);
+  Future setScalperPutOffset(String userId, int offset) async =>
+      await _prefInstance!.setInt('${_scalperPutOffset}_$userId', offset);
 
-  Future setScalperCallPremium(double premium) async =>
-      await _prefInstance!.setDouble(_scalperCallPremium, premium);
+  Future setScalperCallPremium(String userId, double premium) async =>
+      await _prefInstance!.setDouble('${_scalperCallPremium}_$userId', premium);
 
-  Future setScalperPutPremium(double premium) async =>
-      await _prefInstance!.setDouble(_scalperPutPremium, premium);
+  Future setScalperPutPremium(String userId, double premium) async =>
+      await _prefInstance!.setDouble('${_scalperPutPremium}_$userId', premium);
 
-  Future setScalperDefaultSymbol(int index) async =>
-      await _prefInstance!.setInt(_scalperDefaultSymbol, index);
+  Future setScalperDefaultSymbol(String userId, int index) async =>
+      await _prefInstance!.setInt('${_scalperDefaultSymbol}_$userId', index);
 
-  Future setScalperMktProtEnabled(bool enabled) async =>
-      await _prefInstance!.setBool(_scalperMktProtEnabled, enabled);
+  Future setScalperMktProtEnabled(String userId, bool enabled) async =>
+      await _prefInstance!.setBool('${_scalperMktProtEnabled}_$userId', enabled);
 
-  Future setScalperMktProtPoints(int points) async =>
-      await _prefInstance!.setInt(_scalperMktProtPoints, points);
+  Future setScalperMktProtPoints(String userId, int points) async =>
+      await _prefInstance!.setInt('${_scalperMktProtPoints}_$userId', points);
 
-  Future setScalperPosFilter(String filter) async =>
-      await _prefInstance!.setString(_scalperPosFilter, filter);
+  Future setScalperPosFilter(String userId, String filter) async =>
+      await _prefInstance!.setString('${_scalperPosFilter}_$userId', filter);
 
-  // Getters — called when ScalperProvider is created to restore saved values
-  String get scalperStrikeMode =>
-      _prefInstance?.getString(_scalperStrikeMode) ?? 'offset';
+  // Getters — called when ScalperProvider is created to restore saved values (per-user)
+  String getScalperStrikeMode(String userId) =>
+      _prefInstance?.getString('${_scalperStrikeMode}_$userId') ?? 'offset';
 
-  int get scalperCallOffset =>
-      _prefInstance?.getInt(_scalperCallOffset) ?? 0;
+  int getScalperCallOffset(String userId) =>
+      _prefInstance?.getInt('${_scalperCallOffset}_$userId') ?? 0;
 
-  int get scalperPutOffset =>
-      _prefInstance?.getInt(_scalperPutOffset) ?? 0;
+  int getScalperPutOffset(String userId) =>
+      _prefInstance?.getInt('${_scalperPutOffset}_$userId') ?? 0;
 
-  double get scalperCallPremium =>
-      _prefInstance?.getDouble(_scalperCallPremium) ?? 100.0;
+  double getScalperCallPremium(String userId) =>
+      _prefInstance?.getDouble('${_scalperCallPremium}_$userId') ?? 100.0;
 
-  double get scalperPutPremium =>
-      _prefInstance?.getDouble(_scalperPutPremium) ?? 100.0;
+  double getScalperPutPremium(String userId) =>
+      _prefInstance?.getDouble('${_scalperPutPremium}_$userId') ?? 100.0;
 
-  int get scalperDefaultSymbol =>
-      _prefInstance?.getInt(_scalperDefaultSymbol) ?? 0;
+  int getScalperDefaultSymbol(String userId) =>
+      _prefInstance?.getInt('${_scalperDefaultSymbol}_$userId') ?? 0;
 
-  bool get scalperMktProtEnabled =>
-      _prefInstance?.getBool(_scalperMktProtEnabled) ?? false;
+  bool getScalperMktProtEnabled(String userId) =>
+      _prefInstance?.getBool('${_scalperMktProtEnabled}_$userId') ?? false;
 
-  int get scalperMktProtPoints =>
-      _prefInstance?.getInt(_scalperMktProtPoints) ?? 5;
+  int getScalperMktProtPoints(String userId) =>
+      _prefInstance?.getInt('${_scalperMktProtPoints}_$userId') ?? 5;
 
-  String get scalperPosFilter =>
-      _prefInstance?.getString(_scalperPosFilter) ?? 'all';
-
-  /// Clear all scalper preferences on logout so they don't leak between accounts.
-  Future clearScalperSettings() async {
-    await _prefInstance?.remove(_scalperStrikeMode);
-    await _prefInstance?.remove(_scalperCallOffset);
-    await _prefInstance?.remove(_scalperPutOffset);
-    await _prefInstance?.remove(_scalperCallPremium);
-    await _prefInstance?.remove(_scalperPutPremium);
-    await _prefInstance?.remove(_scalperDefaultSymbol);
-    await _prefInstance?.remove(_scalperMktProtEnabled);
-    await _prefInstance?.remove(_scalperMktProtPoints);
-    await _prefInstance?.remove(_scalperPosFilter);
-  }
+  String getScalperPosFilter(String userId) =>
+      _prefInstance?.getString('${_scalperPosFilter}_$userId') ?? 'all';
 
 }
 

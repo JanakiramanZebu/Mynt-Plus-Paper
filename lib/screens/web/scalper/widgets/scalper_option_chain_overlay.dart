@@ -290,6 +290,8 @@ class ScalperOptionChainOverlay extends ConsumerWidget {
           isITMPut: isITMPut,
           callStrike: scalper.callStrike,
           putStrike: scalper.putStrike,
+          selectedCallOptt: scalper.selectedCall?.optt,
+          selectedPutOptt: scalper.selectedPut?.optt,
           onCallTap: call != null ? () => onOptionSelected(call) : null,
           onPutTap: put != null ? () => onOptionSelected(put) : null,
         );
@@ -385,6 +387,8 @@ class _ScalperOptionChainRow extends ConsumerStatefulWidget {
   final bool isITMPut;
   final String callStrike;
   final String putStrike;
+  final String? selectedCallOptt;
+  final String? selectedPutOptt;
   final VoidCallback? onCallTap;
   final VoidCallback? onPutTap;
 
@@ -398,6 +402,8 @@ class _ScalperOptionChainRow extends ConsumerStatefulWidget {
     required this.isITMPut,
     required this.callStrike,
     required this.putStrike,
+    required this.selectedCallOptt,
+    required this.selectedPutOptt,
     required this.onCallTap,
     required this.onPutTap,
   });
@@ -473,7 +479,10 @@ class _ScalperOptionChainRowState
     }
 
     final changeColor = _priceChangeColor(context, perChange);
-    final isSelected = widget.strike == widget.callStrike;
+    // Highlight if this strike's CE is loaded in either panel
+    final isSelected =
+        (widget.strike == widget.callStrike && widget.selectedCallOptt == 'CE') ||
+        (widget.strike == widget.putStrike && widget.selectedPutOptt == 'CE');
 
     return MouseRegion(
       onEnter: (_) => _isCallHovered.value = true,
@@ -626,7 +635,10 @@ class _ScalperOptionChainRowState
     }
 
     final changeColor = _priceChangeColor(context, perChange);
-    final isSelected = widget.strike == widget.putStrike;
+    // Highlight if this strike's PE is loaded in either panel
+    final isSelected =
+        (widget.strike == widget.callStrike && widget.selectedCallOptt == 'PE') ||
+        (widget.strike == widget.putStrike && widget.selectedPutOptt == 'PE');
 
     return MouseRegion(
       onEnter: (_) => _isPutHovered.value = true,

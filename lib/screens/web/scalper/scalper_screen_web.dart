@@ -87,6 +87,9 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
     final scalper = ref.read(scalperProvider);
     final portfolio = ref.read(portfolioProvider);
 
+    // Reload user-specific scalper settings (provider persists across logins)
+    scalper.reloadUserSettings();
+
     // Load TradingView charting library (from static server in debug mode)
     try {
       await scalperChartManager.loadLibrary();
