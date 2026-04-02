@@ -1,3 +1,30 @@
+/// Direct lookup request for /select-symbols with exact expiry and strike
+class SelectSymbolsDirectRequest {
+  final String exchange;
+  final String symbol;
+  final String optionType; // CE, PE
+  final String expiry; // e.g. "27-MAR-2026"
+  final String strikeprice; // e.g. "22000" or "" for no specific strike
+
+  SelectSymbolsDirectRequest({
+    required this.exchange,
+    required this.symbol,
+    required this.optionType,
+    required this.expiry,
+    this.strikeprice = '',
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'exchange': exchange,
+      'symbol': symbol,
+      'option_type': optionType,
+      'expiry': expiry,
+      'strikeprice': strikeprice,
+    };
+  }
+}
+
 /// Request model for a single leg sent to POST /select-symbols
 class SelectSymbolsLegRequest {
   final String exchange; // NFO, BFO, MCX
