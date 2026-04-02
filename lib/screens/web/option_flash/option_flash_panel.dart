@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,6 +48,9 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
   final GlobalKey _strikeButtonKey = GlobalKey();
   OverlayEntry? _strikeOverlay;
 
+  // WebSocket subscription
+  StreamSubscription? _webSocketSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +61,12 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupWebSocketListener();
       _initializeControllerValues();
+
+      // Register close callback so provider can re-enable chart iframes
+      ref.read(optionFlashProvider).onPanelClosed = () {
+        ChartIframeGuard.reset();
+        _enableAllChartIframes();
+      };
     });
   }
 
@@ -82,7 +92,9 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
 
   @override
   void dispose() {
-    ChartIframeGuard.release();
+    _webSocketSubscription?.cancel();
+    _webSocketSubscription = null;
+    ChartIframeGuard.reset();
     _enableAllChartIframes();
     _removeSymbolOverlay();
     _removeExpiryOverlay();
@@ -99,12 +111,11 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
       for (var iframe in iframes) {
         if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
           iframe.style.pointerEvents = 'none';
-          // Reset cursor style to prevent cursor bleeding
           iframe.style.cursor = 'default';
         }
       }
-      // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
+      debugPrint('[OptionFlash] _disableAllChartIframes called, isVisible: ${ref.read(optionFlashProvider).isVisible}');
     } catch (e) {
       debugPrint('Error disabling iframes: $e');
     }
@@ -113,13 +124,17 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
   void _enableAllChartIframes() {
     try {
       final iframes = html.document.querySelectorAll('iframe');
+      int count = 0;
       for (var iframe in iframes) {
         if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          debugPrint('[OptionFlash] Enabling iframe: ${iframe.id}, current pointerEvents: ${iframe.style.pointerEvents}');
           iframe.style.pointerEvents = 'auto';
           iframe.style.cursor = '';
+          count++;
         }
       }
       html.document.body?.style.cursor = '';
+      debugPrint('[OptionFlash] _enableAllChartIframes: enabled $count iframes, guard locked: ${ChartIframeGuard.isLocked}');
     } catch (e) {
       debugPrint('Error enabling iframes: $e');
     }
@@ -138,11 +153,15 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
   void _removeStrikeOverlay() {
     _strikeOverlay?.remove();
     _strikeOverlay = null;
+    ref.read(optionFlashProvider).setStrikeDropdownOpen(false);
   }
 
   void _setupWebSocketListener() {
+    // Cancel any existing subscription to prevent accumulation
+    _webSocketSubscription?.cancel();
+
     final websocketProv = ref.read(websocketProvider);
-    websocketProv.socketDataStream.listen((data) {
+    _webSocketSubscription = websocketProv.socketDataStream.listen((data) {
       if (mounted) {
         final typedData = Map<String, dynamic>.from(data);
         ref.read(optionFlashProvider).updateFromWebSocket(typedData);
@@ -156,11 +175,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
     final theme = ref.watch(themeProvider);
     final isDark = theme.isDarkMode;
 
-    if (!optionFlash.isVisible) {
-      return const SizedBox.shrink();
-    }
-
-    // Listen for external state changes to update controllers
+    // Listen BEFORE early return — otherwise close cleanup never fires
     ref.listen(optionFlashProvider, (previous, next) {
       // Re-initialize controller values when panel becomes visible
       if (previous?.isVisible == false && next.isVisible == true) {
@@ -170,6 +185,19 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
           _lastStrikeToken = null;
           _lastPriceType = null;
         });
+      }
+
+      // Re-enable chart iframes when panel is closed
+      // Use reset() instead of release() to clear all locks since multiple
+      // acquire() calls may have stacked (panel + dropdown overlays)
+      if (previous?.isVisible == true && next.isVisible == false) {
+        debugPrint('[OptionFlash] Panel closing — running cleanup');
+        _removeSymbolOverlay();
+        _removeExpiryOverlay();
+        _removeStrikeOverlay();
+        ChartIframeGuard.reset();
+        _enableAllChartIframes();
+        debugPrint('[OptionFlash] Panel closed — cleanup done');
       }
 
       // Sync Qty (only if changed and mismatch)
@@ -184,6 +212,10 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
       }
       // Note: Price sync is handled in _buildPriceInput using state tracking
     });
+
+    if (!optionFlash.isVisible) {
+      return const SizedBox.shrink();
+    }
 
     return Positioned(
       left: optionFlash.dialogPosition.dx,
@@ -369,10 +401,10 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                       ),
                     ),
                     Text(
-                      optionFlash.strikeNetQty.toString(),
+                      '${optionFlash.strikeNetQtyLots} lots',
                       style: MyntWebTextStyles.body(
                         context,
-                        color: optionFlash.strikeNetQty >= 0
+                        color: optionFlash.strikeNetQtyLots >= 0
                             ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
                             : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
                         fontWeight: MyntFonts.medium,
@@ -1146,6 +1178,9 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
       return;
     }
 
+    // Bring dropdown data up-to-date before showing
+    ref.read(optionFlashProvider).setStrikeDropdownOpen(true);
+
     // Get button position using GlobalKey
     final RenderBox? renderBox = _strikeButtonKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
@@ -1153,6 +1188,14 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
     final buttonPosition = renderBox.localToGlobal(Offset.zero);
     final buttonSize = renderBox.size;
     final screenSize = MediaQuery.of(context).size;
+
+    // Calculate initial scroll offset to show selected strike
+    const itemHeight = 42.0;
+    final filteredStrikes = optionFlash.filteredStrikes;
+    final selectedIndex = filteredStrikes.indexWhere(
+      (s) => s.option.token == optionFlash.selectedStrike?.option.token,
+    );
+    final initialOffset = selectedIndex > 0 ? (selectedIndex * itemHeight) - (itemHeight * 2) : 0.0;
 
     // Calculate dropdown height (estimate: ~42px per item, max 350px)
     final dropdownHeight = (optionFlash.filteredStrikes.length * 42.0).clamp(0.0, 350.0);
@@ -1225,6 +1268,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                         borderRadius: BorderRadius.circular(6),
                         child: ListView.builder(
                           shrinkWrap: true,
+                          controller: ScrollController(initialScrollOffset: initialOffset.clamp(0.0, double.infinity)),
                           padding: const EdgeInsets.all(4),
                           itemCount: filteredStrikes.length,
                           itemBuilder: (context, index) {
@@ -1297,11 +1341,18 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                                           strike.moneynessLabel,
                                           style: MyntWebTextStyles.caption(
                                             context,
-                                            color: resolveThemeColor(
-                                              context,
-                                              dark: MyntColors.textSecondaryDark,
-                                              light: MyntColors.textSecondary,
-                                            ),
+                                            fontWeight: strike.isATM ? MyntFonts.semiBold : null,
+                                            color: strike.isATM
+                                                ? resolveThemeColor(
+                                                    context,
+                                                    dark: MyntColors.primaryDark,
+                                                    light: MyntColors.primary,
+                                                  )
+                                                : resolveThemeColor(
+                                                    context,
+                                                    dark: MyntColors.textSecondaryDark,
+                                                    light: MyntColors.textSecondary,
+                                                  ),
                                           ),
                                         ),
                                       ),
@@ -1391,8 +1442,8 @@ dark:MyntColors.textSecondaryDark,
     final hasError = optionFlash.qtyError != null;
 
     return Tooltip(
-      message: optionFlash.freezeQty > 0
-          ? 'Freeze limit: ${optionFlash.freezeQty ~/ optionFlash.lotSize} lots (${optionFlash.freezeQty} qty)'
+      message: optionFlash.lotSize > 0
+          ? 'Lot size: ${optionFlash.lotSize}${optionFlash.freezeQty > 0 ? '\nFreeze limit: ${optionFlash.freezeQty ~/ optionFlash.lotSize} lots' : ''}'
           : '',
       child: SizedBox(
         width: 65,
@@ -1518,7 +1569,22 @@ dark:MyntColors.textSecondaryDark,
     final isDisabled = optionFlash.orderLoading || hasValidationErrors;
 
     return ElevatedButton(
-        onPressed: isDisabled ? null : () => optionFlash.placeQuickOrder(context),
+        onPressed: isDisabled ? null : () {
+          // Sync text fields to provider before placing order
+          if (_qtyController != null) {
+            final qty = int.tryParse(_qtyController!.text) ?? 0;
+            if (qty != optionFlash.qtyLots) {
+              optionFlash.setQtyLots(qty);
+            }
+          }
+          if (_priceController != null && optionFlash.priceType == 'LMT') {
+            final price = double.tryParse(_priceController!.text) ?? 0;
+            if (price != optionFlash.price) {
+              optionFlash.setPrice(price);
+            }
+          }
+          optionFlash.placeQuickOrder(context);
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: hasValidationErrors
               ? (Theme.of(context).brightness == Brightness.dark
