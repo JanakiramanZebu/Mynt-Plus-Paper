@@ -258,10 +258,6 @@ class OptionFlashProvider extends DefaultChangeNotifier {
   String _selectedOptionType = 'CE';
   String get selectedOptionType => _selectedOptionType;
 
-  // Option type (CE/PE)
-  String _selectedOptionType = 'CE';
-  String get selectedOptionType => _selectedOptionType;
-
   // Positions data
   List<PositionBookModel> _positionsData = [];
   List<PositionBookModel> get positionsData => _positionsData;
