@@ -10,6 +10,7 @@ import 'market_watch_provider.dart';
 import 'portfolio_provider.dart';
 import 'index_list_provider.dart';
 import 'stocks_provider.dart';
+import 'watchlist_oc_provider.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
@@ -211,12 +212,13 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     });
   }
 
-  /// Rebuild the set of symbols actually needed right now from active screens + ticker.
-  /// This prevents stale symbols from accumulating in the master list over time.
+  /// Rebuild the set of symbols actually needed right now from ALL sources.
+  /// This includes active screens, ticker, and providers that bypass the subscription manager
+  /// (option chain, futures, depth, watchlist OC). Nothing should be left out.
   Set<String> _rebuildActiveSymbols() {
     final symbols = <String>{};
 
-    // 1. Gather symbols from all currently active screens
+    // 1. Gather symbols from all currently active screens (managed by WebSubscriptionManager)
     for (final screenType in _activeScreens.values) {
       if (screenType == null) continue;
       final subType = _screenSubscriptionTypes[screenType] ?? SubscriptionType.none;
@@ -232,6 +234,62 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
     // 2. Always include ticker subscriptions (positions in header - must always be live)
     symbols.addAll(_tickerSubscriptions);
+
+    // 3. Gather symbols from providers that bypass WebSubscriptionManager
+    //    These call websocketProvider.establishConnection() directly
+    try {
+      final mwProvider = ref.read(marketWatchProvider);
+
+      // 3a. Option chain tokens (calls + puts) - bypasses manager via requestWSOptChain
+      final optChain = mwProvider.optionChainModel;
+      if (optChain?.optValue != null) {
+        for (var option in optChain!.optValue!) {
+          if (option.exch != null && option.token != null) {
+            symbols.add('${option.exch}|${option.token}');
+          }
+        }
+      }
+
+      // 3b. Futures tokens - bypasses manager via requestWSFut
+      final futures = mwProvider.fut;
+      if (futures != null) {
+        for (var f in futures) {
+          if (f.exch != null && f.token != null) {
+            symbols.add('${f.exch}|${f.token}');
+          }
+        }
+      }
+
+      // 3c. Depth symbol - bypasses manager via subscribeToDepthData
+      final depthSymbol = mwProvider.currentDepthSymbol;
+      if (depthSymbol != null && depthSymbol.isNotEmpty) {
+        symbols.add(depthSymbol);
+      }
+    } catch (e) {
+      log('WebSubscriptionManager: Error getting market watch symbols during rebuild: $e');
+    }
+
+    // 3d. Watchlist OC provider tokens (sidebar option chain panel)
+    try {
+      final ocProvider = ref.read(watchlistOCProvider);
+      // Include the index symbol and subscribed option tokens
+      if (ocProvider.isExpanded) {
+        final selectedSym = ocProvider.selectedSymbol;
+        symbols.add('${selectedSym.exch}|${selectedSym.token}');
+
+        for (final c in ocProvider.callOptions) {
+          if (c.exch != null && c.token != null) symbols.add('${c.exch}|${c.token}');
+        }
+        for (final p in ocProvider.putOptions) {
+          if (p.exch != null && p.token != null) symbols.add('${p.exch}|${p.token}');
+        }
+      }
+    } catch (e) {
+      log('WebSubscriptionManager: Error getting watchlist OC symbols during rebuild: $e');
+    }
+
+    // 3e. Always include index symbols (shown in header bar across all screens)
+    symbols.addAll(_getIndexSymbols());
 
     return symbols;
   }
@@ -957,13 +1015,26 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
             }
             
             symbols.addAll(allTradeActionStocks);
-          } else {
-            // For watchlist and other marketWatch screens, use watchlist scrips
+          } else if (screenType == ScreenType.optionChain) {
+            // Option chain needs all call/put option tokens from the current chain
             final mwProvider = ref.read(marketWatchProvider);
-            final watchlistScrips = mwProvider.marketWatchScrip?.values ?? [];
-            for (var scrip in watchlistScrips) {
-              if (scrip.exch != null && scrip.token != null) {
-                symbols.add('${scrip.exch}|${scrip.token}');
+            final optChain = mwProvider.optionChainModel;
+            if (optChain?.optValue != null) {
+              for (var option in optChain!.optValue!) {
+                if (option.exch != null && option.token != null) {
+                  symbols.add('${option.exch}|${option.token}');
+                }
+              }
+            }
+          } else {
+            // For watchlist and other marketWatch screens, use current watchlist scrips
+            final mwProvider = ref.read(marketWatchProvider);
+            final currentScrips = mwProvider.scrips;
+            for (var scrip in currentScrips) {
+              final exch = scrip['exch']?.toString();
+              final token = scrip['token']?.toString();
+              if (exch != null && token != null && exch.isNotEmpty && token.isNotEmpty) {
+                symbols.add('$exch|$token');
               }
             }
           }
