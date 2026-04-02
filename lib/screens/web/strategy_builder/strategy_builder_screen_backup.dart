@@ -10,13 +10,13 @@ import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
+import 'package:mynt_plus/sharedWidget/common_search_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:mynt_plus/screens/web/strategy_builder/entry_price_input.dart';
-import 'package:mynt_plus/screens/web/strategy_builder/strategy_builder_widgets.dart';
 import 'package:mynt_plus/utils/rupee_convert_format.dart';
 
 
@@ -49,8 +49,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
   final TextEditingController _targetPriceController = TextEditingController();
   double _lastEmittedTargetPrice = 0;
   String _lastSelectedSymbol = '';
-  final LayerLink _searchLayerLink = LayerLink();
-  final GlobalKey _searchFieldKey = GlobalKey();
 
   // Payoff chart tooltip state — uses ValueNotifier to avoid full widget rebuild on hover
   final ValueNotifier<_PayoffTooltipState> _tooltipNotifier = ValueNotifier(const _PayoffTooltipState());
@@ -157,16 +155,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     ],
                   ),
                 ),
-          // Search dropdown: barrier + overlay
-          if (provider.searchDropdownVisible)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => provider.dismissSearchDropdown(),
-                behavior: HitTestBehavior.translucent,
-                child: const SizedBox.expand(),
-              ),
-            ),
-          _buildSearchDropdownOverlay(context, provider, isDark),
           // Loading overlay (only show when not showing option chain dialog)
           if (provider.isLoading && !provider.shouldShowOptionChain)
             Positioned.fill(
@@ -674,45 +662,199 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
   }
 
   Widget _buildAnalyzeHeader(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    return buildStrategyAnalyzeHeader(context: context, provider: provider, isDark: isDark);
-  }
-
-  Widget _buildSearchSection(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    return buildStrategySearchSection(
-      context: context,
-      searchController: _searchController,
-      provider: provider,
-      isDark: isDark,
-      placeholder: 'Search symbol (e.g., NIFTY, BANKNIFTY)',
-      chainButtonLabel: 'Add',
-      buttonHeight: 36,
-      showClearButton: true,
-      onChainPressed: provider.optionChain.isNotEmpty
-          ? () => _showOptionChainDialog(context, provider, isDark)
-          : null,
-      onRefreshPressed: () => provider.refreshEntryPrices(context),
-      onClearBasket: () => provider.clearBasket(),
-      onSearchChanged: (value) => provider.searchStocks(value),
-      onClearSearch: () {
-        _searchController.clear();
-        provider.searchStocks('');
-      },
-      searchLayerLink: _searchLayerLink,
-      searchFieldKey: _searchFieldKey,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Icon(
+            Icons.analytics_outlined,
+            size: 18,
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Analyzing: ${provider.selectedSymbol}',
+            style: MyntWebTextStyles.body(
+              context,
+              fontWeight: MyntFonts.semiBold,
+            ),
+          ),
+          const SizedBox(width: 12),
+          if (provider.spotPrice > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: MyntColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Spot: ${provider.spotPrice.toIndianFormat()}',
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: MyntColors.primary,
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSearchDropdownOverlay(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    return buildStrategySearchDropdown(
-      context: context,
-      provider: provider,
-      isDark: isDark,
-      searchController: _searchController,
-      onStockSelected: (result) => provider.selectStock(result, context),
-      onLastSelectedSymbolChanged: (name) => _lastSelectedSymbol = name,
-      searchLayerLink: _searchLayerLink,
-      searchFieldKey: _searchFieldKey,
-      onDismiss: () => provider.dismissSearchDropdown(),
+  Widget _buildSearchSection(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: MyntSearchTextField.withSmartClear(
+                  controller: _searchController,
+                  placeholder: 'Search symbol (e.g., NIFTY, BANKNIFTY)',
+                  leadingIcon: assets.searchIcon,
+                  onChanged: (value) => provider.searchStocks(value),
+                  onClear: () {
+                    _searchController.clear();
+                    provider.searchStocks('');
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Clear button
+              if (provider.basket.isNotEmpty)
+                OutlinedButton(
+                  onPressed: () => provider.clearBasket(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(70, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    'Clear',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 8),
+              // Add button - shows option chain
+              OutlinedButton(
+                onPressed: provider.optionChain.isNotEmpty
+                    ? () => _showOptionChainDialog(context, provider, isDark)
+                    : null,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  minimumSize: const Size(70, 36),
+                  side: BorderSide(
+                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: Text(
+                  'Add',
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack,
+                  ),
+                ),
+              ),
+              if (provider.basket.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: 'Refresh entry prices to current LTP',
+                  child: OutlinedButton(
+                    onPressed: () => provider.refreshEntryPrices(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      minimumSize: const Size(36, 36),
+                      side: BorderSide(
+                        color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.refresh,
+                      size: 18,
+                      color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          // Search results dropdown
+          if (provider.searchResults.isNotEmpty)
+            Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              margin: const EdgeInsets.only(top: 4),
+              decoration: BoxDecoration(
+                color: isDark ? MyntColors.searchBgDark : MyntColors.backgroundColor,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isDark ? MyntColors.dividerDark : MyntColors.divider,
+                ),
+                boxShadow: MyntShadows.dropdown,
+              ),
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: provider.searchResults.length,
+                itemBuilder: (context, index) {
+                  final result = provider.searchResults[index];
+                  return ListTile(
+                    dense: true,
+                    title: Text(
+                      result['displayName'] ?? result['tsym'] ?? '',
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textBlack,
+                      ),
+                    ),
+                    subtitle: Text(
+                      result['exch'] ?? '',
+                      style: MyntWebTextStyles.caption(
+                        context,
+                        color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                      ),
+                    ),
+                    onTap: () async {
+                      final selectedName = result['displayName'] ?? result['tsym'] ?? '';
+                      _searchController.text = selectedName;
+                      _lastSelectedSymbol = selectedName;
+                      FocusScope.of(context).unfocus();
+                      await provider.selectStock(result, context);
+                    },
+                  );
+                },
+              ),
+            ),
+          if (provider.searchLoading)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -4415,8 +4557,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   final TextEditingController _targetPriceController = TextEditingController();
   double _lastEmittedTargetPrice = 0;
   String _lastSelectedSymbol = '';
-  final LayerLink _searchLayerLink = LayerLink();
-  final GlobalKey _searchFieldKey = GlobalKey();
 
   // Payoff chart tooltip state — uses ValueNotifier to avoid full widget rebuild on hover
   final ValueNotifier<_PayoffTooltipState> _tooltipNotifier = ValueNotifier(const _PayoffTooltipState());
@@ -4523,21 +4663,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       );
     }
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        content,
-        if (provider.searchDropdownVisible)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => provider.dismissSearchDropdown(),
-              behavior: HitTestBehavior.translucent,
-              child: const SizedBox.expand(),
-            ),
-          ),
-        _buildSearchDropdownOverlay(context, provider, isDark),
-      ],
-    );
+    return content;
   }
 
   /// Build layout for narrow panels (single column scrollable)
@@ -4907,45 +5033,195 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   }
 
   Widget _buildAnalyzeHeader(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    return buildStrategyAnalyzeHeader(context: context, provider: provider, isDark: isDark);
-  }
-
-  Widget _buildSearchSection(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    return buildStrategySearchSection(
-      context: context,
-      searchController: _searchController,
-      provider: provider,
-      isDark: isDark,
-      placeholder: 'Search & add',
-      chainButtonLabel: 'Chain',
-      buttonHeight: 45,
-      showClearButton: false,
-      onChainPressed: provider.optionChain.isNotEmpty
-          ? () => _showOptionChainDialog(context, provider, isDark)
-          : null,
-      onRefreshPressed: () => provider.refreshEntryPrices(context),
-      onClearBasket: () => provider.clearBasket(),
-      onSearchChanged: (value) => provider.searchStocks(value),
-      onClearSearch: () {
-        _searchController.clear();
-        provider.searchStocks('');
-      },
-      searchLayerLink: _searchLayerLink,
-      searchFieldKey: _searchFieldKey,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Icon(
+            Icons.analytics_outlined,
+            size: 18,
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Analyzing: ${provider.selectedSymbol}',
+            style: MyntWebTextStyles.body(
+              context,
+              fontWeight: MyntFonts.semiBold,
+            ),
+          ),
+          const SizedBox(width: 12),
+          if (provider.spotPrice > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'Spot: ${provider.spotPrice.toIndianFormat()}',
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSearchDropdownOverlay(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    return buildStrategySearchDropdown(
-      context: context,
-      provider: provider,
-      isDark: isDark,
-      searchController: _searchController,
-      onStockSelected: (result) => provider.selectStock(result, context),
-      onLastSelectedSymbolChanged: (name) => _lastSelectedSymbol = name,
-      searchLayerLink: _searchLayerLink,
-      searchFieldKey: _searchFieldKey,
-      onDismiss: () => provider.dismissSearchDropdown(),
+  Widget _buildSearchSection(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: MyntSearchTextField.withSmartClear(
+                  controller: _searchController,
+                  placeholder: 'Search & add',
+                  leadingIcon: assets.searchIcon,
+                  onChanged: (value) => provider.searchStocks(value),
+                  onClear: () {
+                    _searchController.clear();
+                    provider.searchStocks('');
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Add button - shows option chain
+              OutlinedButton(
+                onPressed: provider.optionChain.isNotEmpty
+                    ? () => _showOptionChainDialog(context, provider, isDark)
+                    : null,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  minimumSize: const Size(70, 45),
+                  side: BorderSide(
+                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: Text(
+                  'Chain',
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack,
+                  ),
+                ),
+              ),
+              if (provider.basket.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: 'Refresh entry prices to current LTP',
+                  child: OutlinedButton(
+                    onPressed: () => provider.refreshEntryPrices(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      minimumSize: const Size(36, 45),
+                      side: BorderSide(
+                        color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.refresh,
+                      size: 18,
+                      color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          // Search results dropdown
+          if (provider.searchResults.isNotEmpty)
+            Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              margin: const EdgeInsets.only(top: 4),
+              decoration: BoxDecoration(
+                color: isDark ? MyntColors.overlayBgDark : Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: provider.searchResults.length,
+                itemBuilder: (context, index) {
+                  final result = provider.searchResults[index];
+                  return ListTile(
+                    dense: true,
+                    title: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${result['displayName'] ?? result['tsym'] ?? ''} ',
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textBlack,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '${result['exch'] ?? ''}',
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                            ).copyWith(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // subtitle: Text(
+                    //   result['exch'] ?? '',
+                    //   style: MyntWebTextStyles.caption(
+                    //     context,
+                    //     color: isDark ? Colors.grey : Colors.grey[600],
+                    //   ),
+                    // ),
+                    onTap: () async {
+                      final selectedName = result['displayName'] ?? result['tsym'] ?? '';
+                      _searchController.text = selectedName;
+                      _lastSelectedSymbol = selectedName;
+                      FocusScope.of(context).unfocus();
+                      await provider.selectStock(result, context);
+                    },
+                  );
+                },
+              ),
+            ),
+          if (provider.searchLoading)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

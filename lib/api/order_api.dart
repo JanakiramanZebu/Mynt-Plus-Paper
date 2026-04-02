@@ -1000,6 +1000,37 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+  /// Call /select-symbols with direct expiry and strike to resolve a single contract
+  Future<SelectSymbolsLegResponse> selectSymbolsDirect(
+    SelectSymbolsDirectRequest request,
+  ) async {
+    try {
+      final uri = Uri.parse(apiLinks.selectSymbols);
+
+      final payload = [request.toJson()];
+
+      log("[SelectSymbolsDirect] Request: ${jsonEncode(payload)}");
+
+      final res = await apiClient.post(
+        uri,
+        headers: defaultHeaders,
+        body: jsonEncode(payload),
+      );
+
+      log("[SelectSymbolsDirect] Response: ${res.body}");
+
+      final jsonList = jsonDecode(res.body) as List<dynamic>;
+      if (jsonList.isEmpty) {
+        throw Exception('Empty response from select-symbols');
+      }
+      return SelectSymbolsLegResponse.fromJson(
+          jsonList.first as Map<String, dynamic>);
+    } catch (e) {
+      log("[SelectSymbolsDirect] Error: $e");
+      rethrow;
+    }
+  }
+
   // / POST /strategies — Create a new custom option strategy
   Future<Map<String, dynamic>> createOptionStrategy({
     required String clientId,
