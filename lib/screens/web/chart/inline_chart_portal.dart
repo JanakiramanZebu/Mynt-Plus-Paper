@@ -59,7 +59,7 @@ class _InlineChartPortalState extends ConsumerState<InlineChartPortal> {
     final chartWidth = isVisible ? size!.width : _lastKnownSize.width;
     final chartHeight = isVisible ? size!.height : _lastKnownSize.height;
 
-    debugPrint('InlineChartPortal: visible=$isVisible, size=${chartWidth}x$chartHeight');
+    // debugPrint('InlineChartPortal: visible=$isVisible, size=${chartWidth}x$chartHeight');
 
     // CRITICAL: Keep the SAME widget tree structure regardless of visibility.
     // Only change: position (off-screen vs 0,0) and which layerLink to use.
