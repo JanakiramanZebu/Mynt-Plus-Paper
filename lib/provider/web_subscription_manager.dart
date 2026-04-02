@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -48,6 +49,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   AppLifecycleState _currentState = AppLifecycleState.resumed;
   DateTime? _lastPauseTime;
   bool _wasDisconnectedInBackground = false;
+
+  // Browser tab visibility tracking
+  DateTime? _tabHiddenTime;
+  // How long the tab must be hidden before we force-reconnect on return
+  static const Duration _staleConnectionThreshold = Duration(seconds: 5);
   
   // Network tracking
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
@@ -80,6 +86,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     // Initialize subscription types for each screen
     _initializeSubscriptionTypes();
 
+    // Listen to browser tab visibility changes
+    // This is CRITICAL for web: Flutter's AppLifecycleState does NOT reliably fire
+    // on browser tab switches. Without this, the app won't know when to reconnect
+    // after the user switches tabs and comes back.
+    html.document.addEventListener('visibilitychange', _onBrowserVisibilityChange);
+
     // Listen to network changes
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
       // connectivity_plus 7.0.0 returns List<ConnectivityResult>
@@ -95,6 +107,133 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     // Listen to websocket connection state changes
     // This ensures subscriptions are restored after websocket reconnects (e.g., after page refresh)
     _setupWebSocketListener();
+  }
+
+  /// Handle browser tab visibility changes (visibilitychange event)
+  /// This fires reliably on tab switch, unlike Flutter's AppLifecycleState on web
+  void _onBrowserVisibilityChange(html.Event event) {
+    final isVisible = html.document.visibilityState == 'visible';
+
+    if (!isVisible) {
+      // Tab is being hidden - record the time
+      _tabHiddenTime = DateTime.now();
+      log('WebSubscriptionManager: Browser tab hidden');
+      print('🔇 [WebSubscriptionManager] Browser tab hidden');
+      return;
+    }
+
+    // Tab is becoming visible again
+    log('WebSubscriptionManager: Browser tab visible again');
+    print('🔊 [WebSubscriptionManager] Browser tab visible again');
+
+    if (!_isUserLoggedIn()) return;
+
+    final wasHiddenFor = _tabHiddenTime != null
+        ? DateTime.now().difference(_tabHiddenTime!)
+        : Duration.zero;
+
+    print('   Was hidden for: ${wasHiddenFor.inSeconds}s');
+    print('   Active subscriptions in master list: ${_activeSubscriptions.length}');
+
+    _tabHiddenTime = null;
+
+    // If tab was hidden long enough for the connection to go stale, force full restore
+    if (wasHiddenFor >= _staleConnectionThreshold) {
+      print('🔄 [WebSubscriptionManager] Tab was hidden for ${wasHiddenFor.inSeconds}s (>= ${_staleConnectionThreshold.inSeconds}s threshold)');
+      print('   Forcing WebSocket reconnect and full re-subscription...');
+      log('WebSubscriptionManager: Forcing reconnect after tab was hidden for ${wasHiddenFor.inSeconds}s');
+
+      _forceReconnectAndResubscribe();
+    } else {
+      // Short switch - just verify connection is alive and data is flowing
+      final wsProvider = ref.read(websocketProvider);
+      if (!wsProvider.wsConnected) {
+        print('⚠️ [WebSubscriptionManager] WebSocket disconnected during short tab switch, reconnecting...');
+        _forceReconnectAndResubscribe();
+      } else {
+        print('✅ [WebSubscriptionManager] WebSocket still connected after short tab switch');
+      }
+    }
+  }
+
+  /// Force close the WebSocket, reconnect, and re-subscribe only what's currently needed.
+  /// Rebuilds the master list from active screens + ticker to avoid accumulating stale symbols.
+  /// This ensures every visible screen gets fresh data after returning from a background tab.
+  void _forceReconnectAndResubscribe() {
+    if (!_isUserLoggedIn()) return;
+
+    final wsProvider = ref.read(websocketProvider);
+    final context = _getValidContext();
+
+    // Rebuild the master list from what's actually needed right now
+    // instead of using the accumulated list which may have stale symbols
+    final freshSymbols = _rebuildActiveSymbols();
+
+    print('═══════════════════════════════════════════════════════════');
+    print('🔄 [WebSubscriptionManager] FORCE RECONNECT AFTER TAB SWITCH');
+    print('   Old master list: ${_activeSubscriptions.length} symbols');
+    print('   Rebuilt fresh list: ${freshSymbols.length} symbols');
+    print('   Ticker subscriptions: ${_tickerSubscriptions.length}');
+    print('   Active screens: ${_activeScreens.length}');
+    print('═══════════════════════════════════════════════════════════');
+
+    // Replace master list with only what's currently needed
+    _activeSubscriptions.clear();
+    _activeSubscriptions.addAll(freshSymbols);
+
+    // Clear deduplication and per-screen tracking so everything gets re-sent
+    _currentWebSocketSubscriptions.clear();
+    _screenSubscriptions.clear();
+
+    // Force close the existing connection (it may be stale/zombie)
+    wsProvider.closeSocket(true);
+
+    // Give it a moment to clean up, then reconnect
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!_isUserLoggedIn()) return;
+
+      final stillConnected = ref.read(websocketProvider).wsConnected;
+      if (stillConnected) {
+        // Already reconnected (fast reconnect) - just re-send subscriptions
+        print('⚡ [WebSubscriptionManager] Already reconnected, sending subscriptions from master list');
+        _sendAllSubscriptionsFromMasterList();
+      } else if (context != null) {
+        // Need to reconnect - the _handleWebSocketStateChange listener will
+        // pick up the reconnection and call _sendAllSubscriptionsFromMasterList
+        // because _activeSubscriptions (master list) is not empty
+        print('🔌 [WebSubscriptionManager] Triggering reconnection...');
+        ref.read(websocketProvider).reconnect(context);
+      } else {
+        print('⚠️ [WebSubscriptionManager] No valid context for reconnection');
+      }
+
+      print('═══════════════════════════════════════════════════════════\n');
+    });
+  }
+
+  /// Rebuild the set of symbols actually needed right now from active screens + ticker.
+  /// This prevents stale symbols from accumulating in the master list over time.
+  Set<String> _rebuildActiveSymbols() {
+    final symbols = <String>{};
+
+    // 1. Gather symbols from all currently active screens
+    for (final screenType in _activeScreens.values) {
+      if (screenType == null) continue;
+      final subType = _screenSubscriptionTypes[screenType] ?? SubscriptionType.none;
+      if (subType == SubscriptionType.none) continue;
+
+      try {
+        final screenSymbols = _getSymbolsForScreen(screenType, subType);
+        symbols.addAll(screenSymbols);
+      } catch (e) {
+        log('WebSubscriptionManager: Error getting symbols for $screenType during rebuild: $e');
+      }
+    }
+
+    // 2. Always include ticker subscriptions (positions in header - must always be live)
+    symbols.addAll(_tickerSubscriptions);
+
+    return symbols;
   }
 
   /// Set up listener for websocket connection state changes
@@ -1554,11 +1693,18 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   
   void _handleAppResumed(AppLifecycleState previousState) {
     log('WebSubscriptionManager: App resumed from $previousState');
-    
-    // Check if we need to reconnect
+
+    // On web, the browser visibilitychange handler (_onBrowserVisibilityChange)
+    // is more reliable for detecting tab switches. However, AppLifecycleState.resumed
+    // can still fire in some cases (e.g., window minimize/restore), so handle it too.
+    // Use the same force-reconnect approach to ensure all screens get fresh data.
     if (_shouldReconnect()) {
-      log('WebSubscriptionManager: Reconnection needed, restoring subscriptions');
-      _restoreActiveSubscriptions();
+      log('WebSubscriptionManager: Reconnection needed, forcing full reconnect');
+      _forceReconnectAndResubscribe();
+    } else if (_activeSubscriptions.isNotEmpty && _currentWebSocketSubscriptions.isEmpty) {
+      // Connection appears alive but no subscriptions tracked - re-send from master list
+      log('WebSubscriptionManager: Connection alive but subscriptions lost, restoring from master list');
+      _sendAllSubscriptionsFromMasterList();
     } else {
       log('WebSubscriptionManager: WebSocket still connected, no reconnection needed');
     }
@@ -1711,6 +1857,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   
   @override
   void dispose() {
+    // Remove browser visibility listener
+    html.document.removeEventListener('visibilitychange', _onBrowserVisibilityChange);
+
     // Cancel all per-panel debounce timers
     for (final timer in _updateDebounceTimers.values) {
       timer.cancel();
