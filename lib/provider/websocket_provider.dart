@@ -240,6 +240,14 @@ class WebSocketProvider extends ChangeNotifier {
     log('✅ WebSocket: State reset complete');
   }
 
+  /// Clear the sent-subscriptions tracking so that the next connectTouchLine
+  /// call will actually send symbols to the server instead of skipping them.
+  /// Call this before re-subscribing after a forced reconnect.
+  void clearSentSubscriptions() {
+    print('🧹 [WEBSOCKET] Clearing _sentSubscriptions (${_sentSubscriptions.length} entries)');
+    _sentSubscriptions.clear();
+  }
+
   void closeSocket(bool mounted, {bool force = false}) {
     // Prevent closing if already closed to avoid unnecessary operations
     if (!_wsConnected && _channel == null && !_connecting) {
