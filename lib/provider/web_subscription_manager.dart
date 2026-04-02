@@ -160,8 +160,17 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   /// Force close the WebSocket, reconnect, and re-subscribe only what's currently needed.
   /// Rebuilds the master list from active screens + ticker to avoid accumulating stale symbols.
   /// This ensures every visible screen gets fresh data after returning from a background tab.
+  bool _isForceReconnecting = false;
+
   void _forceReconnectAndResubscribe() {
     if (!_isUserLoggedIn()) return;
+
+    // Prevent duplicate calls (e.g., visibilitychange + AppLifecycleState both firing)
+    if (_isForceReconnecting) {
+      print('⏸️ [WebSubscriptionManager] Force reconnect already in progress, skipping');
+      return;
+    }
+    _isForceReconnecting = true;
 
     final wsProvider = ref.read(websocketProvider);
     final context = _getValidContext();
@@ -182,15 +191,20 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     _activeSubscriptions.clear();
     _activeSubscriptions.addAll(freshSymbols);
 
-    // Clear deduplication and per-screen tracking so everything gets re-sent
+    // Clear ALL subscription tracking so nothing blocks re-sends:
+    // 1. WebSubscriptionManager's deduplication and per-screen tracking
     _currentWebSocketSubscriptions.clear();
     _screenSubscriptions.clear();
+    // 2. WebSocketProvider's _sentSubscriptions (this was blocking re-sends!)
+    wsProvider.clearSentSubscriptions();
 
-    // Force close the existing connection (it may be stale/zombie)
-    wsProvider.closeSocket(true);
+    // Force close the existing connection even if another connection is in progress.
+    // force: true bypasses the "_connecting" guard that was preventing close.
+    wsProvider.closeSocket(true, force: true);
 
     // Give it a moment to clean up, then reconnect
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _isForceReconnecting = false;
       if (!_isUserLoggedIn()) return;
 
       final stillConnected = ref.read(websocketProvider).wsConnected;
