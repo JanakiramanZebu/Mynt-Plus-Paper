@@ -14,6 +14,7 @@ import 'package:mynt_plus/utils/rupee_convert_format.dart';
 import 'package:mynt_plus/models/marketwatch_model/opt_chain_model.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
 import 'package:mynt_plus/models/order_book_model/order_margin_model.dart';
+import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/models/portfolio_model/position_book_model.dart';
@@ -396,6 +397,14 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
 
   bool _searchLoading = false;
   bool get searchLoading => _searchLoading;
+
+  bool _searchDropdownVisible = false;
+  bool get searchDropdownVisible => _searchDropdownVisible;
+
+  void dismissSearchDropdown() {
+    _searchDropdownVisible = false;
+    notifyListeners();
+  }
 
   List<Map<String, dynamic>> _searchResults = [];
   List<Map<String, dynamic>> get searchResults => _searchResults;
@@ -852,7 +861,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     }
   }
 
-  /// Normalize API expiry format "27-Feb-2025" to provider format "27-FEB-25"
+  /// Normalize API expiry format "27-Feb-2025" to provider format "27-FEB-2025"
   String _normalizeExpiryFromApi(String apiExpiry) {
     if (apiExpiry.isEmpty) return '';
     try {
@@ -860,8 +869,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       if (parts.length == 3) {
         final day = parts[0];
         final month = parts[1].toUpperCase();
-        String year = parts[2];
-        if (year.length == 4) year = year.substring(2);
+        final year = parts[2];
         return '$day-$month-$year';
       }
     } catch (e) {
@@ -922,11 +930,13 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _searchQuery = query;
     if (query.length < 2) {
       _searchResults = [];
+      _searchDropdownVisible = false;
       notifyListeners();
       return;
     }
 
     _searchLoading = true;
+    _searchDropdownVisible = true;
     notifyListeners();
 
     try {
@@ -961,6 +971,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       _searchResults = [];
     } finally {
       _searchLoading = false;
+      _searchDropdownVisible = _searchResults.isNotEmpty;
       notifyListeners();
     }
   }
@@ -971,6 +982,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _selectedToken = stock['token'];
     _selectedExch = stock['exch'];
     _searchResults = [];
+    _searchDropdownVisible = false;
     _searchQuery = '';
     _selectedExpiry = '';
     _expiryDates = [];
@@ -1349,35 +1361,90 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     }
   }
 
-  /// Update expiry for basket item — updates apiLeg expiry type/offset and resolves via API
+  /// Refresh all entry prices to current LTP
+  Future<void> refreshEntryPrices(BuildContext context) async {
+    for (int i = 0; i < _basket.length; i++) {
+      _basket[i].entryPrice = _basket[i].ltp;
+    }
+    notifyListeners();
+
+    await Future.wait([
+      _calculateMargin(context),
+      _fetchPayoffFromAPI(),
+    ]);
+    notifyListeners();
+  }
+
+  /// Update expiry for basket item — calls selectSymbols API to resolve the new contract
   Future<void> updateExpiry(int index, String expiry, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       final item = _basket[index];
 
-      if (item.apiLeg != null) {
-        final newExpiryType = _getExpiryType(expiry);
-        final newExpiryOffset = _getExpiryOffset(expiry);
-
-        _basket[index] = item.copyWith(
-          expdate: expiry,
-          apiLeg: SelectSymbolsLegRequest(
-            exchange: item.apiLeg!.exchange,
-            symbol: item.apiLeg!.symbol,
-            underlyingType: item.apiLeg!.underlyingType,
-            optionType: item.apiLeg!.optionType,
-            optionExpiryType: newExpiryType,
-            optionExpiryOffset: newExpiryOffset,
-            strikeType: item.apiLeg!.strikeType,
-            strikeOffset: item.apiLeg!.strikeOffset,
-            underlyingExpiryType: item.apiLeg!.underlyingExpiryType,
-            underlyingExpiryOffset: item.apiLeg!.underlyingExpiryOffset,
-          ),
-        );
-      } else {
-        _basket[index] = item.copyWith(expdate: expiry);
-      }
-
+      // Update expiry locally first for immediate UI feedback
+      _basket[index] = item.copyWith(expdate: expiry);
       notifyListeners();
+
+      // Call selectSymbols API to resolve the correct contract for new expiry
+      try {
+        final request = SelectSymbolsDirectRequest(
+          exchange: item.exch.isNotEmpty ? item.exch : _getOptionsExchange(),
+          symbol: _extractUnderlyingSymbol(),
+          optionType: item.optt,
+          expiry: expiry,
+          strikeprice: item.strprc,
+        );
+
+        final response = await api.selectSymbolsDirect(request);
+
+        if (!response.hasError && response.token != null) {
+          final normalizedExpiry = _normalizeExpiryFromApi(response.expiry ?? expiry);
+
+          // Update apiLeg offsets for consistency
+          final newExpiryType = _getExpiryType(expiry);
+          final newExpiryOffset = _getExpiryOffset(expiry);
+
+          _basket[index] = _basket[index].copyWith(
+            token: response.token,
+            tsym: response.selectedSymbol ?? _basket[index].tsym,
+            expdate: normalizedExpiry,
+            strprc: normalizeStrike(response.strike ?? item.strprc),
+            ltp: response.optionPrice ?? 0.0,
+            entryPrice: response.optionPrice ?? 0.0,
+            lotSize: int.tryParse(response.lotSize ?? '') ?? _basket[index].lotSize,
+            apiLeg: item.apiLeg != null
+                ? SelectSymbolsLegRequest(
+                    exchange: item.apiLeg!.exchange,
+                    symbol: item.apiLeg!.symbol,
+                    underlyingType: item.apiLeg!.underlyingType,
+                    optionType: item.apiLeg!.optionType,
+                    optionExpiryType: newExpiryType,
+                    optionExpiryOffset: newExpiryOffset,
+                    strikeType: item.apiLeg!.strikeType,
+                    strikeOffset: item.apiLeg!.strikeOffset,
+                    underlyingExpiryType: item.apiLeg!.underlyingExpiryType,
+                    underlyingExpiryOffset: item.apiLeg!.underlyingExpiryOffset,
+                  )
+                : null,
+          );
+          notifyListeners();
+        } else {
+          // Strike not available in new expiry — reset LTP and entry price to 0
+          _basket[index] = _basket[index].copyWith(
+            ltp: 0.0,
+            entryPrice: 0.0,
+            token: '',
+          );
+          notifyListeners();
+        }
+      } catch (e) {
+        log('[StrategyBuilder] updateExpiry selectSymbolsDirect error: $e');
+        // On error, reset LTP and entry price to 0
+        _basket[index] = _basket[index].copyWith(
+          ltp: 0.0,
+          entryPrice: 0.0,
+        );
+        notifyListeners();
+      }
 
       // Recalculate margin and fetch payoff
       await Future.wait([
@@ -1388,50 +1455,74 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     }
   }
 
-  /// Update strike for basket item — updates apiLeg strike type/offset and resolves via API
+  /// Update strike for basket item — calls selectSymbols API to resolve the new contract
   Future<void> updateStrike(int index, String strike, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       final item = _basket[index];
 
-      if (item.apiLeg != null) {
-        // Compute new strike type and offset from the selected strike price
-        final strikeInfo = _getStrikeTypeAndOffset(strike, item.optt);
-        final newStrikeType = strikeInfo['strikeType'] as String;
-        final newStrikeOffset = strikeInfo['strikeOffset'] as int;
-
-        _basket[index] = item.copyWith(
-          strprc: normalizeStrike(strike),
-          apiLeg: SelectSymbolsLegRequest(
-            exchange: item.apiLeg!.exchange,
-            symbol: item.apiLeg!.symbol,
-            underlyingType: item.apiLeg!.underlyingType,
-            optionType: item.apiLeg!.optionType,
-            optionExpiryType: item.apiLeg!.optionExpiryType,
-            optionExpiryOffset: item.apiLeg!.optionExpiryOffset,
-            strikeType: newStrikeType,
-            strikeOffset: newStrikeOffset,
-            underlyingExpiryType: item.apiLeg!.underlyingExpiryType,
-            underlyingExpiryOffset: item.apiLeg!.underlyingExpiryOffset,
-          ),
-        );
-      } else {
-        // Fallback: find from option chain if no apiLeg
-        final option = _optionChain.firstWhere(
-          (o) => normalizeStrike(o.strprc ?? '') == normalizeStrike(strike) && o.optt == item.optt,
-          orElse: () => OptionValues(),
-        );
-        if (option.token != null) {
-          _basket[index] = item.copyWith(
-            strprc: normalizeStrike(strike),
-            tsym: option.tsym,
-            token: option.token,
-            ltp: double.tryParse(option.lp ?? '0') ?? 0,
-            entryPrice: double.tryParse(option.lp ?? '0') ?? 0,
-          );
-        }
-      }
-
+      // Update strike locally first for immediate UI feedback
+      _basket[index] = item.copyWith(strprc: normalizeStrike(strike));
       notifyListeners();
+
+      // Call selectSymbols API to resolve the correct contract for new strike
+      try {
+        final request = SelectSymbolsDirectRequest(
+          exchange: item.exch.isNotEmpty ? item.exch : _getOptionsExchange(),
+          symbol: _extractUnderlyingSymbol(),
+          optionType: item.optt,
+          expiry: item.expdate,
+          strikeprice: normalizeStrike(strike),
+        );
+
+        final response = await api.selectSymbolsDirect(request);
+
+        if (!response.hasError && response.token != null) {
+          // Compute new strike type and offset for apiLeg consistency
+          final strikeInfo = _getStrikeTypeAndOffset(strike, item.optt);
+          final newStrikeType = strikeInfo['strikeType'] as String;
+          final newStrikeOffset = strikeInfo['strikeOffset'] as int;
+
+          _basket[index] = _basket[index].copyWith(
+            token: response.token,
+            tsym: response.selectedSymbol ?? _basket[index].tsym,
+            strprc: normalizeStrike(response.strike ?? strike),
+            ltp: response.optionPrice ?? 0.0,
+            entryPrice: response.optionPrice ?? 0.0,
+            lotSize: int.tryParse(response.lotSize ?? '') ?? _basket[index].lotSize,
+            apiLeg: item.apiLeg != null
+                ? SelectSymbolsLegRequest(
+                    exchange: item.apiLeg!.exchange,
+                    symbol: item.apiLeg!.symbol,
+                    underlyingType: item.apiLeg!.underlyingType,
+                    optionType: item.apiLeg!.optionType,
+                    optionExpiryType: item.apiLeg!.optionExpiryType,
+                    optionExpiryOffset: item.apiLeg!.optionExpiryOffset,
+                    strikeType: newStrikeType,
+                    strikeOffset: newStrikeOffset,
+                    underlyingExpiryType: item.apiLeg!.underlyingExpiryType,
+                    underlyingExpiryOffset: item.apiLeg!.underlyingExpiryOffset,
+                  )
+                : null,
+          );
+          notifyListeners();
+        } else {
+          // Strike not available — reset LTP and entry price to 0
+          _basket[index] = _basket[index].copyWith(
+            ltp: 0.0,
+            entryPrice: 0.0,
+            token: '',
+          );
+          notifyListeners();
+        }
+      } catch (e) {
+        log('[StrategyBuilder] updateStrike selectSymbolsDirect error: $e');
+        // On error, reset LTP and entry price to 0
+        _basket[index] = _basket[index].copyWith(
+          ltp: 0.0,
+          entryPrice: 0.0,
+        );
+        notifyListeners();
+      }
 
       // Recalculate margin, fetch payoff, and update Greeks
       await Future.wait([
@@ -2298,6 +2389,10 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       } else {
         _basketMarginModel = null;
         log('[StrategyBuilder] Margin API Error: ${response.emsg}');
+        if (response.emsg == "Session Expired :  Invalid Session Key" &&
+            response.stat == "Not_Ok") {
+          ref.read(authProvider).ifSessionExpired(context);
+        }
       }
     } catch (e) {
       log('[StrategyBuilder] Margin API Error: $e');
