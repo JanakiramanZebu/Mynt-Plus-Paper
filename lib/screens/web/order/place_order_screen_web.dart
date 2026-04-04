@@ -43,6 +43,7 @@ import 'package:mynt_plus/sharedWidget/enums.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_internet_widget.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
+import 'package:mynt_plus/utils/rupee_convert_format.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -983,6 +984,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           final sip = ref.watch(siprovider);
           int frezQtyOrderSliceMaxLimit =
               ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
+
+          // Watch equls so NSE/BSE toggle updates when linked scrips load
+          final latestEquls = ref.watch(marketWatchProvider).equls ?? [];
+          if (_isStock && _stockExchangesList.isEmpty && latestEquls.isNotEmpty &&
+              latestEquls.any((eq) => eq.token == widget.scripInfo.token)) {
+            _stockExchangesList = latestEquls;
+            final matchingExchange = _stockExchangesList.firstWhere(
+              (exchange) => exchange.exch == widget.scripInfo.exch,
+              orElse: () => _stockExchangesList[0],
+            );
+            stockExchangeSelected = matchingExchange;
+          }
+
           if (internet.connectionStatus == ConnectivityResult.none) {
             return const NoInternetWidget();
           }
@@ -5523,7 +5537,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     ),
 
                                                                     Text(
-                                                                      "${orderProvide.orderMarginModel == null ? "0.00" : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? "0.00" : orderProvide.getBrokerageModel!.brkageAmt ?? "0.00"}",
+                                                                      "${(orderProvide.orderMarginModel == null ? "0.00" : orderProvide.orderMarginModel!.ordermargin ?? "0.00").toIndianFormat()}  + ${(orderProvide.getBrokerageModel == null ? "0.00" : orderProvide.getBrokerageModel!.brkageAmt ?? "0.00").toIndianFormat()}",
                                                                       style: WebTextStyles
                                                                           .para(
                                                                         isDarkTheme:
@@ -5568,7 +5582,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               ),
                                                               // const SizedBox(width: 4),
                                                               Text(
-                                                                " ${clientFundDetail?.avlMrg ?? ''}",
+                                                                " ${(clientFundDetail?.avlMrg ?? '0.00').toIndianFormat()}",
                                                                 style:
                                                                     WebTextStyles
                                                                         .para(
