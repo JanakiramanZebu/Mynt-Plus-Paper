@@ -152,7 +152,7 @@ mixin OrderAPI on ApiCore {
         "channel": placeOrderInput.channel,
         "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
         "app_inst_id": "${prefs.imei}",
-        "ordersource": "MOB",
+        "ordersource": "WEB",
         "ipaddr": ip
       };
       if (placeOrderInput.amo == "Yes") {
@@ -297,9 +297,9 @@ mixin OrderAPI on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","ordersource":"MOB"}&jKey=${prefs.clientSession}''');
+              '''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","ordersource":"WEB"}&jKey=${prefs.clientSession}''');
 
-      log("Cancel Order => ${res.body}"'''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","ordersource":"MOB"}&jKey=${prefs.clientSession}''');
+      log("Cancel Order => ${res.body}"'''jData={"uid":"${prefs.clientId}","norenordno":"$orderNo","ordersource":"WEB"}&jKey=${prefs.clientSession}''');
       final json = jsonDecode(res.body);
 
       return CancelOrderModel.fromJson(json as Map<String, dynamic>);
@@ -403,7 +403,7 @@ mixin OrderAPI on ApiCore {
         "prctyp": input.prctyp,
         "ret": input.ret.toUpperCase(),
         "dscqty": input.dscqty,
-        "ordersource": "MOB",
+        "ordersource": "WEB",
         "prd": input.prd,
         "trantype": input.trantype,
         "usr_agent": "${prefs.deviceName!}   ${prefs.imei}",
@@ -665,7 +665,7 @@ mixin OrderAPI on ApiCore {
           "ret": "DAY",
           "actid": prefs.clientId,
           "uid": prefs.clientId,
-          "ordersource": "MOB",
+          "ordersource": "WEB",
           "qty": input.qty1,
           "prc": input.prc1,
           "trgprc": input.trgprc1
@@ -679,7 +679,7 @@ mixin OrderAPI on ApiCore {
           "ret": "DAY",
           "actid": prefs.clientId,
           "uid": prefs.clientId,
-          "ordersource": "MOB",
+          "ordersource": "WEB",
           "qty": input.qty2,
           "prc": input.prc2,
           "trgprc": input.trgprc2,
@@ -727,7 +727,7 @@ mixin OrderAPI on ApiCore {
           "ret": "DAY",
           "actid": prefs.clientId,
           "uid": prefs.clientId,
-          "ordersource": "MOB",
+          "ordersource": "WEB",
           "qty": input.qty1,
           "prc": input.prc1,
           "trgprc": input.trgprc1
@@ -741,7 +741,7 @@ mixin OrderAPI on ApiCore {
           "ret": "DAY",
           "actid": prefs.clientId,
           "uid": prefs.clientId,
-          "ordersource": "MOB",
+          "ordersource": "WEB",
           "qty": input.qty2,
           "prc": input.prc2,
           "trgprc": input.trgprc2,
