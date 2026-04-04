@@ -476,7 +476,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   "MKT": "Market",
                   "SL-LMT": "SL Limit",
                   "SL-MKT": "SL MKT"
-                }[orderRawValue['prctyp']] ??
+                }[orderRawValue['prctyp'] ?? orderRawValue['prctype']] ??
                 "Limit"
             : isUserOrderPreferenceAvailable
                 ? (["Limit", "Market"].contains(userOrderPreference['prc'])
@@ -707,14 +707,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
       // **FIX FOR BASKET EDIT**: Auto-expand advanced section and set states based on order data
       if (widget.isBasket == "BasketEdit") {
+        final rawPrctyp = orderRawValue['prctyp'] ?? orderRawValue['prctype'];
         // Auto-expand advanced section for stop-loss orders
-        if (["SL-LMT", "SL-MKT"].contains(orderRawValue['prctyp'])) {
+        if (["SL-LMT", "SL-MKT"].contains(rawPrctyp)) {
           _isStoplossOrder = true;
           isAdvancedOptionClicked = true;
         }
 
         // Set market order state
-        _isMarketOrder = ["MKT", "SL-MKT"].contains(orderRawValue['prctyp']);
+        _isMarketOrder = ["MKT", "SL-MKT"].contains(rawPrctyp);
 
         // Auto-expand for IOC validity or disclosed quantity
         if (orderRawValue['ret']?.toUpperCase() == 'IOC' ||
