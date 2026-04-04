@@ -172,16 +172,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     _applyDateRange();
   }
 
-  void _applyQuickDate(int days) {
-    setState(() {
-      _endDate = DateTime.now();
-      _startDate = _endDate.subtract(Duration(days: days));
-      _showDatePickerPopup = false;
-      _expandedDates.clear();
-    });
-    _applyDateRange();
-  }
-
   void _applyDateRange() {
     final lp = ref.read(ledgerProvider);
     final from = DateFormat('dd/MM/yyyy').format(_startDate);
@@ -1572,9 +1562,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    // _buildPresetChip('Last 7 days', () => _applyQuickDate(7)),
-                    // _buildPresetChip(
-                    //     'Last 30 days', () => _applyQuickDate(30)),
                     _buildPresetChip(
                         'Current FY', () => _applyFYPreset(currentFYStart)),
                     _buildPresetChip(

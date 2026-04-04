@@ -699,6 +699,10 @@ class LDProvider extends DefaultChangeNotifier {
 
   String _endDate = "";
   String get endDate => _endDate;
+  set endDate(String val) {
+    _endDate = val;
+    notifyListeners();
+  }
 
   set clickchangemtmandpnl(val) {
     _pnlrmtm = val;
