@@ -153,11 +153,59 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
   String? currentChange;
   String? currentPerChange;
 
+  late final double tik;
+
+  double roundOffWithInterval(double input, double interval) {
+    return ((input / interval).round() * interval);
+  }
+
+  /// Handles keyboard up/down arrow to increment/decrement a price field by tick size.
+  KeyEventResult _handlePriceArrowKey(KeyEvent event, TextEditingController ctrl) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    if (tik <= 0) return KeyEventResult.ignored;
+
+    final isUp = event.logicalKey == LogicalKeyboardKey.arrowUp;
+    final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+    if (!isUp && !isDown) return KeyEventResult.ignored;
+
+    // Skip if field contains non-numeric text (e.g. "Market"), but allow empty (treat as 0)
+    if (ctrl.text.isNotEmpty && double.tryParse(ctrl.text) == null) return KeyEventResult.ignored;
+
+    final current = double.tryParse(ctrl.text) ?? 0;
+    double newVal = isUp ? current + tik : current - tik;
+    if (newVal < 0) newVal = 0;
+    newVal = roundOffWithInterval(newVal, tik);
+    final formatted = newVal.toStringAsFixed(2);
+    ctrl.text = formatted;
+    ctrl.selection = TextSelection.collapsed(offset: formatted.length);
+    setState(() {});
+    return KeyEventResult.handled;
+  }
+
+  /// Handles keyboard up/down arrow to increment/decrement qty by 1.
+  KeyEventResult _handleQtyArrowKey(KeyEvent event, TextEditingController ctrl) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+
+    final isUp = event.logicalKey == LogicalKeyboardKey.arrowUp;
+    final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+    if (!isUp && !isDown) return KeyEventResult.ignored;
+
+    final current = int.tryParse(ctrl.text) ?? 0;
+    int newVal = isUp ? current + 1 : current - 1;
+    if (newVal < 1) newVal = 1;
+    ctrl.text = newVal.toString();
+    ctrl.selection = TextSelection.collapsed(offset: ctrl.text.length);
+    setState(() {});
+    return KeyEventResult.handled;
+  }
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(ordInputProvider).getModifyData(widget.gttOrderBook);
     });
+
+    tik = double.tryParse(widget.scripInfo.ti.toString()) ?? 0.00;
 
     setState(() {
       isOco = widget.gttOrderBook.placeOrderParamsLeg2 != null;
@@ -559,7 +607,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 ),
               ),
               const SizedBox(height: 10),
-              SizedBox(
+              Focus(
+                onKeyEvent: (node, event) => _handleQtyArrowKey(event, orderInput.qtyCtrl),
+                child: SizedBox(
                 height: 40,
                 width: 200,
                 child: MyntTextField(
@@ -597,6 +647,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     }
                   },
                 ),
+              ),
               ),
             ],
           ),
@@ -654,7 +705,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 ),
               ),
               const SizedBox(height: 10),
-              SizedBox(
+              Focus(
+                onKeyEvent: (node, event) => _handlePriceArrowKey(event, orderInput.priceCtrl),
+                child: SizedBox(
                 height: 40,
                 width: 200,
                 child: MyntTextField(
@@ -691,6 +744,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   controller: orderInput.priceCtrl,
                   textAlign: TextAlign.start,
                 ),
+              ),
               ),
             ],
           ),
@@ -782,7 +836,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 ),
               ),
               const SizedBox(height: 10),
-              SizedBox(
+              Focus(
+                onKeyEvent: (node, event) => _handleQtyArrowKey(event, orderInput.ocoQtyCtrl),
+                child: SizedBox(
                 height: 40,
                 width: 200,
                 child: MyntTextField(
@@ -820,6 +876,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     }
                   },
                 ),
+              ),
               ),
             ],
           ),
@@ -877,7 +934,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 ),
               ),
               const SizedBox(height: 10),
-              SizedBox(
+              Focus(
+                onKeyEvent: (node, event) => _handlePriceArrowKey(event, orderInput.ocoPriceCtrl),
+                child: SizedBox(
                 height: 40,
                 width: 200,
                 child: MyntTextField(
@@ -906,6 +965,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                   controller: orderInput.ocoPriceCtrl,
                   textAlign: TextAlign.start,
                 ),
+              ),
               ),
             ],
           ),

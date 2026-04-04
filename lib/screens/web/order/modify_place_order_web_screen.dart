@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -269,8 +270,65 @@ class _ModifyPlaceOrderScreenState
   // String orderType = "Delivery";
 
   double tik = 0.00;
+  Timer? _marginUpdateDebounceTimer;
   double roundOffWithInterval(double input, double interval) {
     return ((input / interval).round() * interval);
+  }
+
+  void _debouncedMarginUpdate() {
+    _marginUpdateDebounceTimer?.cancel();
+    _marginUpdateDebounceTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        marginUpdate();
+      }
+    });
+  }
+
+  /// Handles keyboard up/down arrow to increment/decrement a price field by tick size.
+  KeyEventResult _handlePriceArrowKey(KeyEvent event, TextEditingController ctrl) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    if (tik <= 0) return KeyEventResult.ignored;
+
+    final isUp = event.logicalKey == LogicalKeyboardKey.arrowUp;
+    final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+    if (!isUp && !isDown) return KeyEventResult.ignored;
+
+    // Skip if field contains non-numeric text (e.g. "Market"), but allow empty (treat as 0)
+    if (ctrl.text.isNotEmpty && double.tryParse(ctrl.text) == null) return KeyEventResult.ignored;
+
+    final current = double.tryParse(ctrl.text) ?? 0;
+    double newVal = isUp ? current + tik : current - tik;
+    if (newVal < 0) newVal = 0;
+    newVal = roundOffWithInterval(newVal, tik);
+    final formatted = newVal.toStringAsFixed(2);
+    ctrl.text = formatted;
+    ctrl.selection = TextSelection.collapsed(offset: formatted.length);
+    setState(() {
+      if (ctrl == priceCtrl) {
+        price = formatted;
+        _debouncedMarginUpdate();
+      }
+    });
+    return KeyEventResult.handled;
+  }
+
+  /// Handles keyboard up/down arrow to increment/decrement qty by 1.
+  KeyEventResult _handleQtyArrowKey(KeyEvent event, TextEditingController ctrl) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+
+    final isUp = event.logicalKey == LogicalKeyboardKey.arrowUp;
+    final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+    if (!isUp && !isDown) return KeyEventResult.ignored;
+
+    final current = int.tryParse(ctrl.text) ?? 0;
+    int newVal = isUp ? current + 1 : current - 1;
+    if (newVal < 1) newVal = 1;
+    ctrl.text = newVal.toString();
+    ctrl.selection = TextSelection.collapsed(offset: ctrl.text.length);
+    setState(() {
+      marginUpdate();
+    });
+    return KeyEventResult.handled;
   }
 
   @override
@@ -425,6 +483,12 @@ class _ModifyPlaceOrderScreenState
       showResponsiveWarningMessage(
           context, "Error opening fund page. Please try again.");
     }
+  }
+
+  @override
+  void dispose() {
+    _marginUpdateDebounceTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -836,7 +900,9 @@ class _ModifyPlaceOrderScreenState
                                             ],
                                           ),
                                           const SizedBox(height: 10),
-                                          SizedBox(
+                                          Focus(
+                                            onKeyEvent: (node, event) => _handleQtyArrowKey(event, qtyCtrl),
+                                            child: SizedBox(
                                             height: 40,
                                             // width: 150,
                                             child: MyntTextField(
@@ -1057,6 +1123,7 @@ class _ModifyPlaceOrderScreenState
                                             //   },
                                             // )
                                           )
+                                          )
                                         ])),
                                     const SizedBox(width: 16),
                                     Expanded(
@@ -1093,7 +1160,9 @@ class _ModifyPlaceOrderScreenState
                                             ),
                                           ),
                                           const SizedBox(height: 10),
-                                          SizedBox(
+                                          Focus(
+                                            onKeyEvent: (node, event) => _handlePriceArrowKey(event, priceCtrl),
+                                            child: SizedBox(
                                             height: 40,
                                             // width: 150,
                                             child: MyntTextField(
@@ -1175,6 +1244,7 @@ class _ModifyPlaceOrderScreenState
                                                     : false,
                                                 controller: priceCtrl,
                                                 textAlign: TextAlign.start),
+                                          ),
                                           ),
                                         ],
                                       ),
@@ -2463,7 +2533,9 @@ class _ModifyPlaceOrderScreenState
           //                                                         light: MyntColors.textPrimary))),
           ],),
           const SizedBox(height: 10),
-          SizedBox(
+          Focus(
+            onKeyEvent: (node, event) => _handlePriceArrowKey(event, triggerPriceCtrl),
+            child: SizedBox(
               height: 40,
               width: 200,
               child: MyntTextField(
@@ -2482,16 +2554,6 @@ class _ModifyPlaceOrderScreenState
                   ],
                   onChanged: (value) {
                     double inputPrice = double.tryParse(value) ?? 0;
-                    // if (value.isNotEmpty && inputPrice > 0) {
-                    //   final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
-                    //   if (!regex.hasMatch(value)) {
-                    //     triggerPriceCtrl.text = value.substring(0,
-                    //         value.length - 1); // Revert to previous valid input
-                    //     triggerPriceCtrl.selection = TextSelection.collapsed(
-                    //         offset: triggerPriceCtrl
-                    //             .text.length); // Keep cursor at the end
-                    //   }
-                    // }
                     if (value.isEmpty || inputPrice <= 0) {
                       ResponsiveSnackBar.showWarning(context,
                           "Trigger can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
@@ -2505,12 +2567,9 @@ class _ModifyPlaceOrderScreenState
                         ? MyntColors.textPrimaryDark
                         : MyntColors.textPrimary,
                   ),
-                  // prefixIcon: Container(
-                  //     margin: const EdgeInsets.all(12),
-                  //     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                  //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown)),
                   controller: triggerPriceCtrl,
-                  textAlign: TextAlign.start))
+                  textAlign: TextAlign.start)),
+          )
         ],
       ),
     );
