@@ -1132,8 +1132,9 @@ class _ModifyPlaceOrderScreenState
                                                         .showWarning(context,
                                                             "Limit Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                   } else {
-                                                    if ((double.parse(value) < double.parse("${widget.scripInfo.lc}")) ||
-                                                          (double.parse(value) > double.parse("${widget.scripInfo.uc}"))) {
+                                                    if (_hasValidCircuitBreakerValues &&
+                                                        ((double.parse(value) < double.parse("${widget.scripInfo.lc}")) ||
+                                                          (double.parse(value) > double.parse("${widget.scripInfo.uc}")))) {
                                                           ResponsiveSnackBar.showWarning(
                                                               context,
                                                               double.parse(value) < double.parse("${widget.scripInfo.lc}")
@@ -2228,10 +2229,11 @@ class _ModifyPlaceOrderScreenState
                                                                               "0"
                                                                           ? "Quantity can not be 0"
                                                                           : "Price can not be 0");
-                                                                } else if ((double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) < double.parse("${widget.scripInfo.lc}")) ||
+                                                                } else if (_hasValidCircuitBreakerValues &&
+                                                                    ((double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) < double.parse("${widget.scripInfo.lc}")) ||
                                                                     (double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) >
                                                                         double.parse(
-                                                                            "${widget.scripInfo.uc}"))) {
+                                                                            "${widget.scripInfo.uc}")))) {
                                                                   ResponsiveSnackBar.showWarning(
                                                                       context,
                                                                       double.parse(prcType == "MKT" || prcType == "SL-MKT" ? price : priceCtrl.text) <

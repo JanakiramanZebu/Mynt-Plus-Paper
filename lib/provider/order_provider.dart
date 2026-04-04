@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/legacy.dart';
 
-import '../utils/url_utils.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -3263,14 +3262,20 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_bsktScripList.isNotEmpty) {
         // Include ALL scripts in margin calculation (including executed ones)
         for (var i = 1; i < _bsktScripList.length; i++) {
+          final prctyp = (_bsktScripList[i]["prctype"] ??
+                  _bsktScripList[i]["prctyp"] ??
+                  "MKT")
+              .toString();
+          final prc = _bsktScripList[i]["prc"]?.toString() ?? '0';
+          // tsym is already URL-encoded when saved to basket, pass as-is
           basket.add({
-            "exch": '${_bsktScripList[i]["exch"]}',
-            "tsym": UrlUtils.encodeParameter('${_bsktScripList[i]["tsym"]}'),
-            "qty": '${_bsktScripList[i]["qty"]}',
-            "prc": '${_bsktScripList[i]["prc"]}',
-            "prd": '${_bsktScripList[i]["prd"]}',
-            "trantype": '${_bsktScripList[i]["trantype"]}',
-            "prctyp": '${_bsktScripList[i]["prctype"] ?? _bsktScripList[i]["prctyp"] ?? "MKT"}',
+            "exch": _bsktScripList[i]["exch"]?.toString() ?? '',
+            "tsym": _bsktScripList[i]["tsym"]?.toString() ?? '',
+            "qty": _bsktScripList[i]["qty"]?.toString() ?? '0',
+            "prc": (prctyp == "MKT" || prctyp == "SL-MKT") ? '0' : prc,
+            "prd": _bsktScripList[i]["prd"]?.toString() ?? '',
+            "trantype": _bsktScripList[i]["trantype"]?.toString() ?? '',
+            "prctyp": prctyp,
             "trgprc": _bsktScripList[i]["trgprc"]?.toString() ?? '',
             "blprc": _bsktScripList[i]["blprc"]?.toString() ?? '',
             "bpprc": _bsktScripList[i]["bpprc"]?.toString() ?? ''
@@ -3278,17 +3283,27 @@ class OrderProvider extends DefaultChangeNotifier {
         }
 
         // Qty is already stored as actual quantity (lots × lotSize) for MCX in web basket
-        String qty = '${_bsktScripList[0]["qty"]}';
+        String qty = _bsktScripList[0]["qty"]?.toString() ?? '0';
+        final prctyp0 = (_bsktScripList[0]["prctype"] ??
+                _bsktScripList[0]["prctyp"] ??
+                "MKT")
+            .toString();
+        final prc0 = _bsktScripList[0]["prc"]?.toString() ?? '0';
+        // tsym is already URL-encoded when saved to basket, decode it here
+        // because getBasketMargin will re-encode it for the main input
+        final tsym0 = _bsktScripList[0]["tsym"]?.toString() ?? '';
+        final decodedTsym0 =
+            tsym0.isNotEmpty ? Uri.decodeComponent(tsym0) : '';
 
         // Use first script as main input with available order parameters
         OrderMarginInput inputs = OrderMarginInput(
-            exch: '${_bsktScripList[0]["exch"]}',
-            prc: '${_bsktScripList[0]["prc"]}',
-            prctyp: '${_bsktScripList[0]["prctyp"]}',
-            prd: '${_bsktScripList[0]["prd"]}',
+            exch: _bsktScripList[0]["exch"]?.toString() ?? '',
+            prc: (prctyp0 == "MKT" || prctyp0 == "SL-MKT") ? '0' : prc0,
+            prctyp: prctyp0,
+            prd: _bsktScripList[0]["prd"]?.toString() ?? '',
             qty: qty,
-            trantype: '${_bsktScripList[0]["trantype"]}',
-            tsym: '${_bsktScripList[0]["tsym"]}',
+            trantype: _bsktScripList[0]["trantype"]?.toString() ?? '',
+            tsym: decodedTsym0,
             trgprc: _bsktScripList[0]["trgprc"]?.toString() ?? '',
             rorgprc: '', // Not available in basket data
             rorgqty: '', // Not available in basket data
