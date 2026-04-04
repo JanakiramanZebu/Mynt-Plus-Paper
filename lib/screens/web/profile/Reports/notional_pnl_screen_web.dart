@@ -52,8 +52,18 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
   late DateTime _rightMonth;
   DateTime? _tempStartDate;
   DateTime? _tempEndDate;
+  bool _selectingEnd = false;
   final GlobalKey _datePickerButtonKey = GlobalKey();
-  OverlayEntry? _datePickerOverlay;
+
+  List<String> get _quickPresets {
+    final now = DateTime.now();
+    final currentFYStart = now.month >= 4 ? now.year : now.year - 1;
+    return [
+      'Current FY',
+      'Last FY',
+      for (int y = currentFYStart - 2; y >= currentFYStart - 4; y--) '$y',
+    ];
+  }
 
   @override
   void initState() {
@@ -70,7 +80,6 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
 
   @override
   void dispose() {
-    _removeDatePickerOverlay();
     disposeScrollToLoad();
     _tableScrollController.dispose();
     _horizontalScrollController.dispose();
@@ -80,8 +89,6 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
   }
 
   void _removeDatePickerOverlay() {
-    _datePickerOverlay?.remove();
-    _datePickerOverlay = null;
     if (_showDatePicker) {
       setState(() => _showDatePicker = false);
     }
@@ -97,6 +104,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
     final endStr = ledger.today.isNotEmpty ? ledger.today : _getDefaultEndDate();
     _tempStartDate = _parseDate(startStr);
     _tempEndDate = _parseDate(endStr);
+    _selectingEnd = false;
     if (_tempStartDate != null) {
       _leftMonth = DateTime(_tempStartDate!.year, _tempStartDate!.month);
     }
@@ -107,40 +115,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
       _rightMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
     }
 
-    final keyContext = _datePickerButtonKey.currentContext;
-    if (keyContext == null) return;
-
     setState(() => _showDatePicker = true);
-
-    final RenderBox renderBox =
-        keyContext.findRenderObject() as RenderBox;
-    final buttonPos = renderBox.localToGlobal(Offset.zero);
-    final buttonSize = renderBox.size;
-
-    _datePickerOverlay = OverlayEntry(
-      builder: (context) => _PnlDatePickerOverlay(
-        buttonOffset: Offset(buttonPos.dx, buttonPos.dy + buttonSize.height + 8),
-        theme: theme,
-        leftMonth: _leftMonth,
-        rightMonth: _rightMonth,
-        tempStartDate: _tempStartDate,
-        tempEndDate: _tempEndDate,
-        onClose: () => _removeDatePickerOverlay(),
-        onApply: (start, end) {
-          final fmt = DateFormat('dd/MM/yyyy');
-          ledger.startDate = fmt.format(start);
-          ledger.today = fmt.format(end);
-          _fetchData(force: true);
-          _removeDatePickerOverlay();
-        },
-        onQuickSelect: (preset) {
-          _handleQuickSelect(preset, ledger);
-          _removeDatePickerOverlay();
-        },
-      ),
-    );
-
-    Overlay.of(context, rootOverlay: true).insert(_datePickerOverlay!);
   }
 
   DateTime? _parseDate(String dateStr) {
@@ -160,12 +135,6 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
     DateTime end = now;
 
     switch (preset) {
-      case 'Last 7 days':
-        start = now.subtract(const Duration(days: 7));
-        break;
-      case 'Last 30 days':
-        start = now.subtract(const Duration(days: 30));
-        break;
       case 'Current FY':
         final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
         start = DateTime(fyStartYear, 4, 1);
@@ -191,6 +160,231 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
     ledger.startDate = fmt.format(start);
     ledger.today = fmt.format(end);
     _fetchData(force: true);
+  }
+
+  bool _isSameDayInline(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  Widget _buildDatePickerOverlayInline(BuildContext context, LDProvider ledger) {
+    final cardColor = resolveThemeColor(context,
+        dark: MyntColors.cardDark, light: MyntColors.card);
+    final borderColor = resolveThemeColor(context,
+        dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Material(
+          elevation: 8,
+          borderRadius: BorderRadius.circular(12),
+          color: cardColor,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildMonthCalendarInline(context, _leftMonth, true, ledger),
+                    const SizedBox(width: 16),
+                    _buildMonthCalendarInline(context, _rightMonth, false, ledger),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _quickPresets.map((preset) {
+                    return InkWell(
+                      onTap: () {
+                        _handleQuickSelect(preset, ledger);
+                        _removeDatePickerOverlay();
+                      },
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Text(
+                          preset,
+                          style: MyntWebTextStyles.bodySmall(context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                              fontWeight: MyntFonts.medium),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMonthCalendarInline(
+      BuildContext context, DateTime month, bool isLeft, LDProvider ledger) {
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final firstDayWeekday = DateTime(month.year, month.month, 1).weekday % 7;
+    final monthName = DateFormat('MMMM yyyy').format(month);
+
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+    final secondaryColor = resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+    final primaryColor = resolveThemeColor(context,
+        dark: MyntColors.primaryDark, light: MyntColors.primary);
+
+    return SizedBox(
+      width: 280,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (isLeft) {
+                      _leftMonth = DateTime(_leftMonth.year, _leftMonth.month - 1);
+                      _rightMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
+                    } else {
+                      _rightMonth = DateTime(_rightMonth.year, _rightMonth.month - 1);
+                      _leftMonth = DateTime(_rightMonth.year, _rightMonth.month - 1);
+                    }
+                  });
+                },
+                child: Icon(Icons.chevron_left, size: 20, color: secondaryColor),
+              ),
+              Text(monthName,
+                  style: MyntWebTextStyles.body(context,
+                      color: textColor, fontWeight: MyntFonts.semiBold)),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (isLeft) {
+                      _leftMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
+                      _rightMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
+                    } else {
+                      _rightMonth = DateTime(_rightMonth.year, _rightMonth.month + 1);
+                      _leftMonth = DateTime(_rightMonth.year, _rightMonth.month - 1);
+                    }
+                  });
+                },
+                child: Icon(Icons.chevron_right, size: 20, color: secondaryColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+                .map((d) => Expanded(
+                      child: Center(
+                        child: Text(d,
+                            style: MyntWebTextStyles.caption(context,
+                                color: secondaryColor)),
+                      ),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 4),
+          ...List.generate(6, (week) {
+            return Row(
+              children: List.generate(7, (day) {
+                final dayNum = week * 7 + day - firstDayWeekday + 1;
+                if (dayNum < 1 || dayNum > daysInMonth) {
+                  return const Expanded(child: SizedBox(height: 36));
+                }
+                final date = DateTime(month.year, month.month, dayNum);
+                final isToday = _isSameDayInline(date, DateTime.now());
+                final isStart =
+                    _tempStartDate != null && _isSameDayInline(date, _tempStartDate!);
+                final isEnd =
+                    _tempEndDate != null && _isSameDayInline(date, _tempEndDate!);
+                final isInRange = _tempStartDate != null &&
+                    _tempEndDate != null &&
+                    date.isAfter(_tempStartDate!) &&
+                    date.isBefore(_tempEndDate!);
+                final isSelected = isStart || isEnd;
+
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (!_selectingEnd || _tempStartDate == null) {
+                        setState(() {
+                          _tempStartDate = date;
+                          _tempEndDate = null;
+                          _selectingEnd = true;
+                        });
+                      } else {
+                        DateTime start;
+                        DateTime end;
+                        if (date.isBefore(_tempStartDate!)) {
+                          end = _tempStartDate!;
+                          start = date;
+                        } else {
+                          start = _tempStartDate!;
+                          end = date;
+                        }
+                        _selectingEnd = false;
+                        final fmt = DateFormat('dd/MM/yyyy');
+                        ledger.startDate = fmt.format(start);
+                        ledger.today = fmt.format(end);
+                        _fetchData(force: true);
+                        setState(() => _showDatePicker = false);
+                      }
+                    },
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? primaryColor
+                            : isInRange
+                                ? primaryColor.withValues(alpha: 0.1)
+                                : null,
+                        shape: isSelected ? BoxShape.circle : BoxShape.rectangle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$dayNum',
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: isSelected
+                                ? Colors.white
+                                : isToday
+                                    ? primaryColor
+                                    : textColor,
+                            fontWeight: isToday || isSelected
+                                ? MyntFonts.semiBold
+                                : MyntFonts.medium,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            );
+          }),
+        ],
+      ),
+    );
   }
 
   void _fetchData({bool force = false}) {
@@ -253,13 +447,29 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context, ledger, pnlData),
-          if (isLoading)
-            Expanded(child: Center(child: MyntLoader.simple()))
-          else if (pnlData == null ||
-              (pnlData.transactions == null || pnlData.transactions!.isEmpty))
-            Expanded(child: Center(child: NoDataFound(secondaryEnabled: false)))
-          else
-            Expanded(child: _buildBody(context, pnlData, ledger)),
+          Expanded(
+            child: Stack(
+              children: [
+                if (isLoading)
+                  Center(child: MyntLoader.simple())
+                else if (pnlData == null ||
+                    (pnlData.transactions == null || pnlData.transactions!.isEmpty))
+                  const Center(child: NoDataFound(secondaryEnabled: false))
+                else
+                  _buildBody(context, pnlData, ledger),
+                if (_showDatePicker) ...[
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () => _removeDatePickerOverlay(),
+                      behavior: HitTestBehavior.opaque,
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                  _buildDatePickerOverlayInline(context, ledger),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1954,281 +2164,3 @@ class _DetailedPnlDialogState extends State<_DetailedPnlDialog> {
   }
 }
 
-// ─── Date Picker Overlay (matches ledger page) ─────────────────────────
-
-class _PnlDatePickerOverlay extends StatefulWidget {
-  final Offset buttonOffset;
-  final ThemesProvider theme;
-  final DateTime leftMonth;
-  final DateTime rightMonth;
-  final DateTime? tempStartDate;
-  final DateTime? tempEndDate;
-  final VoidCallback onClose;
-  final void Function(DateTime start, DateTime end) onApply;
-  final void Function(String preset) onQuickSelect;
-
-  const _PnlDatePickerOverlay({
-    required this.buttonOffset,
-    required this.theme,
-    required this.leftMonth,
-    required this.rightMonth,
-    required this.tempStartDate,
-    required this.tempEndDate,
-    required this.onClose,
-    required this.onApply,
-    required this.onQuickSelect,
-  });
-
-  @override
-  State<_PnlDatePickerOverlay> createState() => _PnlDatePickerOverlayState();
-}
-
-class _PnlDatePickerOverlayState extends State<_PnlDatePickerOverlay> {
-  late DateTime _leftMonth;
-  late DateTime _rightMonth;
-  DateTime? _startDate;
-  DateTime? _endDate;
-  bool _selectingEnd = false;
-
-  static const _quickPresets = [
-    'Last 7 days',
-    'Last 30 days',
-    'Current FY',
-    'Last FY',
-    '2023',
-    '2022',
-    '2021',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _leftMonth = widget.leftMonth;
-    _rightMonth = widget.rightMonth;
-    _startDate = widget.tempStartDate;
-    _endDate = widget.tempEndDate;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: widget.onClose,
-            behavior: HitTestBehavior.translucent,
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-        Positioned(
-          left: widget.buttonOffset.dx,
-          top: widget.buttonOffset.dy,
-          child: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(12),
-            color: resolveThemeColor(context,
-                dark: MyntColors.backgroundColorDark,
-                light: MyntColors.backgroundColor),
-            child: Container(
-              width: 620,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.divider),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildMonthCalendar(_leftMonth, true)),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildMonthCalendar(_rightMonth, false)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _quickPresets.map((preset) {
-                      return InkWell(
-                        onTap: () => widget.onQuickSelect(preset),
-                        borderRadius: BorderRadius.circular(6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.dividerDark,
-                                  light: MyntColors.divider),
-                            ),
-                          ),
-                          child: Text(
-                            preset,
-                            style: MyntWebTextStyles.bodySmall(context,
-                                color: resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
-                                fontWeight: MyntFonts.medium),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMonthCalendar(DateTime month, bool isLeft) {
-    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    final firstDayWeekday = DateTime(month.year, month.month, 1).weekday % 7;
-    final monthName = DateFormat('MMMM yyyy').format(month);
-
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-    final secondaryColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    final primaryColor = resolveThemeColor(context,
-        dark: MyntColors.primaryDark, light: MyntColors.primary);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (isLeft) {
-                    _leftMonth = DateTime(_leftMonth.year, _leftMonth.month - 1);
-                    _rightMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
-                  } else {
-                    _rightMonth = DateTime(_rightMonth.year, _rightMonth.month - 1);
-                    _leftMonth = DateTime(_rightMonth.year, _rightMonth.month - 1);
-                  }
-                });
-              },
-              child: Icon(Icons.chevron_left, size: 20, color: secondaryColor),
-            ),
-            Text(monthName,
-                style: MyntWebTextStyles.body(context,
-                    color: textColor, fontWeight: MyntFonts.semiBold)),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (isLeft) {
-                    _leftMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
-                    _rightMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
-                  } else {
-                    _rightMonth = DateTime(_rightMonth.year, _rightMonth.month + 1);
-                    _leftMonth = DateTime(_rightMonth.year, _rightMonth.month - 1);
-                  }
-                });
-              },
-              child: Icon(Icons.chevron_right, size: 20, color: secondaryColor),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-              .map((d) => Expanded(
-                    child: Center(
-                      child: Text(d,
-                          style: MyntWebTextStyles.caption(context,
-                              color: secondaryColor)),
-                    ),
-                  ))
-              .toList(),
-        ),
-        const SizedBox(height: 4),
-        ...List.generate(6, (week) {
-          return Row(
-            children: List.generate(7, (day) {
-              final dayNum = week * 7 + day - firstDayWeekday + 1;
-              if (dayNum < 1 || dayNum > daysInMonth) {
-                return const Expanded(child: SizedBox(height: 36));
-              }
-              final date = DateTime(month.year, month.month, dayNum);
-              final isToday = _isSameDay(date, DateTime.now());
-              final isStart = _startDate != null && _isSameDay(date, _startDate!);
-              final isEnd = _endDate != null && _isSameDay(date, _endDate!);
-              final isInRange = _startDate != null &&
-                  _endDate != null &&
-                  date.isAfter(_startDate!) &&
-                  date.isBefore(_endDate!);
-              final isSelected = isStart || isEnd;
-
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (!_selectingEnd || _startDate == null) {
-                        _startDate = date;
-                        _endDate = null;
-                        _selectingEnd = true;
-                      } else {
-                        if (date.isBefore(_startDate!)) {
-                          _endDate = _startDate;
-                          _startDate = date;
-                        } else {
-                          _endDate = date;
-                        }
-                        _selectingEnd = false;
-                        widget.onApply(_startDate!, _endDate!);
-                      }
-                    });
-                  },
-                  child: Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? primaryColor
-                          : isInRange
-                              ? primaryColor.withValues(alpha: 0.1)
-                              : null,
-                      shape: isSelected ? BoxShape.circle : BoxShape.rectangle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$dayNum',
-                        style: MyntWebTextStyles.bodySmall(
-                          context,
-                          color: isSelected
-                              ? Colors.white
-                              : isToday
-                                  ? primaryColor
-                                  : textColor,
-                          fontWeight: isToday || isSelected
-                              ? MyntFonts.semiBold
-                              : MyntFonts.medium,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          );
-        }),
-      ],
-    );
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-}
