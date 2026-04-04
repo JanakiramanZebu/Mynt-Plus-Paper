@@ -998,7 +998,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     }
 
     if (ipo is SMEIPO) {
-      await ipoProvider.smeipocategory();
+      await ipoProvider.smeipocategory(ipo);
       if (context.mounted) {
         UnifiedIpoOrderScreen.showDraggable(
           context: context,
@@ -1006,7 +1006,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
         );
       }
     } else {
-      await ipoProvider.mainipocategory();
+      await ipoProvider.mainipocategory(ipo as MainIPO);
       if (context.mounted) {
         UnifiedIpoOrderScreen.showDraggable(
           context: context,

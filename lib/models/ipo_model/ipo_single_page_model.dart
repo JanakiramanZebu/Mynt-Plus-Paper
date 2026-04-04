@@ -9,9 +9,9 @@ class IpoSinglePage {
 
   // Factory constructor to create an instance from JSON
   IpoSinglePage.fromJson(Map<String, dynamic> json) {
-    if (json["data"] != "no data") {
-      data = json['data']; // Handling default value
-      scripdata = json['data'].containsKey("script_data")
+    if (json["data"] != null && json["data"] != "no data" && json["data"] is Map) {
+      data = json['data'];
+      scripdata = (json['data'] as Map).containsKey("script_data")
           ? json['data']['script_data']
           : {};
     } else {

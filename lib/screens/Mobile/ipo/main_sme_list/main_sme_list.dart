@@ -571,7 +571,7 @@ class _IPOListItemState extends State<_IPOListItem> {
     );
 
     if (widget.ipo.key == "SME") {
-      await widget.ipoProvider.smeipocategory();
+      await widget.ipoProvider.smeipocategory(widget.ipo as SMEIPO);
       if (context.mounted) {
         Navigator.pushNamed(
           context,
@@ -580,7 +580,7 @@ class _IPOListItemState extends State<_IPOListItem> {
         );
       }
     } else {
-      await widget.ipoProvider.mainipocategory();
+      await widget.ipoProvider.mainipocategory(widget.ipo as MainIPO);
       if (context.mounted) {
         Navigator.pushNamed(
           context,

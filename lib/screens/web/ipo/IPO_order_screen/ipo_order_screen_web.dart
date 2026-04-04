@@ -131,6 +131,7 @@ class UnifiedIpoOrderScreen extends ConsumerStatefulWidget {
 
 class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
   String upierrortext = "";
+  String _upiErrorText = "";
   String selectedChip = "Individual";
   List<IpoDetails> addIpo = [];
   bool _isTermsAccepted = false;
@@ -174,7 +175,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
   void addNewItem() {
     setState(() {
       addIpo.add(IpoDetails(
-          qualitytext: lotSize,
+          qualitytext: minBidQuantity,
           bidprice:
               "${double.parse(minPrice.isEmpty ? "0" : minPrice).toInt()}",
           lotsize: int.parse(lotSize.isEmpty ? "0" : lotSize),
@@ -583,6 +584,19 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                               style: MyntWebTextStyles.body(context),
                               onChanged: (value) => setState(() {}),
                             ),
+                             if (ipo.upierror.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6, left: 4),
+                                child: Text(
+                                  ipo.upierror,
+                                  style: MyntWebTextStyles.bodySmall(
+                                    context,
+                                    color: theme.isDarkMode
+                                        ? MyntColors.lossDark
+                                        : const Color(0xffD93025),
+                                  ),
+                                ),
+                              ),
 
                             const SizedBox(height: 24),
 
@@ -666,14 +680,37 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                     _isTermsAccepted &&
                                     upiProvider.upiid.text.isNotEmpty)
                                 ? () {
-                                    if (addIpo[addIpo.length - 1]
-                                            .requriedprice >
-                                        ipo.maxUPIAmt) {
+                                    final lastBid = addIpo[addIpo.length - 1];
+                                    if (lastBid.requriedprice > ipo.maxUPIAmt) {
                                       showResponsiveWarning(context,
                                           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
                                       _setButtonActiveState(ipo, false);
-                                    } else {
+                                    } else if (lastBid.bidpricecontroller.text.isEmpty ||
+                                        lastBid.bidpricecontroller.text == "0") {
+                                      showResponsiveWarning(
+                                          context,
+                                          lastBid.bidpricecontroller.text == "0"
+                                              ? "Bid Price Value cannot be 0"
+                                              : "* Bid Price Value is required");
+                                    } else if (lastBid.qualityController.text.isEmpty ||
+                                        lastBid.qualityController.text == "0") {
+                                      showResponsiveWarning(
+                                          context,
+                                          lastBid.qualityController.text == "0"
+                                              ? "* Quantity cannot be 0"
+                                              : "* Quantity cannot be empty");
+                                    } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+                                        .hasMatch(upiProvider.upiid.text)) {
+                                      setState(() {
+                                        _upiErrorText = "Invalid UPI ID format";
+                                      });
+                                    } else if (ipo.checkForErrorsInSMEPlaceOrder(addIpo)) {
+                                      _setButtonActiveState(ipo, true);
                                       ipoplaceorder(upiProvider, ipo);
+                                    } else {
+                                      showResponsiveWarning(context,
+                                          "Can't place order with current selected combination of bids");
+                                      _setButtonActiveState(ipo, false);
                                     }
                                   }
                                 : null,
@@ -837,9 +874,36 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                     ),
                     Expanded(
                       child: TextFormField(
-                        readOnly: true,
+                        readOnly: ipo.loading,
                         textAlign: TextAlign.center,
                         controller: addIpo[index].qualityController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        onEditingComplete: () => FocusScope.of(context).unfocus(),
+                        onChanged: (value) {
+                          if (isSME) {
+                            ipo.smequantityOnchange(
+                                value,
+                                addIpo[index],
+                                ipoData,
+                                _getButtonActiveState(ipo),
+                                ipo.maxUPIAmt,
+                                selectedChip);
+                          } else {
+                            ipo.quantityOnchange(
+                                addIpo[index],
+                                _getButtonActiveState(ipo),
+                                ipo,
+                                value,
+                                ipoData,
+                                selectedChip);
+                          }
+                          setState(() {
+                            _updateProviderState(ipo);
+                          });
+                        },
                         style: MyntWebTextStyles.body(context,
                             fontWeight: FontWeight.w600),
                         decoration: const InputDecoration(
@@ -924,9 +988,9 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                             ? colors.textPrimaryDark
                             : colors.textPrimaryLight),
                   ),
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                   ],
                   onChanged: (value) {
                     if (isSME) {
@@ -945,16 +1009,51 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
             ),
           ],
         ),
-        if (index > 0)
+        const SizedBox(height: 4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: addIpo[index].qualityerrortext.isNotEmpty
+                  ? TextWidget.captionText(
+                      theme: false,
+                      text: addIpo[index].qualityerrortext,
+                      color: colors.error,
+                      fw: 0,
+                    )
+                  : const SizedBox(),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: addIpo[index].biderrortext.isNotEmpty
+                  ? TextWidget.captionText(
+                      theme: false,
+                      text: addIpo[index].biderrortext,
+                      color: colors.error,
+                      fw: 0,
+                    )
+                  : const SizedBox(),
+            ),
+          ],
+        ),
+        if (index > 0) ...[
+          const SizedBox(height: 4),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
-              onPressed: () => removeItem(index),
-              icon: Icon(Icons.delete_outline, color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), size: 18),
+              onPressed: ipo.loading ? null : () => removeItem(index),
+              icon: Icon(Icons.delete_outline,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.lossDark, light: MyntColors.loss),
+                  size: 18),
               label: Text("Delete",
-                  style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontSize: 12)),
+                  style: TextStyle(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.lossDark, light: MyntColors.loss),
+                      fontSize: 12)),
             ),
           ),
+        ],
         const SizedBox(height: 16),
       ],
     );
@@ -993,11 +1092,11 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
     // Check if we're in an overlay dialog wrapper
     final closeNotifier = _IpoOrderDialogCloseNotifier.of(context);
 
-    await ref.read(ipoProvide).fetchupiidvalidation(
+    final success = await ref.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid,
         isOverlayDialog: closeNotifier != null);
 
-    if (closeNotifier != null) {
+    if (closeNotifier != null && success) {
       // Add a small delay to allow success message to appear first
       Future.delayed(const Duration(milliseconds: 300), () {
         closeNotifier.onClose();

@@ -10,6 +10,7 @@ import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../sharedWidget/no_data_found_web.dart';
 import '../../../../models/ipo_model/ipo_sme_model.dart';
+import '../../../../models/ipo_model/ipo_mainstream_model.dart';
 import 'IPO_order_screen/ipo_order_screen_web.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -371,9 +372,9 @@ class IpoDetailsSheetWeb extends ConsumerWidget {
 
     // Fetch categories while sheet is open to ensure data is ready for the dialog
     if (ipo is SMEIPO) {
-      await ipoProvider.smeipocategory();
+      await ipoProvider.smeipocategory(ipo);
     } else {
-      await ipoProvider.mainipocategory();
+      await ipoProvider.mainipocategory(ipo as MainIPO);
     }
 
     if (context.mounted) {

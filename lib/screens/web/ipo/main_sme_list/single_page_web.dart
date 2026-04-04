@@ -64,7 +64,9 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
         final singlepage = ref.watch(ipoProvide);
         final upi = ref.watch(transcationProvider);
 
-        if (singlepage.iposinglepage?.data == "no data") {
+        if (singlepage.iposinglepage?.data == null ||
+            singlepage.iposinglepage?.data == "no data" ||
+            singlepage.iposinglepage?.data is! Map) {
           return const _NoDataWidget();
         }
 
@@ -419,15 +421,17 @@ class _IPODetailsContainer extends StatelessWidget {
         final Map<String, dynamic> decodedJson = jsonDecode(widget.ipodetails);
 
         // Fetch UPI ID View
-        await upi.fetchupiIdView(
-          upi.bankdetails!.dATA![upi.indexss][1],
-          upi.bankdetails!.dATA![upi.indexss][2],
-        );
+        if (upi.bankdetails?.dATA != null && upi.bankdetails!.dATA!.isNotEmpty) {
+          await upi.fetchupiIdView(
+            upi.bankdetails!.dATA![upi.indexss][1],
+            upi.bankdetails!.dATA![upi.indexss][2],
+          );
+        }
 
         if (context.mounted) {
           if (decodedJson['key'] == "SME") {
             final ipoOrderbookData = SMEIPO.fromJson(decodedJson);
-            await singlepage.smeipocategory();
+            await singlepage.smeipocategory(ipoOrderbookData);
             Navigator.pushNamed(
               context,
               Routes.applyIPO,
@@ -435,7 +439,7 @@ class _IPODetailsContainer extends StatelessWidget {
             );
           } else {
             final ipoOrderbookData = MainIPO.fromJson(decodedJson);
-            await singlepage.mainipocategory();
+            await singlepage.mainipocategory(ipoOrderbookData);
             Navigator.pushNamed(
               context,
               Routes.applyIPO,

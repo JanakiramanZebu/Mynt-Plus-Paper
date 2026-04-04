@@ -64,9 +64,18 @@ class _PnlStatsSummaryContentState extends State<_PnlStatsSummaryContent> {
     if (widget.data.journal != null) {
       for (final j in widget.data.journal!) {
         DateTime? date;
+        final raw = j.tRADEDATE ?? '';
         try {
-          date = DateTime.parse(j.tRADEDATE ?? '');
+          date = DateTime.parse(raw);
         } catch (_) {}
+        if (date == null) {
+          for (final fmt in ['dd-MM-yyyy', 'dd/MM/yyyy', 'MM-dd-yyyy']) {
+            try {
+              date = DateFormat(fmt).parse(raw);
+              break;
+            } catch (_) {}
+          }
+        }
         final pnl = double.tryParse(j.realisedpnl ?? '0') ?? 0;
         if (date != null) list.add(_DailyPnl(date: date, pnl: pnl));
       }
@@ -238,7 +247,7 @@ class _PnlStatsSummaryContentState extends State<_PnlStatsSummaryContent> {
       BuildContext context, Map<String, dynamic> s) {
     final winRate = s['Win Rate'] is num
         ? '${(s['Win Rate'] * 100).toStringAsFixed(1)}%'
-        : '${s['Win Rate'] ?? 'N/A'}';
+        : '${s['Win Rate'] ?? '0.00'}';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -267,15 +276,15 @@ class _PnlStatsSummaryContentState extends State<_PnlStatsSummaryContent> {
           const SizedBox(height: 12),
           _row3(
               context,
-              "TRADING DAYS", '${s['Trading Days'] ?? 'N/A'}',
-              "WIN DAYS",     '${s['Win Days'] ?? 'N/A'}',
-              "LOSS DAYS",    '${s['Loss Days'] ?? 'N/A'}'),
+              "TRADING DAYS", _fmtInt(s['Trading Days']),
+              "WIN DAYS",     _fmtInt(s['Win Days']),
+              "LOSS DAYS",    _fmtInt(s['Loss Days'])),
           const SizedBox(height: 14),
           _row3(
               context,
               "WIN RATE",    winRate,
-              "WIN STREAK",  '${s['Winning Streak Days'] ?? 'N/A'} days',
-              "LOSS STREAK", '${s['Losing Streak Days'] ?? 'N/A'} days'),
+              "WIN STREAK",  '${_fmtInt(s['Winning Streak Days'])} days',
+              "LOSS STREAK", '${_fmtInt(s['Losing Streak Days'])} days'),
           const SizedBox(height: 20),
           _secHead(context, "P&L Metrics"),
           const SizedBox(height: 12),
@@ -322,7 +331,8 @@ class _PnlStatsSummaryContentState extends State<_PnlStatsSummaryContent> {
 
   Widget _cell(BuildContext context, String label, String value) {
     final neg = value.startsWith('-');
-    final numVal = double.tryParse(value.replaceAll('₹', '').trim());
+    final numVal = double.tryParse(
+        value.replaceAll('₹', '').replaceAll(',', '').trim());
     final isProfit =
         !neg && numVal != null && numVal > 0 && value.contains('.');
     Color? col;
@@ -359,10 +369,15 @@ class _PnlStatsSummaryContentState extends State<_PnlStatsSummaryContent> {
     );
   }
 
-  String _fmt(dynamic v) {
-    if (v == null) return 'N/A';
-    final n = double.tryParse(v.toString()) ?? 0;
-    return n.toStringAsFixed(2);
+  String _fmt(dynamic value) {
+    final d = value is num ? value.toDouble() : double.tryParse('$value') ?? 0.0;
+    final prefix = d < 0 ? '-₹' : '₹';
+    return '$prefix${NumberFormat('#,##,##0.00', 'en_IN').format(d.abs())}';
+  }
+
+  String _fmtInt(dynamic value) {
+    final n = num.tryParse('$value') ?? 0;
+    return NumberFormat('#,##,##0', 'en_IN').format(n);
   }
 }
 

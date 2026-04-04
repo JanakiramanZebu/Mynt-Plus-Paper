@@ -39,6 +39,7 @@ class CalenderpnlModel {
       dateWise = json['dateWise'];
       symbolWise = json['symbolWise'];
       stat = json['stat'];
+      summary = json['summary'];
       
       data = <TradeData>[];
       
