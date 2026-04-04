@@ -326,6 +326,58 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     return ((input / interval).round() * interval);
   }
 
+  /// Handles keyboard up/down arrow to increment/decrement a price field by tick size.
+  /// Returns [KeyEventResult.handled] if the key was consumed, [KeyEventResult.ignored] otherwise.
+  KeyEventResult _handlePriceArrowKey(KeyEvent event, TextEditingController ctrl) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    if (tik <= 0) return KeyEventResult.ignored;
+
+    final isUp = event.logicalKey == LogicalKeyboardKey.arrowUp;
+    final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+    if (!isUp && !isDown) return KeyEventResult.ignored;
+
+    // Skip if field contains non-numeric text (e.g. "Market"), but allow empty (treat as 0)
+    if (ctrl.text.isNotEmpty && double.tryParse(ctrl.text) == null) return KeyEventResult.ignored;
+
+    final current = double.tryParse(ctrl.text) ?? 0;
+    double newVal = isUp ? current + tik : current - tik;
+    if (newVal < 0) newVal = 0;
+    // Round to tick size to avoid floating point drift
+    newVal = roundOffWithInterval(newVal, tik);
+    final formatted = newVal.toStringAsFixed(2);
+    ctrl.text = formatted;
+    ctrl.selection = TextSelection.collapsed(offset: formatted.length);
+    setState(() {
+      if (ctrl == priceCtrl) {
+        ordPrice = formatted;
+      }
+      if (ctrl == priceCtrl || ctrl == triggerPriceCtrl) {
+        _debouncedMarginUpdate();
+      }
+    });
+    return KeyEventResult.handled;
+  }
+
+  /// Handles keyboard up/down arrow to increment/decrement qty by 1 (stocks only).
+  KeyEventResult _handleQtyArrowKey(KeyEvent event, TextEditingController ctrl) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    if (!_isStock) return KeyEventResult.ignored;
+
+    final isUp = event.logicalKey == LogicalKeyboardKey.arrowUp;
+    final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
+    if (!isUp && !isDown) return KeyEventResult.ignored;
+
+    final current = int.tryParse(ctrl.text) ?? 0;
+    int newVal = isUp ? current + 1 : current - 1;
+    if (newVal < 1) newVal = 1;
+    ctrl.text = newVal.toString();
+    ctrl.selection = TextSelection.collapsed(offset: ctrl.text.length);
+    setState(() {
+      _debouncedMarginUpdate();
+    });
+    return KeyEventResult.handled;
+  }
+
   Map userOrderPreference = {};
   bool isUserOrderPreferenceAvailable = false;
   final GlobalKey<TooltipState> tooltipKey = GlobalKey<TooltipState>();
@@ -2284,7 +2336,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ]),
                                                   ),
                                                   const SizedBox(height: 10),
-                                                  SizedBox(
+                                                  Focus(
+                                                    onKeyEvent: (node, event) => _handleQtyArrowKey(event, orderInput.qtyCtrl),
+                                                    child: SizedBox(
                                                       height: 40,
                                                       child: Semantics(
                                                         identifier:
@@ -2420,6 +2474,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               }
                                                             }),
                                                       )),
+                                                  ),
                                                   if (_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
                                                     Padding(
                                                       padding: const EdgeInsets.only(top: 4),
@@ -2478,7 +2533,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         ),
                                                       ]),
                                                   const SizedBox(height: 10),
-                                                  SizedBox(
+                                                  Focus(
+                                                    onKeyEvent: (node, event) => _handlePriceArrowKey(event, orderInput.priceCtrl),
+                                                    child: SizedBox(
                                                       height: 40,
                                                       // width: 150,
                                                       child: Semantics(
@@ -2662,6 +2719,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     TextAlign
                                                                         .start),
                                                       )),
+                                                  ),
                                                 ]))
                                           ])),
                                   const SizedBox(height: 16),
@@ -3010,7 +3068,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       ]),
                                                     ),
                                                     const SizedBox(height: 10),
-                                                    SizedBox(
+                                                    Focus(
+                                                      onKeyEvent: (node, event) => _handleQtyArrowKey(event, orderInput.ocoQtyCtrl),
+                                                      child: SizedBox(
                                                         height: 40,
                                                         width: 200,
                                                         child: Semantics(
@@ -3152,6 +3212,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 }
                                                               }),
                                                         )),
+                                                    ),
                                                     if (_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
                                                       Padding(
                                                         padding: const EdgeInsets.only(top: 4),
@@ -3211,7 +3272,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           ),
                                                         ]),
                                                     const SizedBox(height: 10),
-                                                    SizedBox(
+                                                    Focus(
+                                                      onKeyEvent: (node, event) => _handlePriceArrowKey(event, orderInput.ocoPriceCtrl),
+                                                      child: SizedBox(
                                                         height: 40,
                                                         width: 200,
                                                         child: Semantics(
@@ -3367,7 +3430,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   textAlign:
                                                                       TextAlign
                                                                           .start),
-                                                        ))
+                                                        )),
+                                                    ),
                                                   ]))
                                             ])),
 
@@ -4131,7 +4195,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         // )
                                                       ]),
                                                   const SizedBox(height: 10),
-                                                  SizedBox(
+                                                  Focus(
+                                                    onKeyEvent: (node, event) => _handleQtyArrowKey(event, qtyCtrl),
+                                                    child: SizedBox(
                                                     height: 40,
                                                     width: 200,
                                                     child: Semantics(
@@ -4405,6 +4471,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       ),
                                                     ),
                                                   ),
+                                                  ),
                                                   // if (widget.scripInfo.frzqty != null) ...[
                                                   //         const SizedBox(height: 8),
                                                   //         Text("Frz Qty : $frezQty",
@@ -4518,7 +4585,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         ]),
                                                   ),
                                                   const SizedBox(height: 10),
-                                                  SizedBox(
+                                                  Focus(
+                                                    onKeyEvent: (node, event) => _handlePriceArrowKey(event, priceCtrl),
+                                                    child: SizedBox(
                                                       height: 40,
                                                       width: 200,
                                                       child: Semantics(
@@ -4632,6 +4701,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     TextAlign
                                                                         .start),
                                                       )),
+                                                  ),
                                                   // const SizedBox(height: 8),
                                                   // Text(
                                                   //     "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
@@ -6984,7 +7054,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                 //                                                   light: MyntColors.textPrimary))),
               ],),
               const SizedBox(height: 10),
-              SizedBox(
+              Focus(
+                onKeyEvent: (node, event) => _handlePriceArrowKey(event, triggerPriceCtrl),
+                child: SizedBox(
                   height: 40,
                   width: 200,
                   child: Semantics(
@@ -7045,6 +7117,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         controller: triggerPriceCtrl,
                         textAlign: TextAlign.start),
                   )),
+              ),
               // const SizedBox(height: 8),
               // Text(
               //     "Your order will be executed after a stock crosses this trigger price set for you",
