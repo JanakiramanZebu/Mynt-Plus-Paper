@@ -389,7 +389,7 @@ class _IPODetailsContainer extends StatelessWidget {
         if (context.mounted) {
           if (decodedJson['key'] == "SME") {
             final ipoOrderbookData = SMEIPO.fromJson(decodedJson);
-            await singlepage.smeipocategory();
+            await singlepage.smeipocategory(ipoOrderbookData);
             Navigator.pushNamed(
               context,
               Routes.applyIPO,
@@ -397,7 +397,7 @@ class _IPODetailsContainer extends StatelessWidget {
             );
           } else {
             final ipoOrderbookData = MainIPO.fromJson(decodedJson);
-            await singlepage.mainipocategory();
+            await singlepage.mainipocategory(ipoOrderbookData);
             Navigator.pushNamed(
               context,
               Routes.applyIPO,
