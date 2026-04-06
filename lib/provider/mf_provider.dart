@@ -85,6 +85,15 @@ class MFProvider extends DefaultChangeNotifier {
   MfPlaceOrderResponces? _mfPlaceOrderResponces;
   MfPlaceOrderResponces? get mfPlaceOrderResponces => _mfPlaceOrderResponces;
 
+  void setMfPlaceOrderFromSip(String orderId, String orderVal) {
+    _mfPlaceOrderResponces = MfPlaceOrderResponces(
+      orderId: orderId,
+      orderVal: orderVal,
+      stat: 'Ok',
+    );
+    notifyListeners();
+  }
+
   BestMFModel? _bestMFModel;
   BestMFModel? get bestMFModel => _bestMFModel;
 
@@ -2845,7 +2854,7 @@ class MFProvider extends DefaultChangeNotifier {
       String amt,
       String noofinstallment,
       String enddate,
-      String mandateId, [bool isAdditional = false]) async {
+      String mandateId, [bool isAdditional = false, bool firstInstallment = false]) async {
     try {
       // Debug print before API call
       print("=== CALLING SIP SETUP API ===");
@@ -2862,7 +2871,7 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
-          freqtype, amt, noofinstallment, endDate, mandateId, isAdditional);
+          freqtype, amt, noofinstallment, endDate, mandateId, isAdditional, firstInstallment);
 
       // Debug print after API call
       print("=== SIP SETUP API RESPONSE RECEIVED ===");

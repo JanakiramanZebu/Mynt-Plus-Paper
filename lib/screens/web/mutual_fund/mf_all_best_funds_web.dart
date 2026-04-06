@@ -1027,6 +1027,7 @@ class _SaveTaxesScreenWebState extends ConsumerState<SaveTaxesScreenWeb>
     // Show dialog immediately - data will load inside MFOrderScreen's initState
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Dialog(
         backgroundColor: resolveThemeColor(context,
             dark: MyntColors.backgroundColorDark,

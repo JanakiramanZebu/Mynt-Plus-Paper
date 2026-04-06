@@ -602,6 +602,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     // Show order dialog
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         final isDark = ref.read(themeProvider).isDarkMode;
         return Dialog(
