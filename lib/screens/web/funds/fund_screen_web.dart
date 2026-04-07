@@ -778,16 +778,15 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       final dialogShownRef = <bool>[false];
       
       // Create JavaScript callback functions
-      final handler = _allowInterop((dynamic response) {
+      final handler = _allowInterop((dynamic response) async {
         // Payment success callback
         // Note: Razorpay modal closes automatically on success
         final responseMap = Map<String, dynamic>.from(response as Map);
         final paymentId = responseMap['razorpay_payment_id']?.toString() ?? '';
         if (paymentId.isNotEmpty) {
-          // Handle success - fetch status
-          fundRef.fetchrazorpayStatus(paymentId);
-          
-          // Show success dialog immediately after fetching status
+          // Await status fetch so razorpayTranstationRes is populated before dialog builds
+          await fundRef.fetchrazorpayStatus(paymentId);
+ // Show success dialog immediately after fetching status
           if (mounted) {
             final currentTheme = ref.read(themeProvider);
             final currentColors = colors;
@@ -1139,6 +1138,7 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
       fund.fetchrazorpayStatus("${response.paymentId}");
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) => RazorpaySuccessUi(amount: fund.amount.text),
       );
       fund.amount.clear();
@@ -1272,15 +1272,41 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                               : WebColors.textPrimary,
                         ),
                       ),
+                      if (transactionRes?.createdAt != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            DateFormat('EEE MMM dd yyyy HH:mm:ss').format(
+                              DateTime.fromMillisecondsSinceEpoch(transactionRes!.createdAt! * 1000),
+                            ),
+                            style: WebTextStyles.sub(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textSecondary
+                                  : WebColors.textSecondary,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 24),
-                      if (transactionRes?.id != null)
-                        _buildDetailRow("Payment ID", transactionRes!.id!, theme, colors),
-                      if (transactionRes?.orderId != null)
-                        _buildDetailRow("Order ID", transactionRes!.orderId!, theme, colors),
-                      if (transactionRes?.bank != null)
-                        _buildDetailRow("Bank", transactionRes!.bank!, theme, colors),
-                      if (transactionRes?.method != null)
-                        _buildDetailRow("Payment Method", transactionRes!.method!.toUpperCase(), theme, colors),
+                      if (transactionRes?.method == "netbanking") ...[
+                        if (transactionRes?.notes?.bankname != null && transactionRes!.notes!.bankname!.isNotEmpty)
+                          _buildDetailRow("Bank Name", transactionRes.notes!.bankname!, theme, colors),
+                        if (transactionRes?.notes?.accNo != null && transactionRes!.notes!.accNo!.isNotEmpty)
+                          _buildDetailRow("A/c No", transactionRes.notes!.accNo!, theme, colors),
+                        if (transactionRes?.id != null)
+                          _buildDetailRow("Payment ID", transactionRes!.id!, theme, colors),
+                        if (transactionRes?.acquirerData?.bankTransactionId != null)
+                          _buildDetailRow("Bank Transaction ID", transactionRes!.acquirerData!.bankTransactionId!, theme, colors),
+                      ] else ...[
+                        if (transactionRes?.id != null)
+                          _buildDetailRow("Payment ID", transactionRes!.id!, theme, colors),
+                        if (transactionRes?.orderId != null)
+                          _buildDetailRow("Order ID", transactionRes!.orderId!, theme, colors),
+                        if (transactionRes?.bank != null)
+                          _buildDetailRow("Bank", transactionRes!.bank!, theme, colors),
+                        if (transactionRes?.method != null)
+                          _buildDetailRow("Payment Method", transactionRes!.method!.toUpperCase(), theme, colors),
+                      ],
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,

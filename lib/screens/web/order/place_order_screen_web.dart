@@ -57,6 +57,8 @@ import 'package:mynt_plus/utils/safe_parse.dart';
 import 'package:mynt_plus/models/marketwatch_model/linked_scrips.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:mynt_plus/utils/overlay_manager.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
+import 'package:mynt_plus/routes/route_names.dart';
 
 // InheritedWidget to pass close callback to child widgets
 class _PlaceOrderDialogCloseNotifier extends InheritedWidget {
@@ -905,35 +907,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   }
 
   void openFunds(String pageis, BuildContext context) {
-    if (!kIsWeb) {
-      showResponsiveWarningMessage(
-          context, "This feature is only available on web");
-      return;
-    }
-
-    try {
-      final pref = locator<Preferences>();
-      String? uid = pref.clientId;
-      String? stoken = pref.token;
-
-      // Check if credentials are missing
-      if (uid == null || uid.isEmpty || stoken == null || stoken.isEmpty) {
-        showResponsiveWarningMessage(context, "Please login to continue");
-        return;
-      }
-
-      // Construct URL based on page type
-      String url;
-      if (pageis == 'fund') {
-        url = 'https://fund.zebuetrade.com?uid=$uid&token=$stoken';
-      } else {
-        url = 'https://fund.zebuetrade.com/withdrawal?uid=$uid&token=$stoken';
-      }
-      html.window.open(url, '_blank');
-    } catch (e) {
-      print("Error opening fund page: $e");
-      showResponsiveWarningMessage(
-          context, "Error opening fund page. Please try again.");
+    if (WebNavigationHelper.isAvailable) {
+      WebNavigationHelper.navigateTo(Routes.fundscreen);
     }
   }
 
