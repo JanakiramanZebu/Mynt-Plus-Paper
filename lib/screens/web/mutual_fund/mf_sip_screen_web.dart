@@ -492,15 +492,18 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreenWeb>
                                             color: _getStatusColor(item.status, theme).withValues(alpha: 0.12),
                                             borderRadius: BorderRadius.circular(4),
                                           ),
-                                          child: Text(
-                                            _getStatusText(item.status).toUpperCase(),
-                                            style: MyntWebTextStyles.bodySmall(
-                                              context,
-                                              color: _getStatusColor(item.status, theme),
-                                              fontWeight: MyntFonts.medium,
+                                          child: Tooltip(
+                                            message: _getStatusText(item.status).toUpperCase(),
+                                            child: Text(
+                                              _getStatusText(item.status).toUpperCase(),
+                                              style: MyntWebTextStyles.bodySmall(
+                                                context,
+                                                color: _getStatusColor(item.status, theme),
+                                                fontWeight: MyntFonts.medium,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                             ),
-                                            overflow: TextOverflow.visible,
-                                            softWrap: false,
                                           ),
                                         ),
                                       ),
@@ -822,15 +825,18 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreenWeb>
                                             color: _getStatusColor(item.status, theme).withValues(alpha: 0.12),
                                             borderRadius: BorderRadius.circular(4),
                                           ),
-                                          child: Text(
-                                            _getStatusText(item.status).toUpperCase(),
-                                            style: MyntWebTextStyles.bodySmall(
-                                              context,
-                                              color: _getStatusColor(item.status, theme),
-                                              fontWeight: MyntFonts.medium,
+                                          child: Tooltip(
+                                            message: _getStatusText(item.status).toUpperCase(),
+                                            child: Text(
+                                              _getStatusText(item.status).toUpperCase(),
+                                              style: MyntWebTextStyles.bodySmall(
+                                                context,
+                                                color: _getStatusColor(item.status, theme),
+                                                fontWeight: MyntFonts.medium,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                             ),
-                                            overflow: TextOverflow.visible,
-                                            softWrap: false,
                                           ),
                                         ),
                                       ),
@@ -1299,14 +1305,22 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreenWeb>
                     _closePopover();
                     showDialog(
                       context: context,
+                      barrierDismissible: false,
                       builder: (BuildContext context) {
-                        return MfSipCancelalertWeb(
-                          mfcancels: item.name ?? "",
-                          mforderno: item.sIPRegnNo ?? "",
-                          mfscode: item.schemeCode ?? "",
-                          message: "pause",
-                          mffreqtype: item.frequencyType ?? "",
-                          mfnextsipdate: item.NextSIPDate ?? "",
+                        return Dialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: SizedBox(
+                            width: (MediaQuery.of(context).size.width * 0.30).clamp(380.0, 460.0),
+                            child: MfSipCancelalertWeb(
+                              mfcancels: item.name ?? "",
+                              mforderno: item.sIPRegnNo ?? "",
+                              mfscode: item.schemeCode ?? "",
+                              message: "pause",
+                              mffreqtype: item.frequencyType ?? "",
+                              mfnextsipdate: item.NextSIPDate ?? "",
+                            ),
+                          ),
                         );
                       },
                     );
@@ -1327,14 +1341,22 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreenWeb>
                     _closePopover();
                     showDialog(
                       context: context,
+                      barrierDismissible: false,
                       builder: (BuildContext context) {
-                        return MfSipCancelalertWeb(
-                          mfcancels: item.name ?? "",
-                          mforderno: item.sIPRegnNo ?? "",
-                          mfscode: item.schemeCode ?? "",
-                          message: "sip",
-                          mffreqtype: item.frequencyType ?? "",
-                          mfnextsipdate: item.NextSIPDate ?? "",
+                        return Dialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: SizedBox(
+                            width: (MediaQuery.of(context).size.width * 0.30).clamp(380.0, 460.0),
+                            child: MfSipCancelalertWeb(
+                              mfcancels: item.name ?? "",
+                              mforderno: item.sIPRegnNo ?? "",
+                              mfscode: item.schemeCode ?? "",
+                              message: "sip",
+                              mffreqtype: item.frequencyType ?? "",
+                              mfnextsipdate: item.NextSIPDate ?? "",
+                            ),
+                          ),
                         );
                       },
                     );

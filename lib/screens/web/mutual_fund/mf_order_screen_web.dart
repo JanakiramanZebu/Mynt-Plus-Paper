@@ -327,7 +327,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
         Text(
           "Scheme Type",
           style: MyntWebTextStyles.body(context,
-              fontWeight: MyntFonts.medium,
+              fontWeight: MyntFonts.semiBold,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimaryDark,
                   light: MyntColors.textPrimary)),
@@ -571,7 +571,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
               Text(
                 "Mandates",
                 style: MyntWebTextStyles.body(context,
-                    fontWeight: MyntFonts.medium,
+                    fontWeight: MyntFonts.semiBold,
                     color: resolveThemeColor(context,
                         dark: MyntColors.textPrimaryDark,
                         light: MyntColors.textPrimary)),
@@ -718,11 +718,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
       children: [
         Text(
           isLumpsum ? "Investment amount" : "Instalment amount",
-          style: MyntWebTextStyles.body(context,
-              fontWeight: MyntFonts.medium,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary)),
+           style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary)),
         ),
         const SizedBox(height: 10),
         MyntFormTextField(
@@ -1026,7 +1026,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
       await mfOrder.fetchXsipPlaceOrder(
         context,
         sipResolvedCode,
-        mfOrder.freqName == "Daily" ? "0" : mfOrder.dates,
+        mfOrder.freqName == "Daily" ? "0" : mfOrder.startDate,
         mfOrder.freqName,
         mfOrder.installmentAmt.text,
         mfOrder.invDuration.text,
@@ -1334,9 +1334,15 @@ class _SIPCalendarState extends State<_SIPCalendar> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(selectedYear, selectedMonth, day);
-    // Date must be at least 2 working days from today
+    // Date must be after 2 full working days from today
+    // e.g., if today is Mon 7th, 2 working days = Tue 8th & Wed 9th, so first allowed = Thu 10th
     final minDate = _addWorkingDays(today, 2);
-    return date.isBefore(minDate);
+    return !date.isAfter(minDate);
+  }
+
+  bool _isWeekend(int day) {
+    final date = DateTime(selectedYear, selectedMonth, day);
+    return date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
   }
 
   /// Returns the date that is [days] working days after [from],
@@ -1365,7 +1371,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
         .toList()
       ..sort();
     for (final day in sorted) {
-      if (!_isPastDate(day)) return day;
+      if (!_isPastDate(day) && !_isWeekend(day)) return day;
     }
     return null;
   }
@@ -1413,6 +1419,8 @@ class _SIPCalendarState extends State<_SIPCalendar> {
                             selectedMonth = month;
                             if (selectedDate != null &&
                                 (_isPastDate(selectedDate!) ||
+                                    _isWeekend(selectedDate!) ||
+                                    !isDateAvailable(selectedDate!) ||
                                     selectedDate! > _daysInMonth())) {
                               selectedDate = _firstAvailableDate();
                             }
@@ -1498,6 +1506,8 @@ class _SIPCalendarState extends State<_SIPCalendar> {
                           selectedYear = year;
                           if (selectedDate != null &&
                               (_isPastDate(selectedDate!) ||
+                                  _isWeekend(selectedDate!) ||
+                                  !isDateAvailable(selectedDate!) ||
                                   selectedDate! > _daysInMonth())) {
                             selectedDate = _firstAvailableDate();
                           }
@@ -1859,8 +1869,9 @@ class _SIPCalendarState extends State<_SIPCalendar> {
   Widget _buildDayBox(BuildContext context, int day) {
     final bool isAvailable = isDateAvailable(day);
     final bool isPast = _isPastDate(day);
+    final bool isWeekend = _isWeekend(day);
     final bool isSelected = selectedDate == day;
-    final bool isSelectable = isAvailable && !isPast;
+    final bool isSelectable = isAvailable && !isPast && !isWeekend;
     final bool isDark = widget.theme.isDarkMode;
 
     Color bgColor;

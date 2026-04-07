@@ -14,6 +14,7 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/global_font_web.dart';
 // import '../../../sharedWidget/custom_drag_handler.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 
 class mfSipdetScrenWeb extends StatefulWidget {
@@ -293,42 +294,36 @@ class _mfSipdetScrenWeb extends State<mfSipdetScrenWeb>
   Widget _buildPauseButton(
       BuildContext context, dynamic mfdata, dynamic theme) {
     return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
+      height: 44,
+      child: MyntOutlinedButton(
+        label: "Pause",
         onPressed: () async {
-          await showDialog(
+          final result = await showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (BuildContext context) {
-              return MfSipCancelalertWeb(
-                  mfcancels: widget.data?.name ?? "",
-                  mforderno: widget.data?.sIPRegnNo ?? "",
-                  mfscode: widget.data?.schemeCode ?? "",
-                  message: "pause",
-                  mffreqtype: widget.data?.frequencyType ?? "",
-                  mfnextsipdate: widget.data?.NextSIPDate ?? "");
+              return Dialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: (MediaQuery.of(context).size.width * 0.30).clamp(380.0, 460.0),
+                  child: MfSipCancelalertWeb(
+                    mfcancels: widget.data?.name ?? "",
+                    mforderno: widget.data?.sIPRegnNo ?? "",
+                    mfscode: widget.data?.schemeCode ?? "",
+                    message: "pause",
+                    mffreqtype: widget.data?.frequencyType ?? "",
+                    mfnextsipdate: widget.data?.NextSIPDate ?? "",
+                  ),
+                ),
+              );
             },
           );
+          if (result == true && context.mounted) Navigator.pop(context);
         },
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          side: BorderSide(
-            color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-            width: 1,
-          ),
-          minimumSize: const Size(double.infinity, 45),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
-        child: TextWidget.subText(
-            align: TextAlign.center,
-            text: "Pause",
-            color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-            textOverflow: TextOverflow.ellipsis,
-            theme: theme.isDarkMode,
-            fw: 2),
+        isFullWidth: true,
+        textColor: resolveThemeColor(context,
+            dark: MyntColors.textWhite, light: MyntColors.primary),
       ),
     );
   }
@@ -336,38 +331,34 @@ class _mfSipdetScrenWeb extends State<mfSipdetScrenWeb>
   Widget _buildCancelButton(
       BuildContext context, dynamic mfdata, dynamic theme) {
     return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
+      height: 44,
+      child: MyntPrimaryButton(
+        label: "Cancel SIP",
         onPressed: () async {
-          await showDialog(
+          final result = await showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (BuildContext context) {
-              return MfSipCancelalertWeb(
-                  mfcancels: widget.data?.name ?? "",
-                  mforderno: widget.data?.sIPRegnNo ?? "",
-                  mfscode: widget.data?.schemeCode ?? "",
-                  message: "sip",
-                  mffreqtype: widget.data?.frequencyType ?? "",
-                  mfnextsipdate: widget.data?.NextSIPDate ?? "");
+              return Dialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: (MediaQuery.of(context).size.width * 0.30).clamp(380.0, 460.0),
+                  child: MfSipCancelalertWeb(
+                    mfcancels: widget.data?.name ?? "",
+                    mforderno: widget.data?.sIPRegnNo ?? "",
+                    mfscode: widget.data?.schemeCode ?? "",
+                    message: "sip",
+                    mffreqtype: widget.data?.frequencyType ?? "",
+                    mfnextsipdate: widget.data?.NextSIPDate ?? "",
+                  ),
+                ),
+              );
             },
           );
+          if (result == true && context.mounted) Navigator.pop(context);
         },
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor:
-              theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-          minimumSize: const Size(double.infinity, 45),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
-        child: TextWidget.subText(
-            align: TextAlign.center,
-            text: "Cancel SIP",
-            color: colors.colorWhite,
-            textOverflow: TextOverflow.ellipsis,
-            theme: theme.isDarkMode,
-            fw: 2),
+        isFullWidth: true,
       ),
     );
   }

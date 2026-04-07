@@ -1,21 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
-// import 'package:mynt_plus/models/fund_model_testing_copy/fund_direct_payment_model.dart';
-// import 'package:mynt_plus/models/mf_model/mf_order_det_model.dart';
-// import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
-// import '../../../models/ipo_model/ipo_place_order_model.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/global_state_text.dart';
-import '../../../res/res.dart';
+import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
 
-class MfSipCancelalertWeb extends ConsumerWidget {
+class MfSipCancelalertWeb extends ConsumerStatefulWidget {
   final String mfcancels;
   final String message;
   final String mforderno;
@@ -33,404 +28,458 @@ class MfSipCancelalertWeb extends ConsumerWidget {
     required this.mfscode,
   });
 
+  @override
+  ConsumerState<MfSipCancelalertWeb> createState() =>
+      _MfSipCancelalertWebState();
+}
+
+class _MfSipCancelalertWebState extends ConsumerState<MfSipCancelalertWeb> {
   /// Safely parse max installments with error handling
   String _getMaxInstallments(MFProvider mfData) {
     try {
-      final maxInstallments = mfData.mfSIPModel?.data?.first.pAUSEMAXIMUMINSTALLMENTS;
+      final maxInstallments =
+          mfData.mfSIPModel?.data?.first.pAUSEMAXIMUMINSTALLMENTS;
       if (maxInstallments == null || maxInstallments.isEmpty) {
         return "0";
       }
       return double.parse(maxInstallments).toStringAsFixed(0);
     } catch (e) {
-      print("Error parsing max installments: $e");
       return "0";
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
-    final isDarkMode = theme.isDarkMode;
 
-    // Safe access with defaults
-    final schemeName = mfcancels.isNotEmpty ? mfcancels : "this mutual fund";
-    final orderNo = mforderno.isNotEmpty ? mforderno : "";
-    final freqType = mffreqtype.isNotEmpty ? mffreqtype : "";
-    final nextSipDate = mfnextsipdate.isNotEmpty ? mfnextsipdate : "";
-    final scode = mfscode.isNotEmpty ? mfscode : "";
-    final isPause = message == 'pause';
+    final schemeName =
+        widget.mfcancels.isNotEmpty ? widget.mfcancels : "this mutual fund";
+    final orderNo = widget.mforderno.isNotEmpty ? widget.mforderno : "";
+    final freqType = widget.mffreqtype.isNotEmpty ? widget.mffreqtype : "";
+    final nextSipDate =
+        widget.mfnextsipdate.isNotEmpty ? widget.mfnextsipdate : "";
+    final scode = widget.mfscode.isNotEmpty ? widget.mfscode : "";
+    final isPause = widget.message == 'pause';
 
-    return AlertDialog(
-      backgroundColor:
-          theme.isDarkMode ? const Color(0xFF121212) : const Color(0xFFF1F3F8),
-      titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8))),
-      scrollable: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 12,
-      ),
-      actionsPadding:
-          const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-      title: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  onTap: () async {
-                    await Future.delayed(const Duration(milliseconds: 150));
-                    mfData.cleartext();
-                    mfData.rejectsip.text = "";
-                    mfData.pausesip.text = "";
-                    Navigator.pop(context);
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  splashColor: theme.isDarkMode
-                      ? colors.splashColorDark
-                      : colors.splashColorLight,
-                  highlightColor: theme.isDarkMode
-                      ? colors.splashColorDark
-                      : colors.splashColorLight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 22,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
+          border: Border.all(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
           ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Center(
-              child: TextWidget.subText(
-                align: TextAlign.center,
-                text:
-                    "Are you sure you want to ${isPause ? "Pause" : "Cancel"} the ($schemeName) SIP order",
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textPrimaryLight,
-                fw: 0,
-              ),
-            ),
-          ),
-        ],
-      ),
-      content: SizedBox(
-        width: MediaQuery.of(context).size.width >= 1100
-            ? MediaQuery.of(context).size.width * 0.30
-            : MediaQuery.of(context).size.width * 0.90,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-          // Conditional UI based on action type
-          if (message == 'sip') ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: TextWidget.subText(
-                  text: "Cancel Reason",
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 0,
+            // Header
+            _buildHeader(context, theme, mfData, isPause),
+
+            // Content
+            Flexible(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Confirmation message
+                    Center(
+                      child: Text(
+                        "Are you sure you want to ${isPause ? "Pause" : "Cancel"} the ($schemeName) SIP order",
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(context,
+                      fontWeight: MyntFonts.medium,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Cancel reason dropdown
+                    if (widget.message == 'sip') ...[
+                      Text(
+                        "Cancel Reason",
+                         style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary)),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildReasonDropdown(context, mfData),
+                    ],
+
+                    // Pause installments field
+                    if (isPause) ...[
+                      Text(
+                        "No of installments to pause (Range: 1-${_getMaxInstallments(mfData)})",
+                        style: MyntWebTextStyles.body(
+                          context,
+                          fontWeight: MyntFonts.medium,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      MyntFormTextField(
+                        controller: mfData.pausesip,
+                        placeholder: 'Enter number',
+                        height: 40,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        textStyle: MyntWebTextStyles.title(
+                          context,
+                          fontWeight: MyntFonts.medium,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textPrimary,
+                        ),
+                        onChanged: (value) {
+                          mfData.installmentDuration(value, context);
+                        },
+                      ),
+                      if (mfData.inpauseerror.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          mfData.inpauseerror,
+                          style: MyntWebTextStyles.para(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss),
+                          ),
+                        ),
+                      ],
+                    ],
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            _buildReasonDropdown(mfData, theme),
-            // const SizedBox(height: 5),
-          ],
 
-          if (isPause) ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: TextWidget.subText(
-                  text: "No of installments to pause (Range: 1-${_getMaxInstallments(mfData)})",
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 1,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            _buildPauseTextField(mfData, theme, context),
-            if(mfData.inpauseerror.isNotEmpty)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextWidget.paraText(
-                text: mfData.inpauseerror,
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.lossDark
-                    : colors.lossLight,
-                fw: 3,
-              ),
-            ),
-          ]
-        ],
-      ),
-      ),
-      actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // No button
-
-            // Yes button - SIP Cancel
-            if (message == 'sip')
-              Expanded(
-                child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      elevation: 0,
-                      minimumSize: const Size(0, 40), // width, height
-                      side: BorderSide(
-                          color:
-                              colors.btnOutlinedBorder), // Outline border color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      backgroundColor: colors.primaryDark,
-                    ),
-                    onPressed: () async {
-                      try {
-                        await mfData.cancelsiporder(context, orderNo, scode);
-                      } catch (e) {
-                        // Handle error silently
-                      }
-                    },
-                    child: _buildButtonContent(mfData, isDarkMode)),
-              ),
-
-            // Yes button - SIP Pause
-            if (isPause)
-              Expanded(
-                child: ElevatedButton(
-                    style: OutlinedButton.styleFrom(
-                      elevation: 0,
-                      minimumSize: const Size(0, 40), // width, height
-                      side: BorderSide(
-                          color:
-                              colors.btnOutlinedBorder), // Outline border color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      backgroundColor: colors.primaryDark,
-                    ),
-                    onPressed: mfData.inpauseerror.isNotEmpty && mfData.inpauseerror != "" ? (){} : () async {
-                      try {
-                        await mfData.pausesiporder(
-                            context, orderNo, freqType, nextSipDate, scode);
-                      } catch (e) {
-                        // Handle error silently
-                      }
-                    },
-                    child: _buildButtonContent(mfData, isDarkMode)),
-              )
+            // Footer button
+            _buildFooter(context, theme, mfData, isPause, orderNo, freqType,
+                nextSipDate, scode),
           ],
         ),
-      ],
+      ),
     );
   }
 
-  // Button content (loading indicator or text)
-  Widget _buildButtonContent(MFProvider mfData, bool isDarkMode) {
-    return mfData.loading == true
-        ? const SizedBox(
-            height: 15,
-            width: 15,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.0,
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(Color.fromARGB(99, 48, 48, 48)),
-              backgroundColor: Color.fromARGB(255, 255, 255, 255),
+  Widget _buildHeader(BuildContext context, ThemesProvider theme,
+      MFProvider mfData, bool isPause) {
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            isPause ? 'SIP Pause' : 'SIP Cancel',
+            style: MyntWebTextStyles.title(
+              context,
+              fontWeight: MyntFonts.semiBold,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
             ),
-          )
-        : TextWidget.subText(
-            text: "Yes",
-            color: colors.colorWhite,
-            theme: false,
-            fw: 2,
-          );
+          ),
+          IconButton(
+            onPressed: () {
+              mfData.cleartext();
+              mfData.rejectsip.text = "";
+              mfData.pausesip.text = "";
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.close,
+              size: 20,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.iconSecondaryDark,
+                  light: MyntColors.iconSecondary),
+            ),
+            splashRadius: 20,
+          ),
+        ],
+      ),
+    );
   }
 
-  // SIP Cancel reason dropdown
-  Widget _buildReasonDropdown(MFProvider mfData, ThemesProvider theme) {
-    final isDarkMode = theme.isDarkMode;
+  /// Get the selected reason name for display
+  String _getSelectedReasonName(MFProvider mfData) {
+    if (mfData.droupreason.isEmpty ||
+        mfData.mfrejectsiplist == null ||
+        mfData.mfrejectsiplist!.isEmpty) {
+      return '';
+    }
+    final match = mfData.mfrejectsiplist!
+        .cast<Map<String, dynamic>>()
+        .where((item) => item["id"] == mfData.droupreason);
+    if (match.isNotEmpty) {
+      return match.first["reason_name"] as String? ?? '';
+    }
+    return '';
+  }
+
+  void _showReasonPopover(BuildContext btnContext, MFProvider mfData) {
+    final btnWidth = (btnContext.findRenderObject() as RenderBox).size.width;
     final hasReasonList =
         mfData.mfrejectsiplist != null && mfData.mfrejectsiplist!.isNotEmpty;
+    if (!hasReasonList) return;
 
-    return Column(
-      children: [
-        DropdownButtonHideUnderline(
-          child: DropdownButton2<String>(
-            isExpanded: true,
-            value: hasReasonList &&
-                    mfData.mfrejectsiplist!
-                        .any((item) => item["id"] == mfData.droupreason)
-                ? mfData.droupreason
-                : null,
-            menuItemStyleData: MenuItemStyleData(
-              customHeights: hasReasonList
-                  ? List.filled(mfData.mfrejectsiplist!.length, 50.0)
-                  : [],
-            ),
-            buttonStyleData: ButtonStyleData(
-              height: 40,
-              decoration: BoxDecoration(
-                  border: Border.all(color: colors.colorBlue),
-                color: theme.isDarkMode
-                    ? colors.darkGrey
-                    : const Color(0xffF1F3F8),
-                borderRadius: const BorderRadius.all(Radius.circular(5)),
+    shadcn.showPopover(
+      context: btnContext,
+      alignment: Alignment.topCenter,
+      offset: const Offset(0, 4),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(btnContext).borderRadiusLg,
+      ),
+      builder: (popoverContext) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(popoverContext).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
               ),
-            ),
-            dropdownStyleData: DropdownStyleData(
-              maxHeight: 200,
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: theme.isDarkMode
-                    ? const Color(0xFF121212)
-                    : const Color(0xFFF1F3F8),
-              ),
-              offset: const Offset(0, 8),
-            ),
-            style: TextWidget.textStyle(
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fontSize: 16,
-              fw: 0,
-            ),
-            hint: TextWidget.subText(
-              text: mfData.sipreason,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0,
-            ),
-            items: hasReasonList
-                ? mfData.mfrejectsiplist!.map((item) {
-                    return DropdownMenuItem<String>(
-                      value: item["id"] as String?,
-                      child: Text(
-                        item["reason_name"] as String? ?? "",
-                        style: TextWidget.textStyle(
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fontSize: 12,
-                          fw: 0,
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(4),
+            child: SizedBox(
+              width: btnWidth - 8,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: mfData.mfrejectsiplist!.length,
+                  itemBuilder: (context, index) {
+                    final item = mfData.mfrejectsiplist![index];
+                    final isSelected = item["id"] == mfData.droupreason;
+
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          shadcn.closeOverlay(popoverContext);
+                          mfData.orderrejectupdate(item["id"] as String? ?? '');
+                          setState(() {});
+                        },
+                        splashColor: resolveThemeColor(context,
+                            dark: MyntColors.rippleDark,
+                            light: MyntColors.rippleLight),
+                        highlightColor: resolveThemeColor(context,
+                            dark: MyntColors.highlightDark,
+                            light: MyntColors.highlightLight),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.primary
+                                        .withValues(alpha: 0.1),
+                                    light: MyntColors.primary
+                                        .withValues(alpha: 0.06))
+                                : null,
+                          ),
+                          child: Text(
+                            item["reason_name"] as String? ?? "",
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: isSelected
+                                  ? MyntFonts.semiBold
+                                  : MyntFonts.medium,
+                              color: isSelected
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary)
+                                  : resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                            ),
+                          ),
                         ),
                       ),
                     );
-                  }).toList()
-                : [],
-            onChanged: (value) {
-              if (value != null) {
-                mfData.orderrejectupdate(value);
-              }
-            },
+                  },
+                ),
+              ),
+            ),
           ),
-        ),
-        if (mfData.droupreason == "13") ...[
-          const SizedBox(height: 10),
-          Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              height: 40,
-              child: CustomTextFormField(
-                textAlign: TextAlign.start,
-                fillColor:
-                    isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                hintText: 'Specify The Reason',
-                hintStyle: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                    fw: 0,
-                                    ),
-               style: TextWidget.textStyle(
-                                    fontSize: 16,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                  ),
-                textCtrl: mfData.rejectsip,
-              )),
-        ]
-      ],
+        );
+      },
     );
   }
 
-  // Pause SIP text field
-  Widget _buildPauseTextField(MFProvider mfData, ThemesProvider theme, BuildContext context) {
-    final isDarkMode = theme.isDarkMode;
+  Widget _buildReasonDropdown(BuildContext context, MFProvider mfData) {
+    final hasReasonList =
+        mfData.mfrejectsiplist != null && mfData.mfrejectsiplist!.isNotEmpty;
+    final selectedName = _getSelectedReasonName(mfData);
+    final hasSelection = selectedName.isNotEmpty;
 
     return Column(
       children: [
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          height: 44,
-          child: CustomTextFormField(
-            textAlign: TextAlign.start,
-            fillColor: isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-            inputFormate: [FilteringTextInputFormatter.digitsOnly],
-            style: TextWidget.textStyle(
-              theme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fontSize: 16,
-              fw: 0,
-            ),
-
-            // hintText: 'No of installments Passed (Range: 1-${_getMaxInstallments(mfData)})',
-            hintStyle: TextWidget.textStyle(
-              fontSize: 14,
-              theme: theme.isDarkMode,
-              color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-              fw: 0,
-            ),
-            textCtrl: mfData.pausesip,
-            keyboardType: TextInputType.number, // Show numeric keyboard
-            onChanged: (value) {
-              mfData.installmentDuration(value, context);
-            },
-          ),
+        Builder(
+          builder: (btnContext) {
+            return InkWell(
+              onTap: hasReasonList
+                  ? () => _showReasonPopover(btnContext, mfData)
+                  : null,
+              borderRadius: BorderRadius.circular(5),
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.outlinedBorder),
+                  ),
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.inputBgDark,
+                      light: const Color(0xfff5f5f5)),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        hasSelection ? selectedName : 'Select reason',
+                        style: MyntWebTextStyles.body(
+                          context,
+                          fontWeight: MyntFonts.medium,
+                          color: hasSelection
+                              ? resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary)
+                              : resolveThemeColor(context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
+        if (mfData.droupreason == "13") ...[
+          const SizedBox(height: 10),
+          MyntFormTextField(
+            controller: mfData.rejectsip,
+            placeholder: 'Specify The Reason',
+            height: 40,
+            textStyle: MyntWebTextStyles.body(
+              context,
+              fontWeight: MyntFonts.medium,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  Widget _buildFooter(
+    BuildContext context,
+    ThemesProvider theme,
+    MFProvider mfData,
+    bool isPause,
+    String orderNo,
+    String freqType,
+    String nextSipDate,
+    String scode,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
+          ),
+        ),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 40,
+        child: ElevatedButton(
+          onPressed: (isPause &&
+                  mfData.inpauseerror.isNotEmpty &&
+                  mfData.inpauseerror != "")
+              ? null
+              : () async {
+                  try {
+                    if (isPause) {
+                      await mfData.pausesiporder(
+                          context, orderNo, freqType, nextSipDate, scode);
+                    } else {
+                      await mfData.cancelsiporder(context, orderNo, scode);
+                    }
+                  } catch (e) {
+                    // Handle error silently
+                  }
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                theme.isDarkMode ? MyntColors.secondary : MyntColors.primary,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            elevation: 0,
+          ),
+          child: mfData.loading == true
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  'Cancel',
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: MyntColors.backgroundColor,
+                  ),
+                ),
+        ),
+      ),
+    );
   }
 }

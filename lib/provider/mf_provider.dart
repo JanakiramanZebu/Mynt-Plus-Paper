@@ -2044,6 +2044,57 @@ class MFProvider extends DefaultChangeNotifier {
             _dates = _dateList[0];
           }
 
+          // Ensure the selected date is at least 2 working days from today
+          final now = DateTime.now();
+          final todayDate = DateTime(now.year, now.month, now.day);
+          // Calculate minimum allowed date (2 working days from today, skipping weekends)
+          int addedDays = 0;
+          DateTime minAllowedDate = todayDate;
+          while (addedDays < 2) {
+            minAllowedDate = minAllowedDate.add(const Duration(days: 1));
+            if (minAllowedDate.weekday != DateTime.saturday &&
+                minAllowedDate.weekday != DateTime.sunday) {
+              addedDays++;
+            }
+          }
+          final selectedDay = int.tryParse(_dates) ?? 1;
+          final selectedDayDate = DateTime(now.year, _sipMonth, selectedDay);
+          // Date must be after 2 full working days and not a weekend
+          final isSelectedPast = !selectedDayDate.isAfter(minAllowedDate);
+          final isSelectedWeekend = selectedDayDate.weekday == DateTime.saturday ||
+              selectedDayDate.weekday == DateTime.sunday;
+          if (isSelectedPast || isSelectedWeekend) {
+            // Find the first available date from dateList that meets the minimum and is not a weekend
+            String? firstAvailable;
+            for (var d in _dateList) {
+              final day = int.tryParse(d.trim());
+              if (day != null) {
+                final dayDate = DateTime(now.year, _sipMonth, day);
+                final isDayWeekend = dayDate.weekday == DateTime.saturday ||
+                    dayDate.weekday == DateTime.sunday;
+                if (dayDate.isAfter(minAllowedDate) && !isDayWeekend) {
+                  firstAvailable = d.trim();
+                  break;
+                }
+              }
+            }
+            // If no available date in current month, move to next month
+            if (firstAvailable == null && _dateList.isNotEmpty) {
+              _sipMonth = now.month + 1 > 12 ? 1 : now.month + 1;
+              firstAvailable = _dateList[0].trim();
+            }
+            if (firstAvailable != null) {
+              _dates = firstAvailable;
+            }
+          }
+
+          // Set full start/end date based on resolved _dates and _sipMonth
+          final resolvedDay = int.tryParse(_dates) ?? 1;
+          final resolvedYear = _sipMonth < now.month ? now.year + 1 : now.year;
+          _startDate = "$resolvedDay/$_sipMonth/$resolvedYear";
+          _endsDate = DateTime(resolvedYear + 30, _sipMonth, resolvedDay - 1);
+          _endDate = "${_endsDate!.day}/${_endsDate!.month}/${_endsDate!.year}";
+
           _insAmt =
               "${_mfSIPModel!.data![indexToUse].sIPMINIMUMINSTALLMENTAMOUNT ?? 0.00}";
         }
@@ -2232,54 +2283,33 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   Future cancelsiporder(BuildContext context, orderno, scode) async {
-    // print("WWWWWW{${orderno},1111${siprefno},22222222!!${droupreason}!!,33333333${rejectsip.text}}");
     if (droupreason != "") {
       toggleLoadingOn(true);
       try {
-        toggleLoadingOn(true);
-        try {
-          toggleLoadingOn(true);
+        _mfsipcancelmess = await api.cancelsipapi(
+            orderno, droupreason, rejectsip.text, scode);
 
-          _mfsipcancelmess = await api.cancelsipapi(
-              orderno, droupreason, rejectsip.text, scode);
-          // print("@@@1111111111111111$_mfLumpSumOrderbook");
-          // Navigator.pop(context);
-          if (_mfsipcancelmess?.stat == "Not_Ok") {
-            toggleLoadingOn(false);
-            Navigator.pop(context);
-            warningMessage(context, "${_mfsipcancelmess?.bSERemarks}");
-            Navigator.pop(context);
-          }
-          if (_mfsipcancelmess?.stat == "Ok") {
-            fetchmfsiplist();
+        toggleLoadingOn(false);
 
-            toggleLoadingOn(false);
-            Navigator.pop(context);
-
-            successMessage(
-                context, "Sip successfully ${_mfsipcancelmess?.status}");
-            Navigator.pop(context);
-          }
-          fetchmfsiplist();
-        } catch (e) {
-          toggleLoadingOn(false);
+        if (_mfsipcancelmess?.stat == "Not_Ok") {
           Navigator.pop(context);
-          warningMessage(context, "Something Went Wrong");
-          log("Failed to Create Mandate :: ${e.toString()}");
+          warningMessage(context, "${_mfsipcancelmess?.bSERemarks}");
+        } else if (_mfsipcancelmess?.stat == "Ok") {
+          Navigator.pop(context, true);
+          successMessage(
+              context, "Sip successfully ${_mfsipcancelmess?.status}");
+        } else {
           Navigator.pop(context);
-          notifyListeners();
         }
+        fetchmfsiplist();
       } catch (e) {
         toggleLoadingOn(false);
         Navigator.pop(context);
         warningMessage(context, "Something Went Wrong");
-        log("Failed to fetchMfOrderbook :: ${e.toString()}");
-        notifyListeners();
+        log("Failed to cancel SIP :: ${e.toString()}");
       } finally {
         toggleLoadingOn(false);
-        // _mforderloader = false;
         notifyListeners();
-        // Navigator.pop(context);
       }
     } else {
       warningMessage(context, "SIP Reject Reason Is Required*");
@@ -2291,54 +2321,34 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future pausesiporder(
       BuildContext context, orderno, freqty, nxtdate, scode) async {
-    // print(
-    //     "@@@@@@@@{${orderno},${pausesip.text},freqty${freqty},nxtdate${nxtdate}}");
     if (pausesip.text != "") {
       toggleLoadingOn(true);
       try {
-        toggleLoadingOn(true);
+        _mfsippause = await api.pausesipapi(
+            orderno, pausesip.text, freqty, nxtdate, scode);
 
-        try {
-          toggleLoadingOn(true);
-          _mfsippause = await api.pausesipapi(
-              orderno, pausesip.text, freqty, nxtdate, scode);
-          // print("function coming");
-          // print("pausee sip${_mfsippause?.toJson()}");
-          // print("pausee sip${_mfsippause?.toString()}");
+        toggleLoadingOn(false);
 
-          // Navigator.pop(context);
-          fetchmfsiplist();
-          if (_mfsippause?.stat == "Not_Ok") {
-            warningMessage(context, "${_mfsipcancelmess?.bSERemarks}");
-            Navigator.pop(context);
-          }
-          if (_mfsippause?.stat == "Ok") {
-            warningMessage(context, " ${_mfsippause?.status}");
-            Navigator.pop(context);
-          }
-        } catch (e) {
-          toggleLoadingOn(false);
+        if (_mfsippause?.stat == "Not_Ok") {
           Navigator.pop(context);
-          warningMessage(context, "Something Went Wrong");
-          print("Failed to Create Mandate :: ${e.toString()}");
-          notifyListeners();
-          // Navigator.pop(context);
+          warningMessage(context, "${_mfsippause?.bseRemarks}");
+        } else if (_mfsippause?.stat == "Ok") {
+          Navigator.pop(context, true);
+          successMessage(context, "${_mfsippause?.status}");
+        } else {
+          Navigator.pop(context);
         }
+        fetchmfsiplist();
       } catch (e) {
         toggleLoadingOn(false);
         Navigator.pop(context);
         warningMessage(context, "Something Went Wrong");
-        log("Failed to fetchMfOrderbook :: ${e.toString()}");
-        notifyListeners();
-        // Navigator.pop(context);
+        log("Failed to pause SIP :: ${e.toString()}");
       } finally {
         toggleLoadingOn(false);
-
         notifyListeners();
-        Navigator.pop(context);
       }
     } else {
-      // warningMessage(context, "No of installments is Required*");
       _inpauseerror = "No of installments is Required";
       notifyListeners();
     }
@@ -3484,25 +3494,10 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   bool isValidUpiId(dynamic mfData, String val, {String schemeType = "Growth"}) {
-    // Resolve min/max based on selected scheme type
-    String? resolvedMin;
-    String? resolvedMax;
-    if (schemeType == "Divided Payout") {
-      // IDCW Payout scheme
-      resolvedMin = mfData.iDCWMinimumPurchaseAmount ?? mfData.minimumPurchaseAmount;
-      resolvedMax = mfData.iDCWMaximumPurchaseAmount ?? mfData.maximumPurchaseAmount;
-    } else if (schemeType == "Divided Reinvest") {
-      // Reinvestment scheme
-      resolvedMin = mfData.reinvMinimumPurchaseAmount ?? mfData.minimumPurchaseAmount;
-      resolvedMax = mfData.reinvMaximumPurchaseAmount ?? mfData.maximumPurchaseAmount;
-    } else {
-      // Growth — base scheme
-      resolvedMin = mfData.minimumPurchaseAmount;
-      resolvedMax = mfData.maximumPurchaseAmount;
-    }
-
     final RegExp upiRegex =
         RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$', caseSensitive: false);
+
+    // For reinitiate from portfolio, only validate UPI — no min/max needed
     if (val == 'reinitiatefromportfolio') {
       if (upiId.text.isEmpty) {
         upiError = "Please enter UPI ID";
@@ -3513,7 +3508,23 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
       return upiError?.isEmpty ?? true;
+    }
+
+    // Resolve min/max based on selected scheme type
+    String? resolvedMin;
+    String? resolvedMax;
+    if (schemeType == "Divided Payout") {
+      resolvedMin = mfData.iDCWMinimumPurchaseAmount ?? mfData.minimumPurchaseAmount;
+      resolvedMax = mfData.iDCWMaximumPurchaseAmount ?? mfData.maximumPurchaseAmount;
+    } else if (schemeType == "Divided Reinvest") {
+      resolvedMin = mfData.reinvMinimumPurchaseAmount ?? mfData.minimumPurchaseAmount;
+      resolvedMax = mfData.reinvMaximumPurchaseAmount ?? mfData.maximumPurchaseAmount;
     } else {
+      resolvedMin = mfData.minimumPurchaseAmount;
+      resolvedMax = mfData.maximumPurchaseAmount;
+    }
+
+    {
       if (mfOrderTpye == "One-time") {
         if (invAmt.text.isEmpty) {
           invAmtError = "Please enter Investment amount";

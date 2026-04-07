@@ -37,10 +37,7 @@ class _MfOrderBookScreenWeb extends ConsumerState<MfOrderBookScreenWeb>
     "PAYMENT INITATED",
     "PAYMENT INIT",
     "PAYMENT COMPLETED",
-    "CANCEL ERROR",
     "WAIT FOR ALLOTMENT",
-    "MODIFY REJECTED",
-    "PAYMENT REJECTED"
   };
 
   // State for table hover and sorting
@@ -623,17 +620,20 @@ class _MfOrderBookScreenWeb extends ConsumerState<MfOrderBookScreenWeb>
                                           .withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: Text(
-                                      _getListStatusText(orderData.status)
-                                          .toUpperCase(),
-                                      style: MyntWebTextStyles.bodySmall(
-                                        context,
-                                        color: _getStatusColor(
-                                            orderData.status, theme),
-                                        fontWeight: MyntFonts.medium,
+                                    child: Tooltip(
+                                      message: _getListStatusText(orderData.status).toUpperCase(),
+                                      child: Text(
+                                        _getListStatusText(orderData.status)
+                                            .toUpperCase(),
+                                        style: MyntWebTextStyles.bodySmall(
+                                          context,
+                                          color: _getStatusColor(
+                                              orderData.status, theme),
+                                          fontWeight: MyntFonts.medium,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
                                       ),
-                                      overflow: TextOverflow.visible,
-                                      softWrap: false,
                                     ),
                                   ),
                                 ),
@@ -1008,7 +1008,7 @@ class _MfOrderBookScreenWeb extends ConsumerState<MfOrderBookScreenWeb>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            "Lumpsum",
+                            orderData.orderType == "XSP" ? "SIP" : "Lumpsum",
                             style: MyntWebTextStyles.bodySmall(
                               context,
                               color: theme.isDarkMode
@@ -1247,27 +1247,32 @@ class _MfOrderBookScreenWeb extends ConsumerState<MfOrderBookScreenWeb>
     }
   }
 
+  static const _greenStatuses = {
+    "ALLOCATED",
+    "PAYMENT COMPLETED",
+    "PLACED",
+  };
+  static const _redStatuses = {
+    "REJECTED",
+    "CANCELLED",
+    "PAYMENT DECLINED",
+    "PAYMENT REJECTED",
+    "CANCEL ERROR",
+    "MODIFY REJECTED",
+    "INVALID",
+  };
+
   Color _getStatusColor(String? status, ThemesProvider theme) {
-    if (status == "ALLOCATED") {
+    if (_greenStatuses.contains(status)) {
       return theme.isDarkMode ? colors.profitDark : colors.profitLight;
-    } else if (status == "REJECTED" ||
-        status == "CANCELLED" ||
-        status == "PAYMENT DECLINED") {
+    } else if (_redStatuses.contains(status)) {
       return theme.isDarkMode ? colors.lossDark : colors.lossLight;
-    } else if (inProgressStatuses.contains(status)) {
-      return colors.pending;
     }
     return colors.pending;
   }
 
   String _getListStatusText(String? status) {
-    if (status == "ALLOCATED") return 'ALLOCATED';
-    if (status == "REJECTED") return 'REJECTED';
-    if (status == "CANCELLED") return 'CANCELLED';
-    if (status == "PAYMENT DECLINED") return 'PAYMENT DECLINED';
-    if (inProgressStatuses.contains(status)) return 'IN PROGRESS';
-
-    return status ?? 'Unknown';
+    return status ?? '-';
   }
 
   String _getFolio(dynamic orderData) {
