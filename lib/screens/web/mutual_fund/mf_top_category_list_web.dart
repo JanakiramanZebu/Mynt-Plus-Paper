@@ -995,6 +995,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreenWeb>
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Dialog(
         backgroundColor: isDark
             ? MyntColors.backgroundColorDark

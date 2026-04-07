@@ -217,7 +217,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                mfOrder.mfOrderTpye == "SIP"
+                                mfOrder.mfOrderTpye == "SIP" && widget.condval != 'sipfirstorder' && widget.condval != 'reinitiatefromportfolio'
                                     ? "Setup SIP"
                                     : "Pay With",
                                 style: MyntWebTextStyles.title(
@@ -251,7 +251,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (mfOrder.mfOrderTpye == "SIP") ...[
+                                if (mfOrder.mfOrderTpye == "SIP" && widget.condval != 'sipfirstorder' && widget.condval != 'reinitiatefromportfolio') ...[
                                   Text(
                                     "Auto Pay (Mandate)",
                                     style: MyntWebTextStyles.title(
@@ -271,6 +271,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                         // Navigate to mandate selection screen
                                         showDialog(
                                           context: context,
+                                          barrierDismissible: false,
                                           builder: (context) => Dialog(
                                             insetPadding: const EdgeInsets.symmetric(horizontal: 16),
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -396,6 +397,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                         onPressed: () {
                                           showDialog(
                                             context: context,
+                                            barrierDismissible: false,
                                             builder: (BuildContext context) {
                                               return Dialog(
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -459,7 +461,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                   //             14,
                                   //             FontWeight.w500))),
                                 ],
-                                if (mfOrder.mfOrderTpye != "SIP") ...[
+                                if (mfOrder.mfOrderTpye != "SIP" || widget.condval == 'sipfirstorder' || widget.condval == 'reinitiatefromportfolio') ...[
                                   // Bank selection
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 10),
@@ -704,7 +706,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                             height: 40,
                             child: ElevatedButton(
                               onPressed: () async {
-                                if (mfOrder.mfOrderTpye != "SIP") {
+                                if (mfOrder.mfOrderTpye != "SIP" || widget.condval == 'sipfirstorder' || widget.condval == 'reinitiatefromportfolio') {
                                   final isUpi = mfOrder.paymentName == 'UPI';
                                   final isNetBanking =
                                       mfOrder.paymentName == 'NET BANKING';
@@ -884,7 +886,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                 elevation: 0,
                               ),
                               child: Text(
-                                mfOrder.mfOrderTpye == "SIP"
+                                mfOrder.mfOrderTpye == "SIP" && widget.condval != 'sipfirstorder' && widget.condval != 'reinitiatefromportfolio'
                                     ? "Setup - SIP"
                                     : "Pay - One Time",
                                 style: MyntWebTextStyles.bodySmall(

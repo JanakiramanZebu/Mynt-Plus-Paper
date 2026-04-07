@@ -43,6 +43,7 @@ class XsipOrderResponces {
   String? dPFolioNo;
   String? sIPRegnNo;
   String? sIPRegnDate;
+  String? firstOrderNo;
 
   XsipOrderResponces(
       {this.amount,
@@ -88,6 +89,7 @@ class XsipOrderResponces {
       this.dPFolioNo,
       this.sIPRegnNo,
       this.sIPRegnDate,
+      this.firstOrderNo,
       this.msg});
 
   XsipOrderResponces.fromJson(Map<String, dynamic> json) {
@@ -139,6 +141,7 @@ class XsipOrderResponces {
     dPFolioNo = json['DPFolioNo'];
     sIPRegnNo = json['SIPRegnNo'];
     sIPRegnDate = json['SIPRegnDate'];
+    firstOrderNo = json['First_order_no'];
   }
 
   Map<String, dynamic> toJson() {
@@ -191,6 +194,7 @@ class XsipOrderResponces {
     data['DPFolioNo'] = dPFolioNo;
     data['SIPRegnNo'] = sIPRegnNo;
     data['SIPRegnDate'] = sIPRegnDate;
+    data['First_order_no'] = firstOrderNo;
     return data;
   }
 }

@@ -11,6 +11,7 @@ import 'package:mynt_plus/screens/web/holdings/mf_hold_table.dart';
 import 'package:mynt_plus/utils/custom_navigator.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import '../../../../provider/portfolio_provider.dart';
+import '../../../../provider/profile_all_details_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
@@ -764,8 +765,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 _buildEdisButton(theme, portfolioData),
                 const SizedBox(width: 12),
               ],
-              // MF E-DIS button (always show on Mutual Fund tab)
-              if (_selectedTabIndex == 1) ...[
+              // MF E-DIS button (only show on Mutual Fund tab when POA is not active)
+              if (_selectedTabIndex == 1 &&
+                  ref.read(profileAllDetailsProvider).clientAllDetailsSafe?.clientData?.pOA != 'Y') ...[
                 _buildMfEdisButton(theme),
                 const SizedBox(width: 12),
               ],

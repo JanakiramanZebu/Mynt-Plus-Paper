@@ -975,6 +975,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreenWeb> {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Dialog(
         backgroundColor: isDark
             ? MyntColors.backgroundColorDark

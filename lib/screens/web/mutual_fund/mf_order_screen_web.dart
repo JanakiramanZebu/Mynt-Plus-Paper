@@ -50,6 +50,7 @@ class MFOrderScreenWeb extends ConsumerStatefulWidget {
 
 class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
   String _selectedSchemeType = "Growth";
+  bool _firstInstallment = false;
 
   @override
   void initState() {
@@ -180,6 +181,12 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
 
                       // Investment/Instalment amount field
                       _buildAmountField(isDark, mfOrder),
+
+                      // First installment checkbox (SIP only)
+                      if (mfOrder.mfOrderTpye == "SIP") ...[
+                        const SizedBox(height: 12),
+                        _buildFirstInstallmentCheckbox(isDark),
+                      ],
 
                       // SIP specific fields
                       if (mfOrder.mfOrderTpye == "SIP") ...[
@@ -320,7 +327,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
         Text(
           "Scheme Type",
           style: MyntWebTextStyles.body(context,
-              fontWeight: MyntFonts.medium,
+              fontWeight: MyntFonts.semiBold,
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimaryDark,
                   light: MyntColors.textPrimary)),
@@ -564,7 +571,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
               Text(
                 "Mandates",
                 style: MyntWebTextStyles.body(context,
-                    fontWeight: MyntFonts.medium,
+                    fontWeight: MyntFonts.semiBold,
                     color: resolveThemeColor(context,
                         dark: MyntColors.textPrimaryDark,
                         light: MyntColors.textPrimary)),
@@ -711,11 +718,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
       children: [
         Text(
           isLumpsum ? "Investment amount" : "Instalment amount",
-          style: MyntWebTextStyles.body(context,
-              fontWeight: MyntFonts.medium,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary)),
+           style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary)),
         ),
         const SizedBox(height: 10),
         MyntFormTextField(
@@ -759,6 +766,46 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildFirstInstallmentCheckbox(bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _firstInstallment = !_firstInstallment;
+        });
+      },
+      child: Row(
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Checkbox(
+              value: _firstInstallment,
+              onChanged: (value) {
+                setState(() {
+                  _firstInstallment = value ?? false;
+                });
+              },
+              activeColor: resolveThemeColor(context,
+                  dark: MyntColors.primaryDark, light: MyntColors.primary),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            "First installment",
+            style: MyntWebTextStyles.body(
+              context,
+              fontWeight: MyntFonts.medium,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -842,6 +889,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
   void _showCreateMandateDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape:
@@ -892,7 +940,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
 
         showDialog(
           context: context,
-          barrierDismissible: mfOrder.ispaymentcalled != true,
+          barrierDismissible: false,
           builder: (context) => WillPopScope(
             onWillPop: () async => mfOrder.ispaymentcalled != true,
             child: Dialog(
@@ -978,18 +1026,60 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
       await mfOrder.fetchXsipPlaceOrder(
         context,
         sipResolvedCode,
-        mfOrder.freqName == "Daily" ? "0" : mfOrder.dates,
+        mfOrder.freqName == "Daily" ? "0" : mfOrder.startDate,
         mfOrder.freqName,
         mfOrder.installmentAmt.text,
         mfOrder.invDuration.text,
         mfOrder.freqName == "Daily" ? "0" : mfOrder.endDate,
         mfOrder.mandateId,
         widget.isAdditional,
+        _firstInstallment,
       );
 
       // Close all dialogs, then show response cleanly
       if (!mounted) return;
-      if (mfOrder.xsipOrderResponces?.stat == "Ok" ||
+
+      // If first installment is checked and we got a valid First_order_no,
+      // trigger payment flow like lumpsum
+      final firstOrderNo = mfOrder.xsipOrderResponces?.firstOrderNo;
+      if (_firstInstallment &&
+          mfOrder.xsipOrderResponces?.stat == "Ok" &&
+          firstOrderNo != null &&
+          firstOrderNo != "0" &&
+          firstOrderNo.isNotEmpty) {
+        // Set mfPlaceOrderResponces so the payment bottomsheet can use it
+        mfOrder.setMfPlaceOrderFromSip(
+          firstOrderNo,
+          mfOrder.installmentAmt.text,
+        );
+
+        Navigator.pop(context);
+
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => WillPopScope(
+            onWillPop: () async => mfOrder.ispaymentcalled != true,
+            child: Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width >= 1100
+                    ? MediaQuery.of(context).size.width * 0.30
+                    : MediaQuery.of(context).size.width >= 800
+                        ? MediaQuery.of(context).size.width * 0.50
+                        : MediaQuery.of(context).size.width * 0.90,
+                child: MfOrderBottomsheetWeb(
+                  data: widget.mfData,
+                  condval: 'sipfirstorder',
+                ),
+              ),
+            ),
+          ),
+        );
+      } else if (mfOrder.xsipOrderResponces?.stat == "Ok" ||
           mfOrder.xsipOrderResponces?.stat == "Not_Ok") {
         // Pop all dialog routes to get back to the base page
         Navigator.of(context, rootNavigator: true)
@@ -1049,7 +1139,7 @@ mfPlaceorder(
   BuildContext context, {
   String schemeType = "Growth",
   bool isAdditional = false,
-}) {
+}) async {
   // Resolve base scheme code based on selected scheme type
   String baseCode;
   String? l1Code;
@@ -1099,7 +1189,7 @@ mfPlaceorder(
   );
   // if (mfOrder.paymentName == "UPI") {
   // mfOrder.fetchVerifyUpi(context, mfOrder.upiId.text, input);
-  mfOrder.placeordermftemp(
+  await mfOrder.placeordermftemp(
       context, mfOrder.upiId.text, input, resolvedCode, orderAmt, isAdditional);
   // }
   // else {
@@ -1129,7 +1219,7 @@ mfPlaceorder(
 _showBottomSheet(BuildContext context, Widget bottomSheet) {
   showDialog(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     builder: (context) => Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(
@@ -1167,7 +1257,7 @@ void _showCalendarDialog(
     BuildContext context, dynamic theme, MFProvider mfOrder) {
   showDialog(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1244,9 +1334,15 @@ class _SIPCalendarState extends State<_SIPCalendar> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(selectedYear, selectedMonth, day);
-    // Date must be at least 2 working days from today
+    // Date must be after 2 full working days from today
+    // e.g., if today is Mon 7th, 2 working days = Tue 8th & Wed 9th, so first allowed = Thu 10th
     final minDate = _addWorkingDays(today, 2);
-    return date.isBefore(minDate);
+    return !date.isAfter(minDate);
+  }
+
+  bool _isWeekend(int day) {
+    final date = DateTime(selectedYear, selectedMonth, day);
+    return date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
   }
 
   /// Returns the date that is [days] working days after [from],
@@ -1275,7 +1371,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
         .toList()
       ..sort();
     for (final day in sorted) {
-      if (!_isPastDate(day)) return day;
+      if (!_isPastDate(day) && !_isWeekend(day)) return day;
     }
     return null;
   }
@@ -1323,6 +1419,8 @@ class _SIPCalendarState extends State<_SIPCalendar> {
                             selectedMonth = month;
                             if (selectedDate != null &&
                                 (_isPastDate(selectedDate!) ||
+                                    _isWeekend(selectedDate!) ||
+                                    !isDateAvailable(selectedDate!) ||
                                     selectedDate! > _daysInMonth())) {
                               selectedDate = _firstAvailableDate();
                             }
@@ -1408,6 +1506,8 @@ class _SIPCalendarState extends State<_SIPCalendar> {
                           selectedYear = year;
                           if (selectedDate != null &&
                               (_isPastDate(selectedDate!) ||
+                                  _isWeekend(selectedDate!) ||
+                                  !isDateAvailable(selectedDate!) ||
                                   selectedDate! > _daysInMonth())) {
                             selectedDate = _firstAvailableDate();
                           }
@@ -1769,8 +1869,9 @@ class _SIPCalendarState extends State<_SIPCalendar> {
   Widget _buildDayBox(BuildContext context, int day) {
     final bool isAvailable = isDateAvailable(day);
     final bool isPast = _isPastDate(day);
+    final bool isWeekend = _isWeekend(day);
     final bool isSelected = selectedDate == day;
-    final bool isSelectable = isAvailable && !isPast;
+    final bool isSelectable = isAvailable && !isPast && !isWeekend;
     final bool isDark = widget.theme.isDarkMode;
 
     Color bgColor;

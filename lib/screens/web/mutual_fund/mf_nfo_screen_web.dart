@@ -220,6 +220,7 @@ class _MFNFOScreenWebState extends ConsumerState<MFNFOScreenWeb> {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Dialog(
         backgroundColor: isDark
             ? MyntColors.backgroundColorDark
