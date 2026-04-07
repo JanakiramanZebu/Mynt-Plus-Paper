@@ -54,6 +54,14 @@ class WebSocketProvider extends ChangeNotifier {
   BuildContext? _context;
   bool _reconnecting = false; // Track if we're already in the reconnection process
   bool _reconnectionSuccess = false; // Track if we've successfully reconnected
+
+  // When true, UI should NOT show "Connection lost"/"Connected" toasts.
+  // Set by WebSubscriptionManager during intentional tab-switch reconnects.
+  bool _isTabSwitchReconnect = false;
+  bool get isTabSwitchReconnect => _isTabSwitchReconnect;
+  void setTabSwitchReconnect(bool value) {
+    _isTabSwitchReconnect = value;
+  }
   
   // Track server-initiated closures to prevent reconnection loops
   DateTime? _lastServerClosure;

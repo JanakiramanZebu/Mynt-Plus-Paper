@@ -1005,6 +1005,8 @@ class _CustomizableSplitHomeScreenState
 
         // WEB: Silent auto-reconnect with snackbar notifications instead of blocking overlay
         // Track disconnection state for snackbar notifications
+        final isTabSwitchReconnect =
+            ref.watch(websocketProvider.select((p) => p.isTabSwitchReconnect));
         final isDisconnected = (internet.connectionStatus == ConnectivityResult.none ||
                 connectionCount >= 5) &&
             !reconnectionSuccess &&
@@ -1012,21 +1014,24 @@ class _CustomizableSplitHomeScreenState
 
         if (isDisconnected && !_wasDisconnected) {
           // Just became disconnected - show snackbar and auto-reconnect
+          // Skip toasts if this is an intentional tab-switch reconnect
           _wasDisconnected = true;
           _showedDisconnectSnackbar = false;
-          Future.microtask(() {
-            if (mounted && !_showedDisconnectSnackbar) {
-              _showedDisconnectSnackbar = true;
-              ResponsiveSnackBar.showWarning(
-                context,
-                'Connection lost. Reconnecting...',
-                duration: const Duration(seconds: 3),
-              );
-              // Trigger auto-reconnect
-              ref.read(networkStateProvider).getContext(context);
-              _handleWebSocketConnections();
-            }
-          });
+          if (!isTabSwitchReconnect) {
+            Future.microtask(() {
+              if (mounted && !_showedDisconnectSnackbar) {
+                _showedDisconnectSnackbar = true;
+                ResponsiveSnackBar.showWarning(
+                  context,
+                  'Connection lost. Reconnecting...',
+                  duration: const Duration(seconds: 3),
+                );
+                // Trigger auto-reconnect
+                ref.read(networkStateProvider).getContext(context);
+                _handleWebSocketConnections();
+              }
+            });
+          }
         } else if (!isDisconnected && _wasDisconnected) {
           // Just reconnected - show success snackbar and refresh data
           final wasActualReconnection = _hasConnectedOnce; // Only refresh if this is a real reconnection
@@ -1035,11 +1040,13 @@ class _CustomizableSplitHomeScreenState
           _hasConnectedOnce = true; // Mark that we've connected at least once
           Future.microtask(() {
             if (mounted) {
-              ResponsiveSnackBar.showSuccess(
-                context,
-                'Connected successfully',
-                duration: const Duration(seconds: 2),
-              );
+              if (!isTabSwitchReconnect) {
+                ResponsiveSnackBar.showSuccess(
+                  context,
+                  'Connected successfully',
+                  duration: const Duration(seconds: 2),
+                );
+              }
               // Only refresh data after actual reconnection, not initial connection
               if (wasActualReconnection) {
                 _refreshDataAfterReconnection();
