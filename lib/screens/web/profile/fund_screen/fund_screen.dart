@@ -559,12 +559,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         if (upiIdStatus == "SUCCESS") {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) => Dialog(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
-                child: RazorpaySuccessUi(amount: fund.amount.text),
+                child: UpiSuccessUi(amount: fund.amount.text),
               ),
             ),
           ).then((_) {
@@ -675,11 +676,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       ref.read(fundProvider).fetchFunds(context);
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) => Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
-            child: RazorpaySuccessUi(amount: fund.amount.text),
+            child: UpiSuccessUi(amount: fund.amount.text),
           ),
         ),
       ).then((_) {
@@ -2285,11 +2287,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     if (!mounted) return;
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 440),
-          child: RazorpaySuccessUi(amount: capturedAmount),
+          child: NetBankingSuccessUi(amount: capturedAmount),
         ),
       ),
     ).then((_) {
