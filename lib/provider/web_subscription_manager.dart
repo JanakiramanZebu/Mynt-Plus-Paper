@@ -198,9 +198,14 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     // 2. WebSocketProvider's _sentSubscriptions (this was blocking re-sends!)
     wsProvider.clearSentSubscriptions();
 
+    // Suppress "Connection lost"/"Connected" toasts — this is an intentional reconnect
+    wsProvider.setTabSwitchReconnect(true);
+
     // Force close the existing connection even if another connection is in progress.
     // force: true bypasses the "_connecting" guard that was preventing close.
-    wsProvider.closeSocket(true, force: true);
+    // preserveData: true keeps _socketDatas and _ltpCache so UI doesn't flash 0.0
+    // while reconnecting — stale prices are better than showing 0.0 with wrong P&L.
+    wsProvider.closeSocket(true, force: true, preserveData: true);
 
     // Give it a moment to clean up, then reconnect
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -221,6 +226,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       } else {
         print('⚠️ [WebSubscriptionManager] No valid context for reconnection');
       }
+
+      // Clear tab-switch flag after reconnection completes
+      ref.read(websocketProvider).setTabSwitchReconnect(false);
 
       print('═══════════════════════════════════════════════════════════\n');
     });

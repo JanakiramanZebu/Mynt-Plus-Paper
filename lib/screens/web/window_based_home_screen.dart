@@ -1012,10 +1012,13 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         final wsConnected =
             ref.watch(websocketProvider.select((p) => p.wsConnected));
 
+        final isTabSwitchReconnect =
+            ref.watch(websocketProvider.select((p) => p.isTabSwitchReconnect));
         if ((internet.connectionStatus == ConnectivityResult.none ||
                 connectionCount >= 5) &&
             !reconnectionSuccess &&
-            !wsConnected) {
+            !wsConnected &&
+            !isTabSwitchReconnect) {
           ref.read(networkStateProvider).getContext(context);
           return material.Scaffold(
             appBar: material.AppBar(

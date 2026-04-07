@@ -54,6 +54,14 @@ class WebSocketProvider extends ChangeNotifier {
   BuildContext? _context;
   bool _reconnecting = false; // Track if we're already in the reconnection process
   bool _reconnectionSuccess = false; // Track if we've successfully reconnected
+
+  // When true, UI should NOT show "Connection lost"/"Connected" toasts.
+  // Set by WebSubscriptionManager during intentional tab-switch reconnects.
+  bool _isTabSwitchReconnect = false;
+  bool get isTabSwitchReconnect => _isTabSwitchReconnect;
+  void setTabSwitchReconnect(bool value) {
+    _isTabSwitchReconnect = value;
+  }
   
   // Track server-initiated closures to prevent reconnection loops
   DateTime? _lastServerClosure;
@@ -248,7 +256,7 @@ class WebSocketProvider extends ChangeNotifier {
     _sentSubscriptions.clear();
   }
 
-  void closeSocket(bool mounted, {bool force = false}) {
+  void closeSocket(bool mounted, {bool force = false, bool preserveData = false}) {
     // Prevent closing if already closed to avoid unnecessary operations
     if (!_wsConnected && _channel == null && !_connecting) {
       print('ℹ️  [WEBSOCKET] Already closed, skipping close operation');
@@ -329,13 +337,19 @@ class WebSocketProvider extends ChangeNotifier {
     _pendingSubscriptions['t'] = [];
     _pendingSubscriptions['d'] = [];
 
-    // Clear socket data to ensure fresh state on next login
-    // This fixes the issue where old token data prevents updateHoldingValues()
-    // from being called on re-login (tokens already exist, so _updateSocketData()
-    // is called instead of the new token path that calls updateHoldingValues())
-    _socketDatas.clear();
-    _ltpCache.clear();
-    log('Cleared all WebSocket subscriptions tracking and socket data');
+    if (preserveData) {
+      // Tab-switch reconnect: keep socket data and LTP cache so UI doesn't flash 0.0
+      // Stale prices are better than no prices — new data will overwrite when it arrives
+      log('Preserved socket data and LTP cache for tab-switch reconnect');
+    } else {
+      // Full close (logout/re-login): clear everything for fresh state
+      // This fixes the issue where old token data prevents updateHoldingValues()
+      // from being called on re-login (tokens already exist, so _updateSocketData()
+      // is called instead of the new token path that calls updateHoldingValues())
+      _socketDatas.clear();
+      _ltpCache.clear();
+      log('Cleared all WebSocket subscriptions tracking and socket data');
+    }
 
     print('✅ [WEBSOCKET] Connection closed successfully\n');
     log('✅ WebSocket: Connection closed successfully');
