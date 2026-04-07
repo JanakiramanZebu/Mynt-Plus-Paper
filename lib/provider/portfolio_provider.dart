@@ -2202,14 +2202,67 @@ changeHoldingsTabIndex(int index) {
       // Recalculate from _allPostionList
       double totalPnl = 0.0;
       double totalMtm = 0.0;
+      double unRealMtm = 0.0;
+      double bookPnl = 0.0;
 
       for (var position in _allPostionList) {
         totalPnl += double.tryParse(position.profitNloss ?? "0.00") ?? 0.0;
         totalMtm += double.tryParse(position.mTm ?? "0.00") ?? 0.0;
+
+        // Recalculate unrealized PnL and booked PnL per position
+        final lp = double.tryParse(position.lp ?? "0.00") ?? 0.0;
+        final prcFtr = double.tryParse(position.prcftr ?? "1.0") ?? 1.0;
+        final mult = double.tryParse(position.mult ?? "1.0") ?? 1.0;
+        final netQty = int.tryParse(position.netqty ?? "0") ?? 0;
+        final netUpldPrc =
+            double.tryParse(position.netupldprc ?? "0.00") ?? 0.0;
+        final netAvgPrc =
+            double.tryParse(position.netavgprc ?? "0.00") ?? 0.0;
+        final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
+
+        final dayBuyQty = int.tryParse(position.daybuyqty ?? "0") ?? 0;
+        final daySellQty = int.tryParse(position.daysellqty ?? "0") ?? 0;
+        final cfBuyQty = int.tryParse(position.cfbuyqty ?? "0") ?? 0;
+        final cfSellQty = int.tryParse(position.cfsellqty ?? "0") ?? 0;
+        final dayBuyAmt =
+            double.tryParse(position.daybuyamt ?? "0.00") ?? 0.0;
+        final daySellAmt =
+            double.tryParse(position.daysellamt ?? "0.00") ?? 0.0;
+
+        final netBuyQty = dayBuyQty + cfBuyQty;
+        final netSellQty = daySellQty + cfSellQty;
+
+        // Unrealized PnL: netQty * prcFtr * mult * (lp - avgPrc)
+        final avgPrcForUnrealized =
+            netUpldPrc != 0.0 ? netUpldPrc : netAvgPrc;
+        unRealMtm += netQty * prcFtr * mult * (lp - avgPrcForUnrealized);
+
+        // Booked PnL
+        double actualBuyAvgPrice = 0.0;
+        if (netBuyQty != 0) {
+          actualBuyAvgPrice =
+              ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) /
+                  netBuyQty;
+        }
+        double actualSellAvgPrice = 0.0;
+        if (netSellQty != 0) {
+          actualSellAvgPrice =
+              ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) /
+                  netSellQty;
+        }
+        if (netQty > 0) {
+          bookPnl +=
+              (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
+        } else {
+          bookPnl +=
+              (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
+        }
       }
 
       _totPnL = totalPnl.toStringAsFixed(2);
       _totMtm = totalMtm.toStringAsFixed(2);
+      _totUnRealMtm = unRealMtm.toStringAsFixed(2);
+      _totBookedPnL = bookPnl.toStringAsFixed(2);
     }
 
     // Use post-frame callback to avoid mouse tracker assertion errors
