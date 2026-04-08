@@ -12,8 +12,8 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/transcation_provider.dart';
 // import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/fund_function.dart';
-import '../../Mobile/mutual_fund_old/create_mandate_daialogue.dart';
-import '../../Mobile/profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/create_mandate_dialogue_web.dart';
+import '../../../screens/web/profile/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
 import 'mandate_selection_screen_web.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'mf_processing_screen_web.dart';
@@ -780,40 +780,12 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                         showDialog(
                                           context: context,
                                           barrierDismissible: false,
-                                          builder: (context) => Dialog(
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(15)),
-                                            child: SizedBox(
-                                              width: MediaQuery.of(context)
-                                                          .size
-                                                          .width >=
-                                                      1100
-                                                  ? MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      0.30
-                                                  : MediaQuery.of(context)
-                                                              .size
-                                                              .width >=
-                                                          800
-                                                      ? MediaQuery.of(context)
-                                                              .size
-                                                              .width *
-                                                          0.50
-                                                      : 420,
-                                              child: WillPopScope(
-                                                onWillPop: () async =>
-                                                    !mfOrder.ispaymentcalled,
-                                                child: MfPaymentRespAlert(
-                                                  upiData: upiResponse
-                                                      .data!
-                                                      .toJson(),
-                                                  conditionval:
-                                                      'reinitiateerror',
-                                                ),
-                                              ),
-                                            ),
+                                          builder: (context) => MfPaymentRespAlert(
+                                            upiData: upiResponse
+                                                .data!
+                                                .toJson(),
+                                            conditionval:
+                                                'reinitiateerror',
                                           ),
                                         );
                                       }
@@ -841,34 +813,11 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                       showDialog(
                                         context: context,
                                         barrierDismissible: false,
-                                        builder: (context) => Dialog(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(15)),
-                                          child: SizedBox(
-                                            width: MediaQuery.of(context)
-                                                        .size
-                                                        .width >=
-                                                    1100
-                                                ? MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.30
-                                                : MediaQuery.of(context)
-                                                            .size
-                                                            .width >=
-                                                        800
-                                                    ? MediaQuery.of(context)
-                                                            .size
-                                                            .width *
-                                                        0.50
-                                                    : 420,
-                                            child: MfPaymentRespAlert(
-                                                upiData: mfOrder
-                                                    .xsipOrderResponces
-                                                    ?.toJson(),
-                                                conditionval: ''),
-                                          ),
+                                        builder: (context) => MfPaymentRespAlert(
+                                          upiData: mfOrder
+                                              .xsipOrderResponces
+                                              ?.toJson(),
+                                          conditionval: '',
                                         ),
                                       );
                                     }

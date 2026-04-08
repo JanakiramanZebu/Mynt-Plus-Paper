@@ -2297,7 +2297,7 @@ class MFProvider extends DefaultChangeNotifier {
         } else if (_mfsipcancelmess?.stat == "Ok") {
           Navigator.pop(context, true);
           successMessage(
-              context, "Sip successfully ${_mfsipcancelmess?.status}");
+              context, "SIP successfully ${_mfsipcancelmess?.status?.toLowerCase()}");
         } else {
           Navigator.pop(context);
         }
@@ -2334,7 +2334,7 @@ class MFProvider extends DefaultChangeNotifier {
           warningMessage(context, "${_mfsippause?.bseRemarks}");
         } else if (_mfsippause?.stat == "Ok") {
           Navigator.pop(context, true);
-          successMessage(context, "${_mfsippause?.status}");
+          successMessage(context, "SIP ${_mfsippause?.status?.toLowerCase()} successfully");
         } else {
           Navigator.pop(context);
         }
