@@ -334,7 +334,6 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
                     children: [
                       CustomBackBtn(
                         onBack: () {
-                          ledgerprovider.fetchpledgeandunpledge(context);
                           Navigator.pop(context);
                         },
                       ),
