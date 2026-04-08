@@ -66,6 +66,21 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   final FocusNode _searchFocusNode = FocusNode();
   OverlayEntry? _searchOverlay;
 
+  /// Reclaim keyboard focus from TradingView chart iframes.
+  /// Flutter's glass pane swallows pointer events so document-level listeners
+  /// never fire. Instead we use Flutter's own Listener widget (wrapping the
+  /// build output) and blur any focused iframe via dart:html.
+  void _reclaimFocusFromIframe(PointerDownEvent _) {
+    final active = html.document.activeElement;
+    if (active != null && active.tagName == 'IFRAME') {
+      active.blur();
+      final flutterHost = html.document.querySelector('flutter-view')
+          ?? html.document.querySelector('flt-glass-pane')
+          ?? html.document.body;
+      flutterHost?.focus();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -276,19 +291,25 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
 
     // Embedded mode: no Scaffold, just the body content
     if (widget.embedded) {
-      return body;
+      return Listener(
+        onPointerDown: _reclaimFocusFromIframe,
+        child: body,
+      );
     }
 
-    return Scaffold(
-      backgroundColor: resolveThemeColor(
-        context,
-        dark: MyntColors.backgroundColorDark,
-        light: MyntColors.backgroundColor,
+    return Listener(
+      onPointerDown: _reclaimFocusFromIframe,
+      child: Scaffold(
+        backgroundColor: resolveThemeColor(
+          context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor,
+        ),
+        appBar: ScalperAppBar(
+          onHomeTap: () => Navigator.of(context).pop(),
+        ),
+        body: body,
       ),
-      appBar: ScalperAppBar(
-        onHomeTap: () => Navigator.of(context).pop(),
-      ),
-      body: body,
     );
   }
 
@@ -1207,13 +1228,10 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
 
     if (option == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('No ${isCall ? 'CE' : 'PE'} option selected'),
-            backgroundColor: MyntColors.loss,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-          ),
+        ResponsiveSnackBar.showError(
+          context,
+          'No ${isCall ? 'CE' : 'PE'} option selected',
+          duration: const Duration(seconds: 2),
         );
       }
       return;
@@ -1264,39 +1282,15 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
         channel: 'WEB',
       );
 
-      final result = await ref.read(orderProvider).fetchPlaceOrder(
+      await ref.read(orderProvider).fetchPlaceOrder(
             context,
             orderInput,
             false,
             quickOrder: true,
           );
 
-      if (mounted) {
-        final optType = isCall ? 'CE' : 'PE';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              result?.stat == 'Ok'
-                  ? '${isBuy ? 'Buy' : 'Sell'} $optType order placed'
-                  : (result?.emsg ?? 'Order failed'),
-            ),
-            backgroundColor: result?.stat == 'Ok' ? MyntColors.profit : MyntColors.loss,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Order failed: $e'),
-            backgroundColor: MyntColors.loss,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+      // Order provider already shows success/error toast via ResponsiveSnackBar
+    } catch (_) {
     } finally {
       _isPlacingShortcutOrder = false;
     }
