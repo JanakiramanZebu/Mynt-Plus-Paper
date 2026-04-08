@@ -275,11 +275,6 @@ class _PnlChart extends StatelessWidget {
     final trackballLineColor = resolveThemeColor(context,
         dark: const Color(0xFF9CA3AF), light: const Color(0xFF6B7280));
 
-    // Determine chart color based on final P&L
-    final lastPnl = data.last.pnl;
-    final lineColor = lastPnl >= 0 ? profitColor : lossColor;
-    final fillColor = lineColor.withValues(alpha: 0.12);
-
     // Compute Y-axis range: auto-scale to data with padding, always include 0
     final pnlValues = data.map((d) => d.pnl).toList();
     final dataMin = pnlValues.reduce(math.min);
@@ -315,7 +310,6 @@ class _PnlChart extends StatelessWidget {
         minimum: rangeMin - padding,
         maximum: rangeMax + padding,
         plotBands: <PlotBand>[
-          // Zero reference line
           PlotBand(
             start: 0,
             end: 0,
@@ -356,30 +350,39 @@ class _PnlChart extends StatelessWidget {
         shouldAlwaysShow: true,
       ),
       series: <CartesianSeries>[
-        // Gradient area fill
-        SplineAreaSeries<GroupPnlDataPoint, DateTime>(
+        // Green area: profit region (P&L > 0, fills between 0 and P&L)
+        RangeAreaSeries<GroupPnlDataPoint, DateTime>(
+          dataSource: data,
+          xValueMapper: (d, _) => d.time,
+          highValueMapper: (d, _) => d.pnl > 0 ? d.pnl : 0,
+          lowValueMapper: (d, _) => 0,
+          name: '$label (Profit)',
+          color: profitColor.withValues(alpha: 0.1),
+          borderColor: Colors.transparent,
+          enableTooltip: false,
+        ),
+        // Red area: loss region (P&L < 0, fills between P&L and 0)
+        RangeAreaSeries<GroupPnlDataPoint, DateTime>(
+          dataSource: data,
+          xValueMapper: (d, _) => d.time,
+          highValueMapper: (d, _) => 0,
+          lowValueMapper: (d, _) => d.pnl < 0 ? d.pnl : 0,
+          name: '$label (Loss)',
+          color: lossColor.withValues(alpha: 0.1),
+          borderColor: Colors.transparent,
+          enableTooltip: false,
+        ),
+        // P&L line — green in profit, red in loss
+        LineSeries<GroupPnlDataPoint, DateTime>(
           dataSource: data,
           xValueMapper: (d, _) => d.time,
           yValueMapper: (d, _) => d.pnl,
           name: label,
           enableTooltip: true,
-          color: fillColor,
-          borderColor: lineColor,
-          borderWidth: 2,
-          splineType: SplineType.monotonic,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              lineColor.withValues(alpha: 0.3),
-              lineColor.withValues(alpha: 0.02),
-            ],
-          ),
-          markerSettings: const MarkerSettings(
-            isVisible: false,
-            height: 8,
-            width: 8,
-          ),
+          width: 1.5,
+          pointColorMapper: (d, _) =>
+              d.pnl >= 0 ? profitColor : lossColor,
+          markerSettings: const MarkerSettings(isVisible: false),
         ),
       ],
     );

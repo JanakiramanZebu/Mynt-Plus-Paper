@@ -57,18 +57,18 @@ class GroupPnlChartProvider extends ChangeNotifier {
     required bool isNetPnl,
     String interval = '5',
   }) async {
-    print('>>> GroupPnlChart: loadGroupChart called for $groupName with ${groupList.length} positions');
+    // Always reset caches on each load — provider survives hot reload
+    // and stale data from previous sessions causes wrong charts
+    _resultCache.clear();
+    _tpCache.clear();
+    _entryEpochs.clear();
+    _tradeBookFetched = false;
+
     _activeGroupName = groupName;
     _interval = interval;
     _positions = groupList
         .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e as Map))
         .toList();
-
-    // Clear stale caches when entry times may have changed
-    if (!_tradeBookFetched) {
-      _resultCache.removeWhere((key, _) => key.startsWith('$groupName|'));
-      _tpCache.clear();
-    }
 
     final cacheKey = _resultCacheKey(groupName, interval, isDay, isNetPnl);
     if (_resultCache.containsKey(cacheKey)) {
@@ -228,16 +228,13 @@ class GroupPnlChartProvider extends ChangeNotifier {
       final prd = pos['prd']?.toString() ?? '';
       final key = '$token|$prd';
       posKeys.add(key);
-      // Default to market open
-      _entryEpochs[key] = marketOpenEpoch;
+      _entryEpochs[key] = 9999999999; // far future, replaced by actual trade time
     }
 
     try {
       final response = await _api.getTradeBook();
       final trades = response['data'] as List<TradeBookModel>? ?? [];
 
-      // For each position, find the EARLIEST execution time from today's trades
-      // norentm format: "HH:mm:ss dd-MM-yyyy"
       for (var trade in trades) {
         final tradeToken = trade.token ?? '';
         final tradePrd = trade.prd ?? '';
@@ -248,23 +245,17 @@ class GroupPnlChartProvider extends ChangeNotifier {
         final epoch = _parseTradeTime(trade.norentm);
         if (epoch == null) continue;
 
-        // Keep the earliest trade time for this token+prd
         if (epoch < _entryEpochs[key]!) {
           _entryEpochs[key] = epoch;
         }
       }
-    } catch (e) {
-      debugPrint('Trade book fetch failed: $e');
-    }
+    } catch (_) {}
 
-    // Log detected entry times for debugging
-    for (var pos in _positions) {
-      final token = pos['token']?.toString() ?? '';
-      final prd = pos['prd']?.toString() ?? '';
-      final key = '$token|$prd';
-      final epoch = _entryEpochs[key] ?? 0;
-      final entryTime = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
-      print('>>> GroupPnlChart entry: ${pos['tsym']} ($prd) → $entryTime');
+    // Fall back to market open for any position where no trade was found
+    for (var key in posKeys) {
+      if (_entryEpochs[key] == 9999999999) {
+        _entryEpochs[key] = marketOpenEpoch;
+      }
     }
 
     _tradeBookFetched = true;

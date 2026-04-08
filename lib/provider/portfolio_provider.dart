@@ -2957,7 +2957,7 @@ changeHoldingsTabIndex(int index) {
     _totUnRealMtm = totalUnRealMtm.toStringAsFixed(2);
     _totBookedPnL = totalBookedPnL.toStringAsFixed(2);
 
-    debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
+    // debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
     notifyListeners();
   }
 
