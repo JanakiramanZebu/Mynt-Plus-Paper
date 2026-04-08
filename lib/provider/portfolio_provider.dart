@@ -2177,14 +2177,38 @@ changeHoldingsTabIndex(int index) {
     final isCustomGrp = _groupedBySymbol[symbol]['isCustomGrp'] ?? false;
 
     if (groupData != null && groupData.isNotEmpty) {
-      // Sync lp values from _allPostionList to group data (group data is JSON copy, not reference)
+      // Sync live position data from _allPostionList to group data (group data is JSON copy, not reference)
       for (var groupPosition in groupData) {
         final groupToken = groupPosition['token']?.toString();
+        final groupPrd = groupPosition['prd']?.toString();
         if (groupToken != null) {
-          // Find the corresponding position in _allPostionList to get updated lp
+          // Find the corresponding position in _allPostionList to get updated values
           for (var pos in _allPostionList) {
-            if (pos.token == groupToken) {
+            if (pos.token == groupToken && (groupPrd == null || pos.prd == groupPrd)) {
+              // Sync all live fields - qty, netqty, buy/sell data, lp, P&L
               groupPosition['lp'] = pos.lp;
+              groupPosition['qty'] = pos.qty;
+              groupPosition['netqty'] = pos.netqty;
+              groupPosition['daybuyqty'] = pos.daybuyqty;
+              groupPosition['daysellqty'] = pos.daysellqty;
+              groupPosition['daybuyamt'] = pos.daybuyamt;
+              groupPosition['daysellamt'] = pos.daysellamt;
+              groupPosition['daybuyavgprc'] = pos.daybuyavgprc;
+              groupPosition['daysellavgprc'] = pos.daysellavgprc;
+              groupPosition['cfbuyqty'] = pos.cfbuyqty;
+              groupPosition['cfsellqty'] = pos.cfsellqty;
+              groupPosition['cfbuyamt'] = pos.cfbuyamt;
+              groupPosition['cfsellamt'] = pos.cfsellamt;
+              groupPosition['cfbuyavgprc'] = pos.cfbuyavgprc;
+              groupPosition['cfsellavgprc'] = pos.cfsellavgprc;
+              groupPosition['rpnl'] = pos.rpnl;
+              groupPosition['urmtom'] = pos.urmtom;
+              groupPosition['netavgprc'] = pos.netavgprc;
+              groupPosition['avgPrc'] = pos.avgPrc;
+              groupPosition['totbuyamt'] = pos.totbuyamt;
+              groupPosition['totsellamt'] = pos.totsellamt;
+              groupPosition['totbuyavgprc'] = pos.totbuyavgprc;
+              groupPosition['totsellavgprc'] = pos.totsellavgprc;
               break;
             }
           }
@@ -2458,11 +2482,34 @@ changeHoldingsTabIndex(int index) {
             "DEBUG GROUP LOAD start -> ${element.posname} existing:$existingCount");
 
         if (element.posdata != null && element.posdata!.isNotEmpty) {
-          // Convert each PositionBookModel to a Map
+          // Convert each PositionBookModel to a Map, then sync with live position data
           for (var pos in element.posdata!) {
-            debugPrint(
-                "DEBUG GROUP ITEM -> ${element.posname} tsym:${pos.tsym} exch:${pos.exch} qty:${pos.qty} netqty:${pos.netqty} exp:${pos.expDate}");
-            groupListData.add(jsonDecode(jsonEncode(pos)));
+            final posMap = jsonDecode(jsonEncode(pos)) as Map<String, dynamic>;
+            final posToken = posMap['token']?.toString() ?? '';
+            final posPrd = posMap['prd']?.toString() ?? '';
+
+            // Find matching live position from _allPostionList by token + prd
+            // This ensures custom group shows current qty/netqty/P&L, not stale saved data
+            PositionBookModel? livePos;
+            for (var lp in _allPostionList) {
+              if (lp.token == posToken && lp.prd == posPrd) {
+                livePos = lp;
+                break;
+              }
+            }
+
+            if (livePos != null) {
+              // Replace with live position data (has current qty, netqty, P&L, etc.)
+              final liveMap = jsonDecode(jsonEncode(livePos)) as Map<String, dynamic>;
+              debugPrint(
+                  "DEBUG GROUP ITEM (live) -> ${element.posname} tsym:${livePos.tsym} exch:${livePos.exch} qty:${livePos.qty} netqty:${livePos.netqty} exp:${livePos.expDate}");
+              groupListData.add(liveMap);
+            } else {
+              // No matching live position found - use saved data as fallback
+              debugPrint(
+                  "DEBUG GROUP ITEM (saved) -> ${element.posname} tsym:${pos.tsym} exch:${pos.exch} qty:${pos.qty} netqty:${pos.netqty} exp:${pos.expDate}");
+              groupListData.add(posMap);
+            }
           }
         }
 
