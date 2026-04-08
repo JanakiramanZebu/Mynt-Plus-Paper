@@ -23,6 +23,56 @@ class _PledgeHistoryScreenState extends State<PledgeHistoryScreen> {
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
 
   static const int _totalColumns = 7;
+  static const int _pageSize = 15;
+
+  /// Number of records currently visible in the table.
+  int _displayedCount = _pageSize;
+
+  /// Whether a simulated load-more delay is in progress.
+  bool _isLoadingMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tableScrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant PledgeHistoryScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.searchQuery != oldWidget.searchQuery) {
+      _displayedCount = _pageSize;
+    }
+  }
+
+  /// Triggers when the user scrolls within ~200 px of the bottom.
+  void _onScroll() {
+    if (_isLoadingMore) return;
+    final maxScroll = _tableScrollController.position.maxScrollExtent;
+    final currentScroll = _tableScrollController.offset;
+    if (currentScroll >= maxScroll - 200) {
+      _loadMore();
+    }
+  }
+
+  /// Shows the next batch of rows (with a brief loading indicator).
+  void _loadMore() {
+    // Nothing more to load — total count is computed in build().
+    // We guard the upper bound there; here we just bump the counter.
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    // Small delay so the user sees the loading indicator and the browser
+    // doesn't jank when painting many new rows at once.
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() {
+        _displayedCount += _pageSize;
+        _isLoadingMore = false;
+      });
+    });
+  }
 
   void _onSort(int columnIndex) {
     setState(() {
@@ -74,6 +124,7 @@ class _PledgeHistoryScreenState extends State<PledgeHistoryScreen> {
 
   @override
   void dispose() {
+    _tableScrollController.removeListener(_onScroll);
     _tableScrollController.dispose();
     _hoveredRowIndex.dispose();
     super.dispose();
@@ -301,6 +352,11 @@ class _PledgeHistoryScreenState extends State<PledgeHistoryScreen> {
         );
       }
 
+      // ── Progressive loading: only render up to _displayedCount rows ──
+      final int totalFiltered = dataList.length;
+      final bool hasMore = _displayedCount < totalFiltered;
+      final visibleList = dataList.take(_displayedCount).toList();
+
       return LayoutBuilder(
         builder: (context, constraints) {
           final double totalWidth = constraints.maxWidth - 32;
@@ -309,8 +365,8 @@ class _PledgeHistoryScreenState extends State<PledgeHistoryScreen> {
           final double reqIdWidth = totalWidth * 0.20;
           final double qtyWidth = totalWidth * 0.10;
           final double segmentsWidth = totalWidth * 0.10;
-          final double statusWidth = totalWidth * 0.12;
-          final double reasonWidth = totalWidth * 0.20;
+          final double statusWidth = totalWidth * 0.17;
+          final double reasonWidth = totalWidth * 0.15;
 
           final columnWidths = {
             0: shadcn.FixedTableSize(isinWidth),
@@ -349,70 +405,110 @@ class _PledgeHistoryScreenState extends State<PledgeHistoryScreen> {
                   Expanded(
                     child: SingleChildScrollView(
                       controller: _tableScrollController,
-                      child: shadcn.Table(
-                        defaultRowHeight: const shadcn.FixedTableSize(52),
-                        columnWidths: columnWidths,
-                        rows: dataList.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final item = entry.value;
+                      child: Column(
+                        children: [
+                          shadcn.Table(
+                            defaultRowHeight: const shadcn.FixedTableSize(52),
+                            columnWidths: columnWidths,
+                            rows: visibleList.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final item = entry.value;
 
-                          return shadcn.TableRow(
-                            cells: [
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 0,
-                                child: Text(
-                                  item.datetime ?? '--',
-                                  style: _getTextStyle(context),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                              return shadcn.TableRow(
+                                cells: [
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 0,
+                                    child: Text(
+                                      item.datetime ?? '--',
+                                      style: _getTextStyle(context),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 1,
+                                    child: Text(item.isin ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 2,
+                                    child: Text(item.symbol ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 3,
+                                    child: Text(
+                                      item.isinreqid ?? '--',
+                                      style: _getTextStyle(context),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 4,
+                                    alignRight: true,
+                                    child: Text(item.quantity ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 5,
+                                    child: Text(item.segments ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 6,
+                                    child:
+                                        _buildStatusBadge(context, item.status),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                          // Loading indicator / record count footer
+                          if (_isLoadingMore)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.5),
+                              ),
+                            )
+                          else if (hasMore)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                'Showing ${visibleList.length} of $totalFiltered records — scroll down for more',
+                                style: _getTextStyle(context).copyWith(
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                  fontSize: 12,
                                 ),
                               ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 1,
-                                child: Text(item.isin ?? '--',
-                                    style: _getTextStyle(context)),
-                              ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 2,
-                                child: Text(item.symbol ?? '--',
-                                    style: _getTextStyle(context)),
-                              ),
-
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 3,
-                                child: Text(
-                                  item.isinreqid ?? '--',
-                                  style: _getTextStyle(context),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                'Showing all $totalFiltered records',
+                                style: _getTextStyle(context).copyWith(
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                  fontSize: 12,
                                 ),
                               ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 4,
-                                alignRight: true,
-                                child: Text(item.quantity ?? '--',
-                                    style: _getTextStyle(context)),
-                              ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 5,
-                                child: Text(item.segments ?? '--',
-                                    style: _getTextStyle(context)),
-                              ),
-                              
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 6,
-                                child: _buildStatusBadge(context, item.status),
-                              ),
-                            ],
-                          );
-                        }).toList(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
