@@ -21,6 +21,7 @@ import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
+import 'group_pnl_chart_dialog.dart';
 import 'position_group_listcard_web.dart';
 import 'position_group_table_web.dart';
 import 'positionlist_bottom_sheet_web.dart';
@@ -538,6 +539,18 @@ class GroupTileHeader extends ConsumerWidget {
                 _HeaderExitButton(
                   groupSymbol: groupSymbol,
                   groupList: groupList,
+                ),
+                const SizedBox(width: 4),
+                // P&L chart button
+                _HeaderActionButton(
+                  icon: assets.linechart,
+                  tooltip: 'P&L Chart',
+                  onTap: () => showGroupPnlChartDialog(
+                    context,
+                    ref: ref,
+                    groupName: groupSymbol,
+                    groupList: groupList,
+                  ),
                 ),
               ],
             ],

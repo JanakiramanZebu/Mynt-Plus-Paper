@@ -32,6 +32,7 @@ import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 
+import 'group_pnl_chart_provider.dart';
 import 'websocket_provider.dart';
 
 final portfolioProvider =
@@ -2100,6 +2101,19 @@ changeHoldingsTabIndex(int index) {
 
       // Recalculate totals
       _recalculateTotalPnl();
+
+      // Update chart provider if chart dialog is open
+      try {
+        final chartProv = ref.read(groupPnlChartProvider);
+        if (chartProv.activeGroupName != null && newLp != null) {
+          chartProv.onTickUpdate(
+            token: token,
+            ltp: newLp,
+            isDay: _isDay,
+            isNetPnl: _isNetPnl,
+          );
+        }
+      } catch (_) {}
     }
   }
 
