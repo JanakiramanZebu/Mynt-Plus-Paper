@@ -77,20 +77,12 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
   // Build groups content - show single "No Groups" if both are empty, otherwise show sections
   Widget _buildGroupsContent(BuildContext context, PortfolioProvider positionBook) {
     try {
-      debugPrint('>>> _buildGroupsContent START');
-      debugPrint('groupPositionSym count: ${positionBook.groupPositionSym.length}');
-      debugPrint('groupedBySymbol keys: ${positionBook.groupedBySymbol.keys.toList()}');
-
       // Check if both default and custom groups are empty
       final hasDefaultGroups = _hasGroups(positionBook, 'default');
       final hasCustomGroups = _hasGroups(positionBook, 'custom');
 
-      debugPrint('hasDefaultGroups: $hasDefaultGroups');
-      debugPrint('hasCustomGroups: $hasCustomGroups');
-
       // If both are empty, show single "No Groups" message
       if (!hasDefaultGroups && !hasCustomGroups) {
-        debugPrint('>>> Showing NoDataFound - no groups');
         return const NoDataFound(
           title: "No Groups Available",
           subtitle: "There are no position groups available at the moment.",
@@ -100,7 +92,6 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
       }
 
       // Otherwise, show sections
-      debugPrint('>>> Building group sections');
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -119,9 +110,7 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
         ],
       );
     } catch (e, stackTrace) {
-      debugPrint('>>> _buildGroupsContent EXCEPTION');
-      debugPrint('Error: $e');
-      debugPrint('Stack: $stackTrace');
+      debugPrint('_buildGroupsContent error: $e\n$stackTrace');
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -163,43 +152,26 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
   // Check if groups exist for a given filter type
   bool _hasGroups(PortfolioProvider positionBook, String filterType) {
     try {
-      debugPrint('>>> _hasGroups START (filterType: $filterType)');
-
       if (positionBook.groupPositionSym.isEmpty ||
           positionBook.groupedBySymbol.isEmpty) {
-        debugPrint('>>> No groups found - empty data');
         return false;
       }
 
       final groupSymbolsSnapshot = List<String>.from(positionBook.groupPositionSym);
       final groupedBySymbolSnapshot = Map<String, dynamic>.from(positionBook.groupedBySymbol);
 
-      debugPrint('Total groups in snapshot: ${groupSymbolsSnapshot.length}');
-
-      // Filter groups based on type
       final filteredGroups = groupSymbolsSnapshot.where((groupSymbol) {
         final groupData = groupedBySymbolSnapshot[groupSymbol];
-        if (groupData == null) {
-          debugPrint('Group $groupSymbol has null data');
-          return false;
-        }
+        if (groupData == null) return false;
 
         final isCustomGrp = groupData["isCustomGrp"] ?? false;
         final groupList = (groupData['groupList'] as List?) ?? [];
 
-        debugPrint('Group: $groupSymbol, isCustom: $isCustomGrp, positions: ${groupList.length}');
-
-        // For custom groups, show even if empty (user just created it)
-        // For default groups, only show if it has F&O positions
         if (!isCustomGrp) {
-          // Default group - must have F&O positions
           final hasFnoPositions = groupList.any((pos) =>
             pos != null && _isFutureOrOption(pos)
           );
-          if (!hasFnoPositions) {
-            debugPrint('Skipping default group $groupSymbol - no F&O positions');
-            return false;
-          }
+          if (!hasFnoPositions) return false;
         }
 
         if (filterType == 'default') {
@@ -210,12 +182,8 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
         return true;
       }).toList();
 
-      debugPrint('Filtered groups ($filterType): ${filteredGroups.length}');
       return filteredGroups.isNotEmpty;
-    } catch (e, stackTrace) {
-      debugPrint('>>> _hasGroups EXCEPTION (filterType: $filterType)');
-      debugPrint('Error: $e');
-      debugPrint('Stack: $stackTrace');
+    } catch (e) {
       return false;
     }
   }

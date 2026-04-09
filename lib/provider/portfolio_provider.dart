@@ -32,6 +32,7 @@ import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 
+import 'group_pnl_chart_provider.dart';
 import 'websocket_provider.dart';
 
 final portfolioProvider =
@@ -841,6 +842,10 @@ changeHoldingsTabIndex(int index) {
           }
 
           await requestWSPosition(context: context, isSubscribe: true);
+
+          // Fetch saved custom groups in background — doesn't block main flow.
+          // Merges custom group data with live positions after fetch completes.
+          _refreshCustomGroups();
         } else {
           //
 
@@ -1778,57 +1783,89 @@ changeHoldingsTabIndex(int index) {
 // Fetching data from the api and stored in a variable
   Future fetchPosGroupSymbol(String name, bool isCreateGrp) async {
     try {
-      debugPrint('>>> fetchPosGroupSymbol START');
-      debugPrint('Group Name: $name');
-      debugPrint('isCreateGrp: $isCreateGrp');
-
       _getPositionGroupSymbol = await api.getGroupPosition();
-      debugPrint('API getGroupPosition completed');
 
-      // NOTE: Don't reset totals to 0.00 here - they will be recalculated by _updateTotalGroupValues()
-      // _totPnL = "0.00";
-      // _totMtm = "0.00";
       _exitAll = false;
-      // _totBookedPnL = "0.00";
-      // _totUnRealMtm = '0.00';
 
       if (isCreateGrp) {
         _posSelection = "Group by symbol";
-        debugPrint('Set posSelection to "Group by symbol"');
       }
 
-      debugPrint('Calling getPositionGroupNames...');
       getPositionGroupNames();
-      debugPrint('Groups found: ${_groupPositionSym.length}');
-      debugPrint('Group symbols: $_groupPositionSym');
 
       // Recalculate P&L for all groups after grouping
-      debugPrint('Recalculating P&L for ${_groupPositionSym.length} groups...');
       for (var symbol in _groupPositionSym) {
         if (_groupedBySymbol.containsKey(symbol)) {
           final groupData = _groupedBySymbol[symbol]['groupList'];
           final isCustomGrp = _groupedBySymbol[symbol]['isCustomGrp'] ?? false;
           if (groupData != null && groupData.isNotEmpty) {
-            debugPrint('Calculating P&L for group: $symbol (${groupData.length} positions)');
             positionGroupCal(_isDay, groupData, symbol, isCustomGrp);
-          } else {
-            debugPrint('Skipping empty group: $symbol');
           }
         }
       }
-      debugPrint('>>> fetchPosGroupSymbol SUCCESS');
-    } catch (e, stackTrace) {
-      debugPrint('>>> fetchPosGroupSymbol EXCEPTION');
-      debugPrint('Error: $e');
-      debugPrint('Stack: $stackTrace');
-    } finally {
-      // Always notify listeners even if error occurs to ensure UI updates
-      // Use post-frame callback to avoid mouse tracker assertion errors
-      debugPrint('Calling notifyListeners');
+    } catch (_) {}
+    finally {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });
     }
+  }
+
+  /// Refresh custom groups in the background without blocking the main flow.
+  /// Fetches saved groups from API, syncs their positions with the live
+  /// position book, removes stale positions from both local state AND
+  /// the server (via deletePositionGrpSym API), and recalculates P&L.
+  void _refreshCustomGroups() async {
+    try {
+      _getPositionGroupSymbol = await api.getGroupPosition();
+
+      // Sync custom group positions with live data from _allPostionList.
+      // Positions that no longer exist are removed from the server too.
+      for (var group in _getPositionGroupSymbol) {
+        if (group.posdata == null || group.posdata!.isEmpty) continue;
+
+        final groupName = group.posname ?? '';
+        final syncedPositions = <PositionBookModel>[];
+        final staleSymbols = <String>[];
+
+        for (var savedPos in group.posdata!) {
+          // Find matching live position by token + prd
+          final livePos =
+              _allPostionList.cast<PositionBookModel?>().firstWhere(
+                    (p) => p?.token == savedPos.token && p?.prd == savedPos.prd,
+                    orElse: () => null,
+                  );
+          if (livePos != null) {
+            syncedPositions.add(livePos);
+          } else if (savedPos.tsym != null && groupName.isNotEmpty) {
+            // Position no longer exists — queue for server cleanup
+            staleSymbols.add(savedPos.tsym!);
+          }
+        }
+
+        group.posdata = syncedPositions;
+
+        // Remove stale positions from server in background (fire-and-forget)
+        for (var tsym in staleSymbols) {
+          api.deletePositionGrpSym(groupName, tsym).ignore();
+        }
+      }
+
+      // Rebuild groups with synced data
+      getPositionGroupNames();
+
+      // Recalculate P&L for all groups
+      for (var symbol in _groupPositionSym) {
+        if (_groupedBySymbol.containsKey(symbol)) {
+          final groupData = _groupedBySymbol[symbol]['groupList'];
+          final isCustomGrp =
+              _groupedBySymbol[symbol]['isCustomGrp'] ?? false;
+          if (groupData != null && groupData.isNotEmpty) {
+            positionGroupCal(_isDay, groupData, symbol, isCustomGrp);
+          }
+        }
+      }
+    } catch (_) {}
   }
 
 // Fetching data from the api and stored in a variable
@@ -2100,6 +2137,19 @@ changeHoldingsTabIndex(int index) {
 
       // Recalculate totals
       _recalculateTotalPnl();
+
+      // Update chart provider if chart dialog is open
+      try {
+        final chartProv = ref.read(groupPnlChartProvider);
+        if (chartProv.activeGroupName != null && newLp != null) {
+          chartProv.onTickUpdate(
+            token: token,
+            ltp: newLp,
+            isDay: _isDay,
+            isNetPnl: _isNetPnl,
+          );
+        }
+      } catch (_) {}
     }
   }
 
@@ -2472,14 +2522,7 @@ changeHoldingsTabIndex(int index) {
           continue;
         }
 
-        // Handle posdata - ensure it's always a List
-        // Show ALL positions in custom groups (no filtering for now)
         List<dynamic> groupListData = [];
-        // Debug: existing count before merging
-        final existingCount =
-            _groupedBySymbol[element.posname]?['groupList']?.length ?? 0;
-        debugPrint(
-            "DEBUG GROUP LOAD start -> ${element.posname} existing:$existingCount");
 
         if (element.posdata != null && element.posdata!.isNotEmpty) {
           // Convert each PositionBookModel to a Map, then sync with live position data
@@ -3043,7 +3086,7 @@ changeHoldingsTabIndex(int index) {
     _totUnRealMtm = totalUnRealMtm.toStringAsFixed(2);
     _totBookedPnL = totalBookedPnL.toStringAsFixed(2);
 
-    debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
+    // debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
     notifyListeners();
   }
 

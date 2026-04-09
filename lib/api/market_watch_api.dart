@@ -78,6 +78,36 @@ print("res.body: ${res.body}");
   }
 }
 
+  /// Fetch TPSeries candle data with clean timestamp handling.
+  /// [startEpoch] and [endEpoch] are Unix epoch seconds.
+  Future<TpSeries> getTPSeriesChart({
+    required String exchange,
+    required String token,
+    required String interval,
+    required int startEpoch,
+    required int endEpoch,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.tpseries);
+      final res = await apiClient.post(
+        uri,
+        headers: defaultHeaders,
+        body:
+            '''jData={"uid":"${prefs.clientId}","exch":"$exchange","token":"$token","st":"$startEpoch","et":"$endEpoch","intrv":"$interval"}&jKey=${prefs.clientSession}''',
+      );
+      final json = jsonDecode(res.body);
+      if (json is List) {
+        return TpSeries.fromJson({"data": json});
+      } else if (json is Map) {
+        return TpSeries.fromJson(json as Map<String, dynamic>);
+      } else {
+        throw Exception("Unexpected JSON type: ${json.runtimeType}");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 // Edit watchlist name from kambala
 
   Future<WatchlistRenameModel> getWatchListRename(
