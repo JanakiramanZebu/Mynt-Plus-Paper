@@ -804,6 +804,9 @@ class _HeaderExitButton extends ConsumerWidget {
           await _exitAllGroupPositions(context, positionBook, ref);
           if (context.mounted) {
             Navigator.of(context).maybePop();
+            // Refresh positions to reflect exited orders
+            positionBook.fetchPositionBook(context, positionBook.isDay,
+                isRefresh: true);
           }
         },
       ),
@@ -870,7 +873,8 @@ class _HeaderExitButton extends ConsumerWidget {
                 placeOrderInput, orderProv.ip);
 
             if (placeOrderModel.stat?.toLowerCase() != "ok") {
-              break;
+              debugPrint("Exit failed for ${element.tsym}: ${placeOrderModel.emsg}");
+              // Continue with remaining positions instead of stopping
             }
           }
         }
@@ -2127,6 +2131,9 @@ class GroupExitAllButton extends ConsumerWidget {
           await _exitAllGroupPositions(context, positionBook, ref);
           if (context.mounted) {
             Navigator.of(context).maybePop();
+            // Refresh positions to reflect exited orders
+            positionBook.fetchPositionBook(context, positionBook.isDay,
+                isRefresh: true);
           }
         },
       ),
@@ -2206,9 +2213,9 @@ class GroupExitAllButton extends ConsumerWidget {
             final placeOrderModel = await positionBook.api.getPlaceOrder(
                 placeOrderInput, orderProv.ip);
 
-            // Stop on first failure (same as Exit All behavior)
             if (placeOrderModel.stat?.toLowerCase() != "ok") {
-              break;
+              debugPrint("Exit failed for ${element.tsym}: ${placeOrderModel.emsg}");
+              // Continue with remaining positions instead of stopping
             }
           }
         }
