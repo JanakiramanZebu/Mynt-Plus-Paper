@@ -1195,11 +1195,8 @@ class _DraggableIpoOrderScreenDialogState
       children: [
         // Backdrop
         Positioned.fill(
-          child: GestureDetector(
-            onTap: widget.onClose,
-            child: Container(
-              color: Colors.black.withOpacity(0.4),
-            ),
+          child: Container(
+            color: Colors.black.withOpacity(0.4),
           ),
         ),
         // Actual dialog
