@@ -9,7 +9,11 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
+import '../../../provider/transcation_provider.dart';
+import '../../../provider/fund_provider.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import 'mf_cancel_alert_web.dart';
+import 'mf_order_bottomsheet_web.dart';
 
 class mforderdetscreenWeb extends StatefulWidget {
   const mforderdetscreenWeb({super.key});
@@ -19,6 +23,8 @@ class mforderdetscreenWeb extends StatefulWidget {
 
 class _mforderdetscreenWebState extends State<mforderdetscreenWeb>
     with SingleTickerProviderStateMixin {
+  bool _isReinitiateLoading = false;
+
   @override
   final inProgressStatuses = {
     "PAYMENT NOT INITIATED",
@@ -26,10 +32,7 @@ class _mforderdetscreenWebState extends State<mforderdetscreenWeb>
     "PAYMENT INITATED",
     "PAYMENT INIT",
     "PAYMENT COMPLETED",
-    "CANCEL ERROR",
     "WAIT FOR ALLOTMENT",
-    "MODIFY REJECTED",
-    "PAYMENT REJECTED"
   };
   @override
   Widget build(BuildContext context) {
@@ -118,9 +121,9 @@ class _mforderdetscreenWebState extends State<mforderdetscreenWeb>
                   ),
                   const SizedBox(height: 16),
                   _buildOrderHeader(theme, mfdata),
-                  const SizedBox(height: 18),
                   _buildCancelButton(theme, mfdata, context),
-                  const SizedBox(height: 24),
+                  _buildReinitiateButton(theme, mfdata, context, ref),
+                  const SizedBox(height: 8),
                   _buildDetailsSection(theme, mfdata),
                   const SizedBox(height: 20),
                   if (mfdata.mforderdet?.data![0].status != "PLACED") ...[
@@ -215,45 +218,20 @@ class _mforderdetscreenWebState extends State<mforderdetscreenWeb>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
-                  ? theme.isDarkMode
-                      ? MyntColors.profitDark.withOpacity(0.1)
-                      : MyntColors.profit.withOpacity(0.1)
-                  : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
-                          mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
-                          mfdata.mforderdet?.data?[0].status ==
-                              "PAYMENT DECLINED"
-                      ? theme.isDarkMode
-                          ? MyntColors.lossDark.withOpacity(0.1)
-                          : MyntColors.loss.withOpacity(0.1)
-                      : mfdata.mforderdet?.data?[0].status ==
-                              inProgressStatuses
-                                  .contains(mfdata.mforderdet?.data?[0].status)
-                          ? MyntColors.pending.withOpacity(0.1)
-                          : MyntColors.pending.withOpacity(0.1), // default fallback
+              color: _getStatusColor(mfdata.mforderdet?.data?[0].status, theme).withOpacity(0.1),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Text(
-                _getListStatusText(mfdata.mforderdet?.data?[0].status),
-                style: MyntWebTextStyles.para(
-                context,
-                color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
-                    ? theme.isDarkMode
-                        ? MyntColors.profitDark
-                        : MyntColors.profit
-                    : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
-                            mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
-                            mfdata.mforderdet?.data?[0].status ==
-                                "PAYMENT DECLINED"
-                        ? theme.isDarkMode
-                            ? MyntColors.lossDark
-                            : MyntColors.loss
-                        : mfdata.mforderdet?.data?[0].status ==
-                                inProgressStatuses.contains(
-                                    mfdata.mforderdet?.data?[0].status)
-                            ? MyntColors.pending
-                            : MyntColors.pending,
-                ),
+            child: Tooltip(
+              message: _getListStatusText(mfdata.mforderdet?.data?[0].status),
+              child: Text(
+                  _getListStatusText(mfdata.mforderdet?.data?[0].status),
+                  style: MyntWebTextStyles.para(
+                  context,
+                  color: _getStatusColor(mfdata.mforderdet?.data?[0].status, theme),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+              ),
             ),
           ),
         ],
@@ -267,14 +245,32 @@ class _mforderdetscreenWebState extends State<mforderdetscreenWeb>
     return assets.warningIcon;
   }
 
-  String _getListStatusText(String? status) {
-    if (status == "ALLOCATED") return 'ALLOCATED';
-    if (status == "REJECTED") return 'REJECTED';
-    if (status == "CANCELLED") return 'CANCELLED';
-    if (status == "PAYMENT DECLINED") return 'PAYMENT DECLINED';
-    if (status != null && inProgressStatuses.contains(status)) return status;
+  static const _greenStatuses = {
+    "ALLOCATED",
+    "PAYMENT COMPLETED",
+    "PLACED",
+  };
+  static const _redStatuses = {
+    "REJECTED",
+    "CANCELLED",
+    "PAYMENT DECLINED",
+    "PAYMENT REJECTED",
+    "CANCEL ERROR",
+    "MODIFY REJECTED",
+    "INVALID",
+  };
 
-    return status ?? 'Unknown';
+  Color _getStatusColor(String? status, ThemesProvider theme) {
+    if (_greenStatuses.contains(status)) {
+      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+    } else if (_redStatuses.contains(status)) {
+      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    }
+    return colors.pending;
+  }
+
+  String _getListStatusText(String? status) {
+    return status ?? '-';
   }
 
   Widget _buildDetailsSection(ThemesProvider theme, dynamic mfdata) {
@@ -323,51 +319,103 @@ class _mforderdetscreenWebState extends State<mforderdetscreenWeb>
         mfdata.mforderdet?.data?[0].buySell == "R" &&
         mfdata.mforderdet?.data?[0].status == "PENDING";
 
-    if (!shouldShowCancel) return const SizedBox();
+    if (!shouldShowCancel) return const SizedBox.shrink();
 
-    return Row(
-      children: [
-        Expanded(
-          flex: 6,
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                if (mfdata.mforderdet?.data != null) {
-                  await showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return MfCancelAlertWeb(
-                          mfcancel: mfdata.mforderdet!.data!, message: "order");
-                    },
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: theme.isDarkMode
-                          ? MyntColors.textSecondaryDark.withOpacity(0.6)
-                          : MyntColors.primary,
-                      // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      side: theme.isDarkMode
-                          ? null
-                          : BorderSide(
-                              color: MyntColors.primary,
-                              width: 1,
-                            ),
-                minimumSize: const Size(double.infinity, 40), // height: 48
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: SizedBox(
+        height: 44,
+        child: MyntOutlinedButton(
+          label: "Cancel Order",
+          onPressed: () async {
+            if (mfdata.mforderdet?.data != null) {
+              await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return MfCancelAlertWeb(
+                      mfcancel: mfdata.mforderdet!.data!, message: "order");
+                },
+              );
+            }
+          },
+          isFullWidth: true,
+          textColor: resolveThemeColor(context,
+              dark: MyntColors.lossDark, light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReinitiateButton(
+      ThemesProvider theme, dynamic mfdata, BuildContext context, WidgetRef ref) {
+    final status = mfdata.mforderdet?.data?[0].status;
+    final shouldShow = status == 'PAYMENT NOT INITIATED' ||
+        status == 'MODIFIED' ||
+        status == 'CANCEL ERROR' ||
+        status == 'MODIFY REJECTED' ||
+        status == 'PAYMENT REJECTED';
+
+    if (!shouldShow) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: SizedBox(
+        height: 44,
+        child: MyntPrimaryButton(
+          label: "Reinitiate Payment",
+          isLoading: _isReinitiateLoading,
+          onPressed: _isReinitiateLoading ? () {} : () async {
+            setState(() => _isReinitiateLoading = true);
+
+            await ref.read(fundProvider).fetchFunds(context);
+            await ref.read(transcationProvider).fetchfundbanks(context);
+            ref.read(transcationProvider).initialdata(context);
+            await mfdata.fetchUpiDetail('', context);
+
+            if (!context.mounted) return;
+
+            // Save order data before closing
+            final orderData = mfdata.mforderdet?.data![0];
+
+            if (mounted) setState(() => _isReinitiateLoading = false);
+
+            // Close the details panel and show payment dialog after it's fully closed
+            Navigator.pop(context);
+
+            // Use a short delay to ensure the pop animation completes and context is clean
+            await Future.delayed(const Duration(milliseconds: 100));
+
+            final navContext = Navigator.of(context, rootNavigator: true).context;
+            if (!navContext.mounted) return;
+
+            showDialog(
+              context: navContext,
+              barrierDismissible: false,
+              builder: (dialogContext) => WillPopScope(
+                onWillPop: () async => mfdata.ispaymentcalled != true,
+                child: Dialog(
+                  insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SizedBox(
+                    width: MediaQuery.of(dialogContext).size.width >= 1100
+                        ? MediaQuery.of(dialogContext).size.width * 0.30
+                        : MediaQuery.of(dialogContext).size.width >= 800
+                            ? MediaQuery.of(dialogContext).size.width * 0.50
+                            : MediaQuery.of(dialogContext).size.width * 0.90,
+                    child: MfOrderBottomsheetWeb(
+                      data: orderData,
+                      condval: 'reinitiatefromportfolio',
+                    ),
+                  ),
                 ),
               ),
-              child: Text(
-                          "Cancel Order",
-                          style: MyntWebTextStyles.buttonXl(context, color: Colors.white)
-                      ),
-            ),
-          ),
+            );
+          },
+          isFullWidth: true,
         ),
-      ],
+      ),
     );
   }
 

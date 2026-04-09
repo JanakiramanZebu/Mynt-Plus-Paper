@@ -1021,6 +1021,7 @@ class AuthProvider extends DefaultChangeNotifier {
         ref.read(indexListProvider).clearSessionState();
 
         ref.read(fundProvider).clearFunds();
+        ref.read(transcationProvider).resetBankDetails();
 
         // Clear banner and text nugget seen storage on logout
         ref.read(bannerProvider).onUserLogout();

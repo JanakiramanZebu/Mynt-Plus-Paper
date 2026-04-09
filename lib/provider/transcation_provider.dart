@@ -281,6 +281,19 @@ class TranctionProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  void resetBankDetails() {
+    _accno = '';
+    _bankname = '';
+    _ifsc = '';
+    _initbank = '';
+    _multipleAccno = '';
+    _indexss = 0;
+    _bankdetails = null;
+    _clientBankDetails = null;
+    _decryptclientcheck = null;
+    notifyListeners();
+  }
+
   // Reset bottom sheet state when starting a new payment process
   void resetBottomSheetState() {
     _isUpiAppsBottomSheetShown = false;
@@ -830,14 +843,18 @@ class TranctionProvider extends DefaultChangeNotifier {
         final status = response.data?.status ?? '';
 
         if (status == "SUCCESS" || status == "FAILED" || status == "REJECTED" || status == "EXPIRED") {
+          _qrCheckStatusResponse = response;
           _upiCollectPolling = false;
           timer.cancel();
+          notifyListeners();
           onStatusUpdate?.call(status);
         } else if (status == "FAILURE" || status == "PENDING FROM BANK" || status == "NODATA" || status == "PENDING") {
           // Continue polling
         } else {
+          _qrCheckStatusResponse = response;
           _upiCollectPolling = false;
           timer.cancel();
+          notifyListeners();
           onStatusUpdate?.call(status);
         }
       } catch (e) {
@@ -897,6 +914,12 @@ class TranctionProvider extends DefaultChangeNotifier {
         // Keep polling on error
       }
     });
+  }
+
+  void clearPaymentResult() {
+    _razorpayTranstationRes = null;
+    _qrCheckStatusResponse = null;
+    notifyListeners();
   }
 
   void stopQrStatusPolling() {

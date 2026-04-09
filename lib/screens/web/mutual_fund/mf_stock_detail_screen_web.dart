@@ -383,6 +383,7 @@ class _MFStockDetailScreenWebState extends State<MFStockDetailScreenWeb>
     final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Dialog(
         backgroundColor: resolveThemeColor(context,
             dark: MyntColors.backgroundColorDark,
@@ -413,6 +414,7 @@ class _MFStockDetailScreenWebState extends State<MFStockDetailScreenWeb>
     final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Dialog(
         backgroundColor: resolveThemeColor(context,
             dark: MyntColors.backgroundColorDark,

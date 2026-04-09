@@ -431,7 +431,7 @@ mixin MutualFundApi on ApiCore {
       String amt,
       String noofinstallment,
       String enddate,
-      String mandateId, [bool isAdditional = false]) async {
+      String mandateId, [bool isAdditional = false, bool firstInstallment = false]) async {
     try {
       final uri = Uri.parse(apiLinks.mfXSipordernew);
       final payload = {
@@ -447,6 +447,9 @@ mixin MutualFundApi on ApiCore {
           };
       if (isAdditional) {
         payload["additional"] = 'true';
+      }
+      if (firstInstallment) {
+        payload["first_order"] = "Y";
       }
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
