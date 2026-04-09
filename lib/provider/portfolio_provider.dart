@@ -34,6 +34,7 @@ import 'index_list_provider.dart';
 
 import 'group_pnl_chart_provider.dart';
 import 'websocket_provider.dart';
+import 'package:mynt_plus/utils/pip_service.dart';
 
 final portfolioProvider =
     ChangeNotifierProvider((ref) => PortfolioProvider(ref));
@@ -803,6 +804,10 @@ changeHoldingsTabIndex(int index) {
         _totUnRealMtm = '0.00';
         _posSelection = "All position";
         _postionBookModel = _tpostionBookModel;
+        // Push zeroed P&L to PiP (no positions)
+        if (PipService.isOpen) {
+          PipService.updatePipValues(_totPnL, _totMtm);
+        }
       }
 
       pref.setPosScrip(true);
@@ -1188,6 +1193,14 @@ changeHoldingsTabIndex(int index) {
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = unRealMtm.toStringAsFixed(2);
     _totBookedPnL = bookPnl.toStringAsFixed(2);
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
     // Use post-frame callback to avoid mouse tracker assertion errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -2338,7 +2351,14 @@ changeHoldingsTabIndex(int index) {
       _totUnRealMtm = unRealMtm.toStringAsFixed(2);
       _totBookedPnL = bookPnl.toStringAsFixed(2);
     }
-
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
     // Use post-frame callback to avoid mouse tracker assertion errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -3085,6 +3105,14 @@ changeHoldingsTabIndex(int index) {
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = totalUnRealMtm.toStringAsFixed(2);
     _totBookedPnL = totalBookedPnL.toStringAsFixed(2);
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
 
     // debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
     notifyListeners();
