@@ -32,24 +32,17 @@ class GroupPnlChartProvider extends ChangeNotifier {
   List<GroupPnlDataPoint> _dataPoints = [];
   List<GroupPnlDataPoint> get dataPoints => _dataPoints;
 
-  // Current group positions (kept for WebSocket recalc)
   List<Map<String, dynamic>> _positions = [];
 
   // --------------- Cache ---------------
-  // token → interval → List<Data>
+
   final Map<String, Map<String, List<Data>>> _tpCache = {};
-
-  // Cached computed results: "groupName|interval|isDay|isNetPnl" → dataPoints
   final Map<String, List<GroupPnlDataPoint>> _resultCache = {};
-
-  // Entry epoch per position: "token|prd" → first trade epoch (seconds)
-  // For carry-forward positions this is market open (09:15).
-  final Map<String, int> _entryEpochs = {};
+  final Map<String, _PositionTimeline> _timelineMap = {};
   bool _tradeBookFetched = false;
 
   // --------------- Public API ---------------
 
-  /// Open chart for a group. Fetches data if not cached.
   Future<void> loadGroupChart({
     required String groupName,
     required List groupList,
@@ -57,18 +50,20 @@ class GroupPnlChartProvider extends ChangeNotifier {
     required bool isNetPnl,
     String interval = '5',
   }) async {
-    // Always reset caches on each load — provider survives hot reload
-    // and stale data from previous sessions causes wrong charts
-    _resultCache.clear();
-    _tpCache.clear();
-    _entryEpochs.clear();
-    _tradeBookFetched = false;
-
+    final groupChanged = _activeGroupName != groupName;
     _activeGroupName = groupName;
     _interval = interval;
     _positions = groupList
         .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e as Map))
         .toList();
+
+    // Only clear caches when group changes
+    if (groupChanged) {
+      _resultCache.clear();
+      _tpCache.clear();
+      _timelineMap.clear();
+      _tradeBookFetched = false;
+    }
 
     final cacheKey = _resultCacheKey(groupName, interval, isDay, isNetPnl);
     if (_resultCache.containsKey(cacheKey)) {
@@ -83,7 +78,7 @@ class GroupPnlChartProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _fetchEntryTimes();
+      await _fetchTradeInfo();
       await _fetchMissingTpData(interval);
       _dataPoints = _computeGroupPnl(isDay: isDay, isNetPnl: isNetPnl);
       _resultCache[cacheKey] = _dataPoints;
@@ -96,7 +91,6 @@ class GroupPnlChartProvider extends ChangeNotifier {
     }
   }
 
-  /// Switch interval (5 → 1 or 1 → 5). Uses cache if available.
   Future<void> switchInterval({
     required String newInterval,
     required bool isDay,
@@ -129,8 +123,7 @@ class GroupPnlChartProvider extends ChangeNotifier {
     }
   }
 
-  /// Called when WebSocket updates a position's LTP.
-  /// Recalculates only the last data point.
+  /// WebSocket LTP update — updates the last data point for all matching positions.
   void onTickUpdate({
     required String token,
     required String ltp,
@@ -139,31 +132,34 @@ class GroupPnlChartProvider extends ChangeNotifier {
   }) {
     if (_activeGroupName == null || _dataPoints.isEmpty) return;
 
-    // Update LTP and adjust P&L by delta in our local positions copy
+    // Update ALL positions with this token (NRML + MIS share the same token)
     bool updated = false;
     for (var pos in _positions) {
-      if (pos['token']?.toString() == token) {
-        final oldLp = double.tryParse(pos['lp']?.toString() ?? '0') ?? 0.0;
-        final newLp = double.tryParse(ltp) ?? 0.0;
-        final netQty = (int.tryParse(pos['netqty']?.toString() ?? '0') ?? 0).toDouble();
-        final prcFtr = double.tryParse(pos['prcftr']?.toString() ?? '1.0') ?? 1.0;
-        final mult = double.tryParse(pos['mult']?.toString() ?? '1.0') ?? 1.0;
-        final pnlDelta = netQty * prcFtr * mult * (newLp - oldLp);
+      if (pos['token']?.toString() != token) continue;
 
-        // Update LTP
-        pos['lp'] = ltp;
-        // Update stored P&L values by delta
-        final oldPnl = double.tryParse(pos['profitNloss']?.toString() ?? '0') ?? 0.0;
-        final oldMtm = double.tryParse(pos['mTm']?.toString() ?? '0') ?? 0.0;
-        pos['profitNloss'] = (oldPnl + pnlDelta).toStringAsFixed(2);
-        pos['mTm'] = (oldMtm + pnlDelta).toStringAsFixed(2);
-        updated = true;
-        break;
-      }
+      final oldLp = double.tryParse(pos['lp']?.toString() ?? '0') ?? 0.0;
+      final newLp = double.tryParse(ltp) ?? 0.0;
+      if (oldLp == newLp) continue;
+
+      final netQty =
+          (int.tryParse(pos['netqty']?.toString() ?? '0') ?? 0).toDouble();
+      final prcFtr =
+          double.tryParse(pos['prcftr']?.toString() ?? '1.0') ?? 1.0;
+      final mult =
+          double.tryParse(pos['mult']?.toString() ?? '1.0') ?? 1.0;
+      final pnlDelta = netQty * prcFtr * mult * (newLp - oldLp);
+
+      pos['lp'] = ltp;
+      final oldPnl =
+          double.tryParse(pos['profitNloss']?.toString() ?? '0') ?? 0.0;
+      final oldMtm =
+          double.tryParse(pos['mTm']?.toString() ?? '0') ?? 0.0;
+      pos['profitNloss'] = (oldPnl + pnlDelta).toStringAsFixed(2);
+      pos['mTm'] = (oldMtm + pnlDelta).toStringAsFixed(2);
+      updated = true;
     }
     if (!updated) return;
 
-    // Recompute the last point using current P&L values
     final now = DateTime.now();
     double groupPnl = 0.0;
     for (var pos in _positions) {
@@ -171,33 +167,25 @@ class GroupPnlChartProvider extends ChangeNotifier {
       groupPnl += double.tryParse(pos[field]?.toString() ?? '0') ?? 0.0;
     }
 
-    // Peak never decreases — take the existing peak and only go higher
     final previousPeak = _dataPoints.last.peak;
     final peak = max(previousPeak, groupPnl);
     final drawdown = groupPnl - peak;
 
-    final updatedLast = GroupPnlDataPoint(
+    _dataPoints[_dataPoints.length - 1] = GroupPnlDataPoint(
       time: now,
       pnl: groupPnl,
       drawdown: drawdown,
       peak: peak,
     );
 
-    _dataPoints = List.from(_dataPoints)
-      ..removeLast()
-      ..add(updatedLast);
-
-    // Invalidate result cache for this group (since live data changed)
     _resultCache.removeWhere((key, _) => key.startsWith('$_activeGroupName|'));
-
     notifyListeners();
   }
 
-  /// Clear all caches (e.g. on logout or full position refresh).
   void clearCache() {
     _tpCache.clear();
     _resultCache.clear();
-    _entryEpochs.clear();
+    _timelineMap.clear();
     _tradeBookFetched = false;
     _dataPoints = [];
     _activeGroupName = null;
@@ -210,10 +198,7 @@ class GroupPnlChartProvider extends ChangeNotifier {
           String group, String interval, bool isDay, bool isNetPnl) =>
       '$group|$interval|$isDay|$isNetPnl';
 
-  /// Fetch trade book to determine the first execution time for each position.
-  /// Looks up today's trades for all positions in the group.
-  /// Falls back to market open (09:15) if no trade found.
-  Future<void> _fetchEntryTimes() async {
+  Future<void> _fetchTradeInfo() async {
     if (_tradeBookFetched) return;
 
     final now = DateTime.now();
@@ -221,47 +206,134 @@ class GroupPnlChartProvider extends ChangeNotifier {
         DateTime(now.year, now.month, now.day, 9, 15).millisecondsSinceEpoch ~/
             1000;
 
-    // Collect all token|prd keys we need entry times for
     final posKeys = <String>{};
     for (var pos in _positions) {
       final token = pos['token']?.toString() ?? '';
       final prd = pos['prd']?.toString() ?? '';
-      final key = '$token|$prd';
-      posKeys.add(key);
-      _entryEpochs[key] = 9999999999; // far future, replaced by actual trade time
+      posKeys.add('$token|$prd');
     }
 
+    final tradesPerKey = <String, List<TradeBookModel>>{};
     try {
       final response = await _api.getTradeBook();
-      final trades = response['data'] as List<TradeBookModel>? ?? [];
-
-      for (var trade in trades) {
-        final tradeToken = trade.token ?? '';
-        final tradePrd = trade.prd ?? '';
-        final key = '$tradeToken|$tradePrd';
-
+      final allTrades = response['data'] as List<TradeBookModel>? ?? [];
+      for (var trade in allTrades) {
+        final key = '${trade.token ?? ''}|${trade.prd ?? ''}';
         if (!posKeys.contains(key)) continue;
-
-        final epoch = _parseTradeTime(trade.norentm);
-        if (epoch == null) continue;
-
-        if (epoch < _entryEpochs[key]!) {
-          _entryEpochs[key] = epoch;
-        }
+        tradesPerKey.putIfAbsent(key, () => []).add(trade);
       }
     } catch (_) {}
 
-    // Fall back to market open for any position where no trade was found
-    for (var key in posKeys) {
-      if (_entryEpochs[key] == 9999999999) {
-        _entryEpochs[key] = marketOpenEpoch;
+    for (var pos in _positions) {
+      final token = pos['token']?.toString() ?? '';
+      final prd = pos['prd']?.toString() ?? '';
+      final key = '$token|$prd';
+      final trades = tradesPerKey[key];
+
+      // Carry-forward: position qty from previous day
+      final cfBuyQty =
+          (int.tryParse(pos['cfbuyqty']?.toString() ?? '0') ?? 0).toDouble();
+      final cfSellQty =
+          (int.tryParse(pos['cfsellqty']?.toString() ?? '0') ?? 0).toDouble();
+      final cfNetQty = cfBuyQty - cfSellQty;
+      // netupldprc = previous day settlement price (base for CF P&L)
+      final netUpldPrc =
+          double.tryParse(pos['netupldprc']?.toString() ?? '0') ?? 0.0;
+      final upldPrc =
+          double.tryParse(pos['upldprc']?.toString() ?? '0') ?? 0.0;
+      final cfPrice = netUpldPrc != 0 ? netUpldPrc : upldPrc;
+      final hasCF = cfNetQty != 0;
+
+      final hasTrades = trades != null && trades.isNotEmpty;
+
+      if (!hasTrades && !hasCF) {
+        _timelineMap[key] = _PositionTimeline(
+          entryEpoch: marketOpenEpoch,
+          snapshots: [],
+        );
+        continue;
       }
+
+      if (hasTrades) {
+        trades.sort((a, b) {
+          final ea = _parseTradeTime(a.norentm) ?? 0;
+          final eb = _parseTradeTime(b.norentm) ?? 0;
+          if (ea != eb) return ea.compareTo(eb);
+          final fa = int.tryParse(a.flid ?? '0') ?? 0;
+          final fb = int.tryParse(b.flid ?? '0') ?? 0;
+          return fa.compareTo(fb);
+        });
+      }
+
+      final firstTradeEpoch = hasTrades
+          ? (_parseTradeTime(trades.first.norentm) ?? marketOpenEpoch)
+          : marketOpenEpoch;
+      // CF positions exist from market open; day-only from first trade
+      final entryEpoch = hasCF ? marketOpenEpoch : firstTradeEpoch;
+
+      // Initialize from carry-forward position
+      double runQty = cfNetQty;
+      double avgEntry = (hasCF && cfPrice != 0) ? cfPrice : 0;
+      double realizedPnl = 0;
+      final snapshots = <_TimelineSnapshot>[];
+
+      // Synthetic snapshot at market open for carry-forward positions
+      if (hasCF) {
+        snapshots.add(_TimelineSnapshot(
+          epoch: marketOpenEpoch,
+          runningQty: runQty,
+          avgEntryPrice: avgEntry,
+          cumulativeRealizedPnl: 0,
+        ));
+      }
+
+      for (var t in trades ?? <TradeBookModel>[]) {
+        final epoch = _parseTradeTime(t.norentm) ?? 0;
+        final fillQty =
+            (int.tryParse(t.flqty ?? t.qty ?? '0') ?? 0).toDouble();
+        final fillPrc = double.tryParse(t.flprc ?? '0') ?? 0.0;
+        final isBuy = t.trantype == 'B';
+        final signedQty = isBuy ? fillQty : -fillQty;
+
+        if (runQty == 0) {
+          runQty = signedQty;
+          avgEntry = fillPrc;
+        } else if ((runQty > 0 && isBuy) || (runQty < 0 && !isBuy)) {
+          final newQty = runQty + signedQty;
+          avgEntry =
+              (avgEntry * runQty.abs() + fillPrc * fillQty) / newQty.abs();
+          runQty = newQty;
+        } else {
+          final closedQty = min(fillQty, runQty.abs());
+          if (runQty > 0) {
+            realizedPnl += closedQty * (fillPrc - avgEntry);
+          } else {
+            realizedPnl += closedQty * (avgEntry - fillPrc);
+          }
+          final prevSign = runQty.sign;
+          runQty += signedQty;
+          if (runQty != 0 && prevSign != runQty.sign) {
+            avgEntry = fillPrc;
+          }
+        }
+
+        snapshots.add(_TimelineSnapshot(
+          epoch: epoch,
+          runningQty: runQty,
+          avgEntryPrice: avgEntry,
+          cumulativeRealizedPnl: realizedPnl,
+        ));
+      }
+
+      _timelineMap[key] = _PositionTimeline(
+        entryEpoch: entryEpoch,
+        snapshots: snapshots,
+      );
     }
 
     _tradeBookFetched = true;
   }
 
-  /// Parse trade time string "HH:mm:ss dd-MM-yyyy" into epoch seconds.
   int? _parseTradeTime(String? timeStr) {
     if (timeStr == null || timeStr.isEmpty) return null;
     try {
@@ -272,21 +344,18 @@ class GroupPnlChartProvider extends ChangeNotifier {
     }
   }
 
-  /// Get the entry epoch for a position identified by token+prd.
-  int _getEntryEpoch(Map<String, dynamic> pos) {
+  _PositionTimeline _getTimeline(Map<String, dynamic> pos) {
     final token = pos['token']?.toString() ?? '';
     final prd = pos['prd']?.toString() ?? '';
     final key = '$token|$prd';
-    // Default to market open if not found
     final now = DateTime.now();
     final marketOpen =
         DateTime(now.year, now.month, now.day, 9, 15).millisecondsSinceEpoch ~/
             1000;
-    return _entryEpochs[key] ?? marketOpen;
+    return _timelineMap[key] ??
+        _PositionTimeline(entryEpoch: marketOpen, snapshots: []);
   }
 
-  /// Fetch TPSeries for any tokens not yet cached at the given interval.
-  /// Uses the position's entry time as start (not market open).
   Future<void> _fetchMissingTpData(String interval) async {
     final now = DateTime.now();
     final endEpoch = now.millisecondsSinceEpoch ~/ 1000;
@@ -298,15 +367,13 @@ class GroupPnlChartProvider extends ChangeNotifier {
       final exch = pos['exch']?.toString() ?? 'NFO';
       if (token.isEmpty) continue;
 
-      // Skip if already cached for this interval
       if (_tpCache.containsKey(token) &&
           _tpCache[token]!.containsKey(interval) &&
           _tpCache[token]![interval]!.isNotEmpty) {
         continue;
       }
 
-      // Fetch from this position's entry time, not market open
-      final entryEpoch = _getEntryEpoch(pos);
+      final entryEpoch = _getTimeline(pos).entryEpoch;
       futures.add(
           _fetchAndCacheToken(token, exch, interval, entryEpoch, endEpoch));
     }
@@ -335,60 +402,43 @@ class GroupPnlChartProvider extends ChangeNotifier {
     }
   }
 
-  /// Compute aggregated group P&L timeline from cached TPSeries data.
-  ///
-  /// Uses the already-computed P&L from positionGroupCal as the anchor
-  /// (profitNloss or mTm), then derives historical values via price delta:
-  ///
-  ///   P&L(t) = currentPnl + netQty × prcFtr × mult × (close(t) − currentLtp)
-  ///
-  /// At t=now the delta is 0, so the chart endpoint equals the position
-  /// screen value exactly. For past timestamps the delta captures how
-  /// much the P&L differed based on the instrument's price at that time.
+  /// Compute aggregated group P&L timeline.
+  /// Uses trade timeline for ALL positions with endpoint anchoring.
   List<GroupPnlDataPoint> _computeGroupPnl({
     required bool isDay,
     required bool isNetPnl,
   }) {
-    // Step 1: Read each position's anchor values
     final posCalcs = <_PositionCalcInfo>[];
 
     for (var pos in _positions) {
       final token = pos['token']?.toString() ?? '';
       final candles = _tpCache[token]?[_interval] ?? [];
 
-      // The P&L already computed by positionGroupCal — the source of truth
       final pnlField = isNetPnl ? 'profitNloss' : 'mTm';
       final currentPnl =
           double.tryParse(pos[pnlField]?.toString() ?? '0') ?? 0.0;
-      final currentLtp =
-          double.tryParse(pos['lp']?.toString() ?? '0') ?? 0.0;
-      final netQty =
-          (int.tryParse(pos['netqty']?.toString() ?? '0') ?? 0).toDouble();
       final prcFtr =
           double.tryParse(pos['prcftr']?.toString() ?? '1.0') ?? 1.0;
       final mult =
           double.tryParse(pos['mult']?.toString() ?? '1.0') ?? 1.0;
 
-      // Entry time: carry-forward = market open, day trade = first execution
-      final entryEpoch = _getEntryEpoch(pos);
+      final timeline = _getTimeline(pos);
 
       posCalcs.add(_PositionCalcInfo(
         currentPnl: currentPnl,
-        currentLtp: currentLtp,
-        netQty: netQty,
         prcFtr: prcFtr,
         mult: mult,
-        entryEpoch: entryEpoch,
+        entryEpoch: timeline.entryEpoch,
+        timeline: timeline,
         candles: candles,
       ));
     }
 
-    // Step 2: Collect timestamps only from each position's entry time onwards
+    // Collect timestamps from each position's entry time onwards
     final allTimestamps = <int>{};
     for (var pc in posCalcs) {
       for (var c in pc.candles) {
         final epoch = int.tryParse(c.ssboe ?? '0') ?? 0;
-        // Only include candles from this position's entry time
         if (epoch >= pc.entryEpoch) allTimestamps.add(epoch);
       }
     }
@@ -396,16 +446,39 @@ class GroupPnlChartProvider extends ChangeNotifier {
     final sortedTimestamps = allTimestamps.toList()..sort();
     if (sortedTimestamps.isEmpty) return [];
 
-    // Step 3: Build candle lookup per position (epoch → close price)
+    // Pre-compute forward-filled price maps (O(n) per position instead of O(n²))
     for (var pc in posCalcs) {
+      // Build raw price map
       for (var c in pc.candles) {
         final epoch = int.tryParse(c.ssboe ?? '0') ?? 0;
         final close = double.tryParse(c.intc ?? '0') ?? 0.0;
         if (epoch > 0) pc.priceAtTime[epoch] = close;
       }
+      // Forward-fill: for each timestamp in sortedTimestamps, ensure a price
+      double? lastKnown;
+      for (var t in sortedTimestamps) {
+        if (pc.priceAtTime.containsKey(t)) {
+          lastKnown = pc.priceAtTime[t];
+        } else if (lastKnown != null) {
+          pc.priceAtTime[t] = lastKnown;
+        }
+      }
     }
 
-    // Step 4: For each timestamp, compute group P&L via delta
+    // Endpoint anchoring: correction per position
+    final lastEpoch = sortedTimestamps.last;
+    for (var pc in posCalcs) {
+      if (pc.timeline.snapshots.isEmpty) {
+        pc.correction = 0;
+        continue;
+      }
+      final lastPrice = pc.priceAtTime[lastEpoch] ?? 0;
+      final timelineFinal =
+          pc.timeline.pnlAtTime(lastEpoch, lastPrice, pc.prcFtr, pc.mult);
+      pc.correction = pc.currentPnl - timelineFinal;
+    }
+
+    // Compute group P&L at each timestamp
     final result = <GroupPnlDataPoint>[];
     double runningPeak = double.negativeInfinity;
 
@@ -413,16 +486,17 @@ class GroupPnlChartProvider extends ChangeNotifier {
       double groupPnl = 0.0;
 
       for (var pc in posCalcs) {
-        // Position didn't exist before its entry time — contributes 0
         if (epoch < pc.entryEpoch) continue;
 
-        final price = _getPrice(pc, epoch, sortedTimestamps);
+        final price = pc.priceAtTime[epoch];
         if (price == null) continue;
 
-        // currentPnl + delta: how much the P&L differed at this candle
-        final pnl = pc.currentPnl +
-            pc.netQty * pc.prcFtr * pc.mult * (price - pc.currentLtp);
-        groupPnl += pnl;
+        if (pc.timeline.snapshots.isNotEmpty) {
+          groupPnl += pc.timeline.pnlAtTime(epoch, price, pc.prcFtr, pc.mult) +
+              pc.correction;
+        } else {
+          groupPnl += pc.currentPnl;
+        }
       }
 
       runningPeak = max(runningPeak, groupPnl);
@@ -438,52 +512,73 @@ class GroupPnlChartProvider extends ChangeNotifier {
 
     return result;
   }
+}
 
-  /// Get price for a position at a given epoch.
-  /// Uses exact match first, then forward-fills from last known price.
-  double? _getPrice(
-      _PositionCalcInfo pc, int epoch, List<int> sortedTimestamps) {
-    if (pc.priceAtTime.containsKey(epoch)) {
-      return pc.priceAtTime[epoch];
-    }
-    // Forward-fill: find the latest price before this epoch
-    double? lastKnown;
-    for (var t in sortedTimestamps) {
-      if (t > epoch) break;
-      if (pc.priceAtTime.containsKey(t)) {
-        lastKnown = pc.priceAtTime[t];
+// --------------- Data Classes ---------------
+
+class _TimelineSnapshot {
+  final int epoch;
+  final double runningQty;
+  final double avgEntryPrice;
+  final double cumulativeRealizedPnl;
+
+  const _TimelineSnapshot({
+    required this.epoch,
+    required this.runningQty,
+    required this.avgEntryPrice,
+    required this.cumulativeRealizedPnl,
+  });
+}
+
+class _PositionTimeline {
+  final int entryEpoch;
+  final List<_TimelineSnapshot> snapshots;
+
+  const _PositionTimeline({
+    required this.entryEpoch,
+    required this.snapshots,
+  });
+
+  _TimelineSnapshot? getSnapshot(int epoch) {
+    if (snapshots.isEmpty) return null;
+    _TimelineSnapshot? state;
+    for (var s in snapshots) {
+      if (s.epoch <= epoch) {
+        state = s;
+      } else {
+        break;
       }
     }
-    return lastKnown;
+    return state;
+  }
+
+  double pnlAtTime(int epoch, double candlePrice, double prcFtr, double mult) {
+    final state = getSnapshot(epoch);
+    if (state == null) return 0;
+
+    final unrealized =
+        state.runningQty * prcFtr * mult * (candlePrice - state.avgEntryPrice);
+    return state.cumulativeRealizedPnl * prcFtr * mult + unrealized;
   }
 }
 
-/// Per-position anchor data and candle lookup.
 class _PositionCalcInfo {
-  /// P&L value already computed by positionGroupCal (profitNloss or mTm)
   final double currentPnl;
-
-  /// Current last traded price — the reference for computing deltas
-  final double currentLtp;
-
-  final double netQty;
   final double prcFtr;
   final double mult;
-
-  /// Epoch (seconds) when this position was first entered.
-  /// Candles before this time are ignored (position didn't exist).
   final int entryEpoch;
+  final _PositionTimeline timeline;
+  double correction = 0;
 
   final List<Data> candles;
   final Map<int, double> priceAtTime = {};
 
   _PositionCalcInfo({
     required this.currentPnl,
-    required this.currentLtp,
-    required this.netQty,
     required this.prcFtr,
     required this.mult,
     required this.entryEpoch,
+    required this.timeline,
     required this.candles,
   });
 }

@@ -232,19 +232,16 @@ class _GroupPnlChartDialog extends ConsumerWidget {
     return Row(
       children: [
         _SummaryItem(
-            context: context,
             title: 'Current $label',
             value: _numFmt.format(current),
             color: pnlColor(current)),
         const SizedBox(width: 24),
         _SummaryItem(
-            context: context,
             title: 'Peak',
             value: _numFmt.format(peak),
             color: pnlColor(peak)),
         const SizedBox(width: 24),
         _SummaryItem(
-            context: context,
             title: 'Drawdown',
             value: _numFmt.format(dd),
             color: pnlColor(dd)),
@@ -564,20 +561,18 @@ class _IntervalChip extends StatelessWidget {
 }
 
 class _SummaryItem extends StatelessWidget {
-  final BuildContext context;
   final String title;
   final String value;
   final Color color;
 
   const _SummaryItem({
-    required this.context,
     required this.title,
     required this.value,
     required this.color,
   });
 
   @override
-  Widget build(BuildContext _) {
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
