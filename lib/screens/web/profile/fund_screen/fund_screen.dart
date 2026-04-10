@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 import 'dart:async';
+import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -57,6 +58,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
   bool _isInitialized = false;
   bool _isUpiIdExpanded = false;
   int _selectedPaymentMethod = -1; // -1 = none, 0 = Scan QR, 1 = UPI ID, 2 = Net Banking
+  String _selectedGateway = 'RAZORPAY'; // 'RAZORPAY' or 'ATOM'
 
   @override
   void initState() {
@@ -646,6 +648,44 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     }
   }
 
+  Future<void> _handleAtomPayment(
+      BuildContext context, TranctionProvider fund) async {
+    fund.resetBottomSheetState();
+
+    final clientData =
+        fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss];
+    final clientCode = clientData[0];
+    final clientName = clientData[2];
+    final clientEmail = clientData[4];
+    final clientMobile = clientData[5];
+    final amt = '${fund.amount.text}.00';
+    final ifsc4 = fund.ifsc.length >= 4 ? fund.ifsc.substring(0, 4) : fund.ifsc;
+
+    final url = 'https://fundapi.mynt.in/atom/atomredirect'
+        '?seg=${Uri.encodeComponent(fund.textValue)}'
+        '&code=${Uri.encodeComponent(clientCode)}'
+        '&amt=${Uri.encodeComponent(amt)}'
+        '&custacc=${Uri.encodeComponent(fund.accno)}'
+        '&bankifsc=${Uri.encodeComponent(ifsc4)}'
+        '&name=${Uri.encodeComponent(clientName)}'
+        '&mobile=${Uri.encodeComponent(clientMobile)}'
+        '&email=${Uri.encodeComponent(clientEmail)}'
+        '&bankname=${Uri.encodeComponent(fund.bankname)}'
+        '&ru=${Uri.encodeComponent('https://fundapi.mynt.in/atom/fromatom')}';
+
+    try {
+      html.window.open(
+        url,
+        'AtomPayment',
+        'width=800,height=700,scrollbars=yes,resizable=yes,left=200,top=100',
+      );
+    } catch (e) {
+      if (mounted) {
+        warningMessage(context, "Failed to open Atom payment gateway");
+      }
+    }
+  }
+
   Future<void> _handleScanQrPayment(
       BuildContext context, TranctionProvider fund) async {
     fund.resetBottomSheetState();
@@ -1072,6 +1112,20 @@ class _FundScreenState extends ConsumerState<FundScreen> {
 
                                     const SizedBox(height: 20),
 
+                                    // Segment selection
+                                    Text(
+                                      "Segment",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _buildSegmentSelector(fund, context),
+                                    const SizedBox(height: 20),
+
                                     // Bank account
                                     Text(
                                       "Bank account",
@@ -1243,6 +1297,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       isDisabled: false,
                                     ),
 
+                                    // Gateway selector (visible when Net Banking is selected)
+                                    if (_selectedPaymentMethod == 2) ...[
+                                      const SizedBox(height: 10),
+                                      _buildGatewaySelector(context),
+                                    ],
+
                                     const SizedBox(height: 20),
 
                                     // Pay button
@@ -1346,6 +1406,209 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     }
   }
 
+  static const _segmentGroups = [
+  {'label': 'Equity',    'codes': ['NSE_CASH', 'BSE_CASH']},
+  {'label': 'F&O',       'codes': ['NSE_FNO', 'BSE_FNO']},
+  {'label': 'Currency',  'codes': ['CD_NSE', 'CD_BSE']},
+  {'label': 'Commodity', 'codes': ['MCX', 'NSE_COM', 'BSE_COM']},
+];
+
+  Widget _buildSegmentSelector(TranctionProvider fund, BuildContext context) {
+    final codes = fund.companycodes;
+
+    // Build the list of available segments with the first matching code
+    final available = <Map<String, String>>[];
+    for (final group in _segmentGroups) {
+      final groupCodes = group['codes'] as List<String>;
+      final match = groupCodes.firstWhere(
+        (c) => codes.contains(c),
+        orElse: () => '',
+      );
+      if (match.isNotEmpty) {
+        available.add({'label': group['label'] as String, 'code': match});
+      }
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: available.map((seg) {
+        final isSelected = fund.textValue == seg['code'];
+        return ChoiceChip(
+          label: Text(seg['label']!),
+          selected: isSelected,
+          onSelected: (_) => _selectSegment(seg['code']!, fund),
+          labelStyle: MyntWebTextStyles.bodySmall(
+            context,
+            color: isSelected
+                ? resolveThemeColor(context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary)
+                : resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+            fontWeight: MyntFonts.medium,
+          ),
+          selectedColor: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark.withValues(alpha: 0.1),
+            light: MyntColors.primary.withValues(alpha: 0.1),
+          ),
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.cardDark,
+            light: MyntColors.inputBg,
+          ),
+          side: BorderSide(
+            color: isSelected
+                ? resolveThemeColor(context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary)
+                : resolveThemeColor(context,
+                    dark: MyntColors.cardBorderDark,
+                    light: MyntColors.cardBorder),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          showCheckmark: false,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.compact,
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildGatewaySelector(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: PopupMenuButton<String>(tooltip: "",
+        onSelected: (value) {
+          setState(() {
+            _selectedGateway = value;
+          });
+        },
+        offset: const Offset(0, 36),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        color: resolveThemeColor(context,
+            dark: MyntColors.cardDark, light: MyntColors.card),
+        itemBuilder: (context) => [
+          _buildGatewayMenuItem(
+            context,
+            value: 'RAZORPAY',
+            label: 'Razorpay',
+            logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg',
+            isSelected: _selectedGateway == 'RAZORPAY',
+          ),
+          _buildGatewayMenuItem(
+            context,
+            value: 'ATOM',
+            label: 'Atom',
+            logoUrl: null,
+            isSelected: _selectedGateway == 'ATOM',
+          ),
+        ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.cardBorderDark,
+                  light: MyntColors.cardBorder),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Gateway : ",
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              ),
+              Text(
+                _selectedGateway == 'RAZORPAY' ? 'Razorpay' : 'Atom',
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 18,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuEntry<String> _buildGatewayMenuItem(
+    BuildContext context, {
+    required String value,
+    required String label,
+    required bool isSelected,
+    String? logoUrl,
+  }) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? resolveThemeColor(context,
+                      dark: MyntColors.transparent,
+                      light: MyntColors.transparent)
+                  
+              : null,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight:
+                      isSelected ? MyntFonts.semiBold : MyntFonts.semiBold,
+                 color: isSelected ? resolveThemeColor(context,
+                       dark: MyntColors.primaryDark,
+                    light: MyntColors.primary) : resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_rounded,
+                size: 18,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary),
+              ),
+            const SizedBox(width: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPaymentMethodCard({
     required TranctionProvider fund,
     required dynamic theme,
@@ -1365,6 +1628,10 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             : () {
                 setState(() {
                   _selectedPaymentMethod = isSelected ? -1 : index;
+                  // Reset gateway to default when switching away from Net Banking
+                  if (_selectedPaymentMethod != 2) {
+                    _selectedGateway = 'RAZORPAY';
+                  }
                 });
               },
         borderRadius: BorderRadius.circular(10),
@@ -1531,7 +1798,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
           warningMessage(context, "Max amount ₹50,00,000");
           return;
         }
-        _handleRazorpayPayment(context, fund);
+        if (_selectedGateway == 'ATOM') {
+          _handleAtomPayment(context, fund);
+        } else {
+          _handleRazorpayPayment(context, fund);
+        }
         break;
     }
   }
