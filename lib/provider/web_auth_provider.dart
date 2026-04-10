@@ -75,6 +75,13 @@ class WebAuthProvider extends ChangeNotifier {
   bool _topflow = false;
   bool get topflow => _topflow;
 
+  // Flag when API says password must be changed (after OTP verify)
+  bool _requiresPasswordChange = false;
+  bool get requiresPasswordChange => _requiresPasswordChange;
+
+  bool _isPasswordExpiredFlag = false;
+  bool get isPasswordExpiredFlag => _isPasswordExpiredFlag;
+
   // Unique ID for device
   String _deviceUuid = '';
 
@@ -93,6 +100,8 @@ class WebAuthProvider extends ChangeNotifier {
     _apiSession = null;
     _showTotpSetup = false;
     _topflow = false;
+    _requiresPasswordChange = false;
+    _isPasswordExpiredFlag = false;
     _loading = false;
     _loginError = null;
     _passwordError = null;
@@ -377,7 +386,17 @@ class WebAuthProvider extends ChangeNotifier {
         final errorMsg = _mobileOtp!.emsg!.toLowerCase();
         final otpTypeLabel = _isTotp ? 'TOTP' : 'OTP';
 
-        if (errorMsg.contains('otp not valid') || errorMsg.contains('invalid otp') || errorMsg.contains('invalid input')) {
+        if (errorMsg.contains('change password') || errorMsg.contains('password expired')) {
+          // Set flags so the UI can show the change password screen
+          _requiresPasswordChange = true;
+          _isPasswordExpiredFlag = errorMsg.contains('password expired');
+          _otpError = _mobileOtp!.emsg;
+          if (context.mounted) {
+            ResponsiveSnackBar.showWarning(context, _mobileOtp!.emsg!);
+          }
+          notifyListeners();
+          return false;
+        } else if (errorMsg.contains('otp not valid') || errorMsg.contains('invalid otp') || errorMsg.contains('invalid input')) {
           _otpError = 'Invalid $otpTypeLabel';
           // Check context validity before showing toast
           if (context.mounted) {
@@ -418,6 +437,13 @@ class WebAuthProvider extends ChangeNotifier {
     _isTotp = false; // Switch to OTP mode for verification
     otpController.clear();
     _otpError = null; // Clear any existing error
+    notifyListeners();
+  }
+
+  /// Clear password change requirement flags
+  void clearPasswordChangeFlags() {
+    _requiresPasswordChange = false;
+    _isPasswordExpiredFlag = false;
     notifyListeners();
   }
 
@@ -687,6 +713,8 @@ class WebAuthProvider extends ChangeNotifier {
     _totpTimer = 30;
     _apiSession = null;
     _showTotpSetup = false;
+    _requiresPasswordChange = false;
+    _isPasswordExpiredFlag = false;
     _loading = false;
     notifyListeners();
   }
