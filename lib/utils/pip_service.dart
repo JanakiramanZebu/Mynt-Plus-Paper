@@ -40,8 +40,10 @@ class PipService {
     String pnl = '0.00',
     String mtm = '0.00',
     List<PipPositionItem> positions = const [],
+    bool isDarkMode = false,
   }) async {
     if (!isSupported) {
+      debugPrint('Document PiP API not supported in this browser');
       return false;
     }
 
@@ -70,10 +72,12 @@ class PipService {
       final htmlContent = _buildHtmlContent(pnl, mtm, positions);
 
       // Inject content into PiP window's document body via eval
+      final initialBodyClass = isDarkMode ? 'dark' : '';
       final jsCode = '''
         (function(win) {
           var doc = win.document;
           doc.body.innerHTML = ${_escapeJsString(htmlContent)};
+          doc.body.className = ${_escapeJsString(initialBodyClass)};
 
           // Add script for live updates + freeze/resume handling
           var script = doc.createElement('script');
@@ -92,6 +96,7 @@ class PipService {
         _removeFreezeResumeListeners();
         _removeMessageListener();
         pipVisibilityNotifier.value = false;
+        debugPrint('PiP window closed');
       }).toJS;
       _pipWindow!.callMethod('addEventListener'.toJS, 'pagehide'.toJS, onClose);
 
@@ -102,8 +107,10 @@ class PipService {
       _setupFreezeResumeListeners();
 
       pipVisibilityNotifier.value = true;
+      debugPrint('PiP window opened successfully');
       return true;
     } catch (e) {
+      debugPrint('Failed to open PiP window: $e');
       pipVisibilityNotifier.value = false;
       return false;
     }
@@ -120,6 +127,7 @@ class PipService {
       final dataObj = data as JSObject;
       final type = (dataObj['type'] as JSString?)?.toDart;
       if (type == 'mynt_pip_open_positions') {
+        debugPrint('PiP: Open Positions button clicked — navigating');
         // Close PiP first
         closePipWindow();
         // Navigate to positions screen in the next frame
@@ -156,6 +164,7 @@ class PipService {
       final data = JSObject();
       data['type'] = 'mynt_pip_freeze'.toJS;
       _pipWindow!.callMethod('postMessage'.toJS, data, '*'.toJS);
+      debugPrint('PiP: Tab frozen — sent pause signal');
     }).toJS;
 
     _resumeHandler = ((JSAny? event) {
@@ -163,6 +172,7 @@ class PipService {
       final data = JSObject();
       data['type'] = 'mynt_pip_resume'.toJS;
       _pipWindow!.callMethod('postMessage'.toJS, data, '*'.toJS);
+      debugPrint('PiP: Tab resumed — sent resume signal');
     }).toJS;
 
     doc.callMethod('addEventListener'.toJS, 'freeze'.toJS, _freezeHandler!);
@@ -199,8 +209,23 @@ class PipService {
         pipVisibilityNotifier.value = false;
       }
     } catch (e) {
+      debugPrint('Error closing PiP window: $e');
       _pipWindow = null;
       pipVisibilityNotifier.value = false;
+    }
+  }
+
+  /// Sends a theme change signal to the PiP window.
+  /// Called when the main app toggles dark/light mode.
+  static void updateTheme(bool isDarkMode) {
+    if (_pipWindow == null) return;
+    try {
+      final data = JSObject();
+      data['type'] = 'mynt_pip_theme'.toJS;
+      data['isDark'] = isDarkMode.toJS;
+      _pipWindow!.callMethod('postMessage'.toJS, data, '*'.toJS);
+    } catch (e) {
+      debugPrint('Error updating PiP theme: $e');
     }
   }
 
@@ -230,6 +255,7 @@ class PipService {
 
       _pipWindow!.callMethod('postMessage'.toJS, data, '*'.toJS);
     } catch (e) {
+      debugPrint('Error updating PiP values: $e');
     }
   }
 
@@ -241,11 +267,17 @@ class PipService {
     String pnl = '0.00',
     String mtm = '0.00',
     List<PipPositionItem> positions = const [],
+    bool isDarkMode = false,
   }) async {
     if (isOpen) {
       await closePipWindow();
     } else {
-      await openPipWindow(pnl: pnl, mtm: mtm, positions: positions);
+      await openPipWindow(
+        pnl: pnl,
+        mtm: mtm,
+        positions: positions,
+        isDarkMode: isDarkMode,
+      );
     }
   }
 
@@ -260,6 +292,9 @@ class PipService {
   }
 
   /// Builds the HTML content string for the PiP window body.
+  ///
+  /// Uses CSS variables with a `.dark` class on body — so switching theme
+  /// only requires toggling the class via postMessage, no DOM rebuild.
   static String _buildHtmlContent(
       String pnl, String mtm, List<PipPositionItem> positions) {
     final pnlColor = _getColor(pnl);
@@ -267,37 +302,62 @@ class PipService {
 
     final buf = StringBuffer();
 
-    // Styles
+    // Styles with CSS variables for theme switching
     buf.write('<style>'
         '* { margin: 0; padding: 0; box-sizing: border-box; }'
+        // Light mode (default)
         'body {'
+        '  --bg: #FFFFFF;'
+        '  --border: #E5E7EB;'
+        '  --divider: #F3F4F6;'
+        '  --scrollbar: #D1D5DB;'
+        '  --text-primary: #121212;'
+        '  --text-secondary: #4A4A4A;'
+        '  --text-tertiary: #6B6B6B;'
+        '  --profit: #00B14F;'
+        '  --loss: #FF1717;'
+        '  --open-hover: #E6ECF8;'
         '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;'
-        '  background: #ffffff;'
+        '  background: var(--bg);'
+        '  color: var(--text-primary);'
         '  padding: 10px 12px;'
         '  user-select: none;'
         '  overflow-y: auto;'
         '  overflow-x: hidden;'
         '}'
+        // Dark mode overrides
+        'body.dark {'
+        '  --bg: #0D0F11;'
+        '  --border: #30363D;'
+        '  --divider: #21262D;'
+        '  --scrollbar: #30363D;'
+        '  --text-primary: #C9D1D9;'
+        '  --text-secondary: #8B949E;'
+        '  --text-tertiary: #6E7681;'
+        '  --profit: #3FB950;'
+        '  --loss: #F85149;'
+        '  --open-hover: #1F2937;'
+        '}'
         'body::-webkit-scrollbar { width: 4px; }'
         'body::-webkit-scrollbar-track { background: transparent; }'
-        'body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }'
+        'body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }'
         '.header {'
         '  display: flex;'
         '  justify-content: space-between;'
         '  align-items: center;'
         '  font-size: 11px;'
         '  font-weight: 600;'
-        '  color: #6b7280;'
+        '  color: var(--text-primary);'
         '  text-transform: uppercase;'
         '  letter-spacing: 0.5px;'
         '  margin-bottom: 8px;'
         '  padding-bottom: 6px;'
-        '  border-bottom: 1px solid #e5e7eb;'
+        '  border-bottom: 1px solid var(--border);'
         '}'
         '.open-btn {'
         '  font-size: 10px;'
         '  font-weight: 600;'
-        '  color: #3b82f6;'
+        '  color: #0037B7;'
         '  cursor: pointer;'
         '  text-transform: uppercase;'
         '  letter-spacing: 0.3px;'
@@ -307,8 +367,8 @@ class PipService {
         '  border-radius: 3px;'
         '}'
         '.open-btn:hover {'
-        '  background: #eff6ff;'
-        '  color: #2563eb;'
+        '  background: var(--open-hover);'
+        '  color: #0037B7;'
         '}'
         '.stat-row {'
         '  display: flex;'
@@ -322,17 +382,17 @@ class PipService {
         '}'
         '.divider {'
         '  height: 1px;'
-        '  background: #f3f4f6;'
+        '  background: var(--divider);'
         '  margin: 4px 0;'
         '}'
         '.stat-label {'
         '  font-size: 12px;'
         '  font-weight: 500;'
-        '  color: #6b7280;'
+        '  color: var(--text-secondary);'
         '}'
         '.stat-label.total-label {'
         '  font-weight: 600;'
-        '  color: #374151;'
+        '  color: var(--text-primary);'
         '}'
         '.stat-value {'
         '  font-size: 13px;'
@@ -343,16 +403,16 @@ class PipService {
         '.pos-label {'
         '  font-size: 11px;'
         '  font-weight: 500;'
-        '  color: #9ca3af;'
+        '  color: var(--text-primary);'
         '}'
         '.pos-value {'
         '  font-size: 12px;'
         '  font-weight: 600;'
         '  font-variant-numeric: tabular-nums;'
         '}'
-        '.profit { color: #16a34a; }'
-        '.loss { color: #dc2626; }'
-        '.neutral { color: #6b7280; }'
+        '.profit { color: var(--profit); }'
+        '.loss { color: var(--loss); }'
+        '.neutral { color: var(--text-tertiary); }'
         '.stale-badge {'
         '  display: none;'
         '  font-size: 9px;'
@@ -438,6 +498,10 @@ class PipService {
         '  }'
         '  if (data.type === "mynt_pip_resume") {'
         '    hidePaused();'
+        '    return;'
+        '  }'
+        '  if (data.type === "mynt_pip_theme") {'
+        '    document.body.className = data.isDark ? "dark" : "";'
         '    return;'
         '  }'
         '  if (data.type === "mynt_pip_update") {'

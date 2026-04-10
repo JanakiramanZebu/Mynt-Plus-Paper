@@ -50,6 +50,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
 
   // WebSocket subscription
   StreamSubscription? _webSocketSubscription;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -92,6 +93,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _webSocketSubscription?.cancel();
     _webSocketSubscription = null;
     ChartIframeGuard.reset();
@@ -157,9 +159,14 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
 
     final websocketProv = ref.read(websocketProvider);
     _webSocketSubscription = websocketProv.socketDataStream.listen((data) {
-      if (mounted) {
+      // Guard against race: stream events queued before dispose() can still
+      // fire after the widget is deactivated. Both checks are required.
+      if (_isDisposed || !mounted) return;
+      try {
         final typedData = Map<String, dynamic>.from(data);
         ref.read(optionFlashProvider).updateFromWebSocket(typedData);
+      } catch (_) {
+        // Widget was disposed mid-callback — safely ignore.
       }
     });
   }

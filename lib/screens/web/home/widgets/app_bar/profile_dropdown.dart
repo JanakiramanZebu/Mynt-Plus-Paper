@@ -25,6 +25,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../customizable_split_home_screen.dart' show ScreenType, tickerVisibilityNotifier, toggleTickerVisibility;
 import '../../../market_watch/tv_chart/chart_iframe_guard.dart';
+import 'package:mynt_plus/utils/pip_service.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
 
 // Profile dropdown widget using shadcn
 class ProfileDropdown extends ConsumerStatefulWidget {
@@ -451,6 +453,14 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
             pref: pref,
           ),
 
+          // Position PiP Toggle
+          if (PipService.isSupported)
+            _buildPipToggleMenuItem(
+              context,
+              iconColor: iconColor,
+              textColor: textColor,
+            ),
+
           // Theme Toggle
           if (widget.onThemeToggle != null)
             _buildSimpleMenuItem(
@@ -652,6 +662,84 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 200),
                     left: isTickerVisible ? 18 : 2,
+                    top: 2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  MenuButton _buildPipToggleMenuItem(
+    BuildContext context, {
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    final isPipActive = pipVisibilityNotifier.value;
+    return MenuButton(
+      onPressed: (ctx) async {
+        final portfolio = ref.read(portfolioProvider);
+        final themeState = ref.read(themeProvider);
+        final positions = PipService.buildPositionItems(
+          groupedBySymbol: portfolio.groupedBySymbol,
+          groupPositionSym: portfolio.groupPositionSym,
+        );
+        await PipService.togglePip(
+          pnl: portfolio.totPnL,
+          mtm: portfolio.totMtM,
+          positions: positions,
+          isDarkMode: themeState.isDarkMode,
+        );
+        setState(() {}); // Refresh the menu to show updated state
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Icon(
+              isPipActive
+                  ? Icons.picture_in_picture_alt
+                  : Icons.picture_in_picture_alt_outlined,
+              size: 22,
+              color: iconColor,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'Position PiP',
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: textColor,
+                ),
+              ),
+            ),
+            Container(
+              width: 36,
+              height: 20,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: isPipActive
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.secondary, light: MyntColors.primary)
+                    : Colors.grey.withValues(alpha: 0.3),
+              ),
+              child: Stack(
+                children: [
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 200),
+                    left: isPipActive ? 18 : 2,
                     top: 2,
                     child: Container(
                       width: 16,

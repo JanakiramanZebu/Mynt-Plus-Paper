@@ -963,6 +963,25 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
     final List<Map<String, dynamic>> tools = [
       {
+        'title': 'Algo Trading',
+        'subtitle': 'Automated • Rule-based',
+        'description':
+            'Create, backtest & deploy automated trading strategies with Zebu Algo.',
+        'accentColor': const Color(0xFFF59E0B),
+        'badge': 'NEW',
+        'isIcon': true,
+        'icon': Icons.auto_graph_rounded,
+        'onTap': () async {
+          final Uri algoUri = Uri.parse('https://algo.zebuetrade.com/');
+          if (await canLaunchUrl(algoUri)) {
+            await launchUrl(
+              algoUri,
+              mode: LaunchMode.externalApplication,
+            );
+          }
+        },
+      },
+      {
         'title': 'MF Stratergy',
       'subtitle': 'Mutual Funds • Smart Investing',
     'description': 'Create and invest in curated mutual fund baskets with a single tap. Diversify your portfolio and manage multiple funds effortlessly.',
