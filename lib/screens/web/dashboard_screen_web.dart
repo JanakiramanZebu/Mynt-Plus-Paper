@@ -967,10 +967,11 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'subtitle': 'Automated • Rule-based',
         'description':
             'Create, backtest & deploy automated trading strategies with Zebu Algo.',
-        'accentColor': const Color(0xFFF59E0B),
+        'accentColor': const Color(0xFF4A1F8E),
         'badge': 'NEW',
+        'filled': true,
         'isIcon': true,
-        'icon': Icons.auto_graph_rounded,
+        'icon': Icons.bolt_rounded,
         'onTap': () async {
           final Uri algoUri = Uri.parse('https://algo.zebuetrade.com/');
           if (await canLaunchUrl(algoUri)) {
@@ -1142,6 +1143,314 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         final tool = entry.value;
                         final Color accent = tool['accentColor'] as Color;
                         final String? badge = tool['badge'] as String?;
+                        final bool filled = tool['filled'] == true;
+
+                        if (filled) {
+                          return MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                (tool['onTap'] as Function).call();
+                              },
+                              child: Container(
+                                width: cardWidth,
+                                margin: EdgeInsets.only(
+                                    right: index < tools.length - 1
+                                        ? cardSpacing
+                                        : 0),
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    stops: [0.0, 0.55, 1.0],
+                                    colors: [
+                                      Color(0xFF170B26),
+                                      Color(0xFF4A1F8E),
+                                      Color(0xFF7B3FB5),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.10),
+                                    width: 1,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF4A1F8E)
+                                          .withValues(alpha: 0.28),
+                                      blurRadius: 18,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Positioned(
+                                      right: -70,
+                                      bottom: -70,
+                                      child: IgnorePointer(
+                                        child: Container(
+                                          width: 240,
+                                          height: 240,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: RadialGradient(
+                                              colors: [
+                                                const Color(0xFFB685FF)
+                                                    .withValues(alpha: 0.65),
+                                                const Color(0xFFB685FF)
+                                                    .withValues(alpha: 0.0),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: -50,
+                                      top: -50,
+                                      child: IgnorePointer(
+                                        child: Container(
+                                          width: 160,
+                                          height: 160,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: RadialGradient(
+                                              colors: [
+                                                Colors.white
+                                                    .withValues(alpha: 0.06),
+                                                Colors.white
+                                                    .withValues(alpha: 0.0),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: 64,
+                                                height: 56,
+                                                child: Stack(
+                                                  children: [
+                                                    Positioned(
+                                                      left: 0,
+                                                      top: 10,
+                                                      child: Transform.rotate(
+                                                        angle: -0.18,
+                                                        child: Container(
+                                                          width: 44,
+                                                          height: 44,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white
+                                                                .withValues(
+                                                                    alpha:
+                                                                        0.22),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        11),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      left: 8,
+                                                      top: 5,
+                                                      child: Transform.rotate(
+                                                        angle: -0.09,
+                                                        child: Container(
+                                                          width: 44,
+                                                          height: 44,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white
+                                                                .withValues(
+                                                                    alpha:
+                                                                        0.45),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        11),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      left: 16,
+                                                      top: 0,
+                                                      child: Container(
+                                                        width: 44,
+                                                        height: 44,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(11),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: accent
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.4),
+                                                              blurRadius: 8,
+                                                              offset:
+                                                                  const Offset(
+                                                                      0, 3),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: Center(
+                                                          child: tool['isIcon'] ==
+                                                                  true
+                                                              ? Icon(
+                                                                  tool['icon']
+                                                                      as IconData,
+                                                                  size: 24,
+                                                                  color: const Color(
+                                                                      0xFF4A1F8E),
+                                                                )
+                                                              : SvgPicture.asset(
+                                                                  tool['svgAsset']
+                                                                      as String,
+                                                                  width: 24,
+                                                                  height: 24,
+                                                                  colorFilter:
+                                                                      const ColorFilter
+                                                                          .mode(
+                                                                    Color(
+                                                                        0xFF4A1F8E),
+                                                                    BlendMode
+                                                                        .srcIn,
+                                                                  ),
+                                                                ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Flexible(
+                                                          child: Text(
+                                                            tool['title']
+                                                                as String,
+                                                            style: MyntWebTextStyles
+                                                                .body(
+                                                              context,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  MyntFonts
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (badge != null) ...[
+                                                          const SizedBox(
+                                                              width: 6),
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color:
+                                                                  Colors.white,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5),
+                                                            ),
+                                                            child: Text(
+                                                              'NEW',
+                                                              style: MyntWebTextStyles
+                                                                  .caption(
+                                                                context,
+                                                                color: const Color(
+                                                                    0xFF170B26),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 3),
+                                                    Text(
+                                                      tool['subtitle']
+                                                          as String,
+                                                      style: MyntWebTextStyles
+                                                          .para(
+                                                        context,
+                                                        color: Colors.white
+                                                            .withValues(
+                                                                alpha: 0.85),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow
+                                                          .ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Divider(
+                                            height: 1,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.18),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Expanded(
+                                            child: Text(
+                                              tool['description'] as String,
+                                              style: MyntWebTextStyles.para(
+                                                context,
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.85),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }
 
                         return MouseRegion(
                           cursor: SystemMouseCursors.click,
