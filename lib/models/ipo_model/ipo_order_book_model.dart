@@ -105,7 +105,6 @@ class IpoOrderBookModel {
             }
           }
         } catch (e) {
-          print("Error parsing bid_detail string: $e");
         }
       }
     }
@@ -153,7 +152,6 @@ class IpoOrderBookModel {
             }
           }
         } catch (e) {
-          print("Error parsing resp_bid string: $e");
         }
       }
     }
@@ -176,7 +174,6 @@ class IpoOrderBookModel {
             }
           }
         } catch (e) {
-          print("Error parsing subcategorysettings string: $e");
         }
       }
     }

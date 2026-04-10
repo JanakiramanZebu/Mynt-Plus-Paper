@@ -7901,7 +7901,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -7916,7 +7915,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -8374,26 +8372,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
     String jsonData = jsonEncode(data);
 
-    print("=== ADDING TO BASKET DEBUG ===");
-    print("Basket name: $bsktName");
-    print("Script count after add: ${scripList.length}");
-    print("Full data being saved: $jsonData");
 
     // Save to the same storage type we read from
     if (userId != null && userId.isNotEmpty) {
       await pref.setBasketScripForUser(userId, jsonData);
-      print("Saved to user storage for user: $userId");
 
       // Clear general storage to prevent conflicts
       if (pref.bsktScrips != null && pref.bsktScrips!.isNotEmpty) {
         await pref.setBasketScrip("{}");
-        print("Cleared general storage");
       }
     } else {
       await pref.setBasketScrip(jsonData);
-      print("Saved to general storage");
     }
-    print("==============================");
 
     // **FIX: Add small delay to ensure storage write completes before reading**
     await Future.delayed(const Duration(milliseconds: 100));
@@ -8598,7 +8588,6 @@ class _DraggablePlaceOrderScreenDialogState
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -8613,7 +8602,6 @@ class _DraggablePlaceOrderScreenDialogState
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

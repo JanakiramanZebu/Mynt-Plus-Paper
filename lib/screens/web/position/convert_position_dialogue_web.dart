@@ -89,7 +89,6 @@ class _ConvertPositionDialogueWebState
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -106,7 +105,6 @@ class _ConvertPositionDialogueWebState
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -139,15 +137,8 @@ class _ConvertPositionDialogueWebState
   }
 
   Future<void> _handleConvert() async {
-    debugPrint('=== CONVERT BUTTON PRESSED ===');
-    debugPrint('Position data: ${widget.convertPosition.tsym}');
-    debugPrint('Current product: ${widget.convertPosition.sPrdtAli}');
-    debugPrint('Target product code: ${_getTargetProductCode()}');
-    debugPrint('Qty text: ${_qtyController.text}');
-    debugPrint('Max qty: $_maxQty');
 
     if (_qtyController.text.isEmpty || _qtyController.text == "0") {
-      debugPrint('ERROR: Quantity validation failed - empty or zero');
       showResponsiveWarningMessage(
         context,
         _qtyController.text.isEmpty
@@ -158,7 +149,6 @@ class _ConvertPositionDialogueWebState
     }
 
     if (int.parse(_qtyController.text) > int.parse(_maxQty)) {
-      debugPrint('ERROR: Quantity exceeds max qty');
       setState(() {
         _qtyController.text = _maxQty;
       });
@@ -176,7 +166,6 @@ class _ConvertPositionDialogueWebState
             .toString()
         : _qtyController.text;
 
-    debugPrint('Final qty for API: $finalQty');
 
     PositionConvertionInput positionConvertionInput = PositionConvertionInput(
       exch: "${widget.convertPosition.exch}",
@@ -188,11 +177,9 @@ class _ConvertPositionDialogueWebState
       tsym: "${widget.convertPosition.tsym}",
     );
 
-    debugPrint('Calling fetchPositionConverstion...');
     await ref
         .read(portfolioProvider)
         .fetchPositionConverstion(positionConvertionInput, context);
-    debugPrint('fetchPositionConverstion completed');
   }
 
   @override

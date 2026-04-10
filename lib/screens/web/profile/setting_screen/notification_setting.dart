@@ -170,7 +170,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 NotifyCustomSwitch(
                                   value: isActiveBtn1[index],
                                   onChanged: (value) {
-                                    print("VALUE : $value");
                                     setState(() {
                                       isActiveBtn1[index] = value;
                                     });
@@ -182,7 +181,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 NotifyCustomSwitch(
                                   value: isActiveBtn2[index],
                                   onChanged: (value) {
-                                    print("VALUE : $value");
                                     setState(() {
                                       isActiveBtn2[index] = value;
                                     });
@@ -194,7 +192,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 NotifyCustomSwitch(
                                   value: isActiveBtn3[index],
                                   onChanged: (value) {
-                                    print("VALUE : $value");
                                     setState(() {
                                       isActiveBtn3[index] = value;
                                     });

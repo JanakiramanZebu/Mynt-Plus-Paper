@@ -34,7 +34,6 @@ class OverlayManager {
           overlay.remove();
         }
       } catch (e) {
-        debugPrint('Error removing overlay: $e');
       }
     }
 

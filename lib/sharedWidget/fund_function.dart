@@ -28,7 +28,6 @@ parseJson(String responseBody) {
   for (var item in jsonData) {
     // Now you can treat each item as a map
     Map<String, dynamic> mapItem = item;
-    print(mapItem['name']); // Accessing map values
   }
 }
 

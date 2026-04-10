@@ -414,13 +414,6 @@ class _mfSipdetScrenWeb extends State<mfSipdetScrenWeb>
   /// Determines whether to show pause and cancel buttons based on SIP status and pause flag
   bool _shouldShowButtons(String? status, String? pauseFlag) {
     // Debug print to see what values we're getting
-    print("=== SIP BUTTON VISIBILITY DEBUG ===");
-    print("SIP Status: '$status'");
-    print("Pause Flag: '$pauseFlag'");
-    print("Widget Data Status: '${widget.data?.status}'");
-    print("Widget Data Name: '${widget.data?.name}'");
-    print("Widget Data Scheme Code: '${widget.data?.schemeCode}'");
-    print("===================================");
 
     // Show buttons only if:
     // 1. SIP is ACTIVE
@@ -428,24 +421,17 @@ class _mfSipdetScrenWeb extends State<mfSipdetScrenWeb>
     // 3. SIP is not already paused, cancelled, or rejected
 
     if (status == null || pauseFlag == null) {
-      print("Buttons hidden: status or pauseFlag is null");
-      print("Status is null: ${status == null}");
-      print("PauseFlag is null: ${pauseFlag == null}");
       return false;
     }
 
     // Don't show buttons for cancelled, rejected, or paused SIPs
     if (status == "CANCELLED" || status == "REJECTED" || status == "PAUSED") {
-      print("Buttons hidden: SIP status is $status");
       return false;
     }
 
     // Show buttons for ACTIVE SIPs (regardless of pause flag)
     // Cancel button is always available for active SIPs
     bool shouldShow = status == "ACTIVE";
-    print("Status == 'ACTIVE': ${status == 'ACTIVE'}");
-    print("PauseFlag == 'Y': ${pauseFlag == 'Y'}");
-    print("Should show buttons: $shouldShow");
     return shouldShow;
   }
 }

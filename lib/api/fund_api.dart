@@ -68,7 +68,6 @@ mixin FundApi on ApiCore {
     Future  getlinkfordisplay( ) async {
     try {
       final uri = Uri.parse(apiLinks.mftemporderlinkget);
-      print(uri);
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: jsonEncode({ 

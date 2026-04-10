@@ -135,7 +135,6 @@ class LDProvider extends DefaultChangeNotifier {
   CalenderpnlModel? _calenderpnlAllData;
   CalenderpnlModel? get calenderpnlAllData {
     final data = _calenderpnlDataBySegment[selectedSegment];
-    print("calenderpnlAllData getter called for segment: $selectedSegment, data exists: ${data != null}");
     return data;
   }
 
@@ -309,7 +308,6 @@ class LDProvider extends DefaultChangeNotifier {
 
   set setfilterval(SingingCharacter? val) {
     _filterval = val;
-    print("${_filterval}yyyyyyyy");
   }
 
   set setterfornullallSwitch(val) {
@@ -643,7 +641,6 @@ class LDProvider extends DefaultChangeNotifier {
 
   set clickedvaluecur(val) {
     _curtypestring = val;
-    print("${_filterval}yyyyyyyy");
   }
 
   int _activeTabTaxPnl = 0;
@@ -672,12 +669,10 @@ class LDProvider extends DefaultChangeNotifier {
 
   set clickedtabvalue(val) {
     _eqdertabvalue = val;
-    print("${_filterval}yyyyyyyy");
   }
 
   set clickedvalueder(val) {
     _dertypestring = val;
-    print("${_filterval}yyyyyyyy");
   }
 
   String _startDate = "";
@@ -723,8 +718,6 @@ class LDProvider extends DefaultChangeNotifier {
       _taxpnlyeararray.add(year);
     }
 
-    print("Current Year: $yearmount");
-    print("Generated Years: $_taxpnlyeararray");
   }
 
   getCurrentDate(String trade) {
@@ -732,7 +725,6 @@ class LDProvider extends DefaultChangeNotifier {
       var date = DateTime.now();
 
       _dayforpledgeunpledge = DateFormat('EEEE').format(date);
-      print("$_dayforpledgeunpledge loakdsdejkvh");
     }
     _curDate = DateTime.now();
     _pickedStartDate = null;
@@ -743,15 +735,12 @@ class LDProvider extends DefaultChangeNotifier {
     DateFormat dateFormat = DateFormat('dd/MM/yyyy');
 
     // Print in reverse order
-    print(dateFormat.format(seventhDayBefore)); // 7th day before
-    print(dateFormat.format(curDate)); // Current date
     final date =
         _curDate.day.toString().padLeft(2, '0'); // Ensures "01", "02", etc.
     final month =
         _curDate.month.toString().padLeft(2, '0'); // Ensures "04" for April
     final year = _curDate.year.toString();
 
-    print("$date-$month-$year"); // Example Output: 20-04-2024
 
     if (_curDate.month > 3) {
       _dummyStartYear = _curDate.year.toString();
@@ -759,13 +748,10 @@ class LDProvider extends DefaultChangeNotifier {
       _dummyStartdate = _curDate.day.toString();
       _dummyStartmonth = _curDate.month.toString();
     } else {
-      print("less");
       _dummyStartYear = "${_curDate.year - 1}";
       _dummyEndYear = _curDate.year.toString();
 
-      print("$_curDate");
     }
-    print("$date, $month , $year vaavavaavva");
 
     _today = "$date/$month/$year";
     if (trade == 'tradebook') {
@@ -1039,7 +1025,6 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _ledgerloading = false;
-      debugPrint("$e");
     }
   }
 
@@ -1048,14 +1033,12 @@ class LDProvider extends DefaultChangeNotifier {
       _cmrdownload = await api.cmrdownload();
       final Uri uri =
           Uri.parse("https://rekycbe.mynt.in/${_cmrdownload!.path}");
-      print("urilinks: $uri");
       if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch  ';
       }
 
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -1064,14 +1047,12 @@ class LDProvider extends DefaultChangeNotifier {
     try {
       final Uri uri =
           Uri.parse('https://profile.zebuetrade.com/positions/?uid=${pref.clientId}&token=${pref.token}');
-      print("urilinks: $uri");
       if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch  ';
       }
 
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 //  final Uri uri = Uri.parse(
@@ -1092,7 +1073,6 @@ class LDProvider extends DefaultChangeNotifier {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
     }
   }
 
@@ -1115,7 +1095,6 @@ class LDProvider extends DefaultChangeNotifier {
         }
       }
 
-      print(_historyalterlist.length);
 
       //  _ledgerAllData = new LedgerModelData();
       _pledgehistory = false;
@@ -1125,7 +1104,6 @@ class LDProvider extends DefaultChangeNotifier {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
     }
   }
 
@@ -1143,7 +1121,6 @@ class LDProvider extends DefaultChangeNotifier {
       _positionloading = false;
       notifyListeners();
         warningMessage(context, 'Error occurred in positions try again later');
-      debugPrint("$e");
     }
   }
 
@@ -1151,11 +1128,8 @@ class LDProvider extends DefaultChangeNotifier {
     if (_timer != null) {
       _timer!.cancel();
 
-      print("Timer cancelled");
       _timer = null;
       notifyListeners();
-    } else {
-      print("No active timer to cancel");
     }
     if (_timedis == '') {
       final time = DateFormat('hh:mm:ss a').format(DateTime.now());
@@ -1173,11 +1147,8 @@ class LDProvider extends DefaultChangeNotifier {
   ccancelalltimes() {
     if (_timer != null) {
       _timer!.cancel();
-      print("Timer cancelled");
       _timer = null;
       notifyListeners();
-    } else {
-      print("No active timer to cancel");
     }
   }
 
@@ -1188,18 +1159,14 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       _holdingsAllData = await api.getHoldingsdata(from);
-      print(_holdingsAllData);
       _holdingsloading = false;
       notifyListeners();
 
-      print("${_holdingsAllData}rererere");
     } catch (e) {
       _holdingsloading = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
-      print("${e}eeeeee");
     } finally {
       await requestWS(context: context, isSubscribe: true);
       notifyListeners();
@@ -1228,7 +1195,6 @@ class LDProvider extends DefaultChangeNotifier {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
       notifyListeners();
     }
   }
@@ -1271,7 +1237,6 @@ class LDProvider extends DefaultChangeNotifier {
       await edischeckfunction('');
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -1283,8 +1248,6 @@ class LDProvider extends DefaultChangeNotifier {
         for (var y = 0; y < _holdingsAllData!.holdings!.length; y++) {
           final data2 = _holdingsAllData!.holdings![y];
           if (data.isin == data2['ISIN']) {
-            print(
-                "${data.isin} /////${data2['ISIN']} ............................data.isin == data2['ISIN']");
             data.eligibleornot = 'yes';
             data.havingqty = data2['NET'].toString();
             _isinlistforcopedisdata.add(data2['ISIN']);
@@ -1371,7 +1334,6 @@ class LDProvider extends DefaultChangeNotifier {
         );
       }
       Navigator.pop(context); // Pop after snackbar
-      debugPrint("$e");
     } finally {
       _cpactionloader = false;
       notifyListeners();
@@ -1399,8 +1361,6 @@ class LDProvider extends DefaultChangeNotifier {
       //   warningMessage(context, 'Error occurred try again later'),
       // );
 
-      debugPrint("$e");
-      print("${e}eeeeee");
     } finally {
       notifyListeners();
     }
@@ -1439,7 +1399,6 @@ class LDProvider extends DefaultChangeNotifier {
           }
         }
       }
-      print("${_calendarpnlloading} printprint");
     } catch (e) {
       _calendarpnlloading = false;
 
@@ -1452,8 +1411,6 @@ class LDProvider extends DefaultChangeNotifier {
 
         warningMessage(context, 'Sharing error'
       );
-      debugPrint("$e");
-      print("${e}eeeeee");
     } finally {
       _calendarpnlloading = false;
       notifyListeners();
@@ -1470,7 +1427,6 @@ class LDProvider extends DefaultChangeNotifier {
           }
         }
       }
-      print('${input} sub val');
     }
 
     if (input.isNotEmpty) {
@@ -1492,21 +1448,18 @@ class LDProvider extends DefaultChangeNotifier {
       _pnlloading = false;
       _reportsloadingforcharges = false;
       // _selectedFilters = {}; // Reset filters
-      print("${_pnlAllData} valval");
       notifyListeners();
     } catch (e) {
       _pnlloading = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
     }
   }
 
   setthenotice() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("notice", "yes");
-    print(prefs.getString('notice'));
     _noticenewfeature = prefs.getString('notice').toString();
     notifyListeners();
   }
@@ -1587,7 +1540,6 @@ class LDProvider extends DefaultChangeNotifier {
 
       _tradebookdataDummy = TradeBookModel.fromJson(_tradebookdata!.toJson());
       // _selectedFilters = {}; // Reset filters
-      print("$_tradebookdata object");
       _tradebookloading = false;
       // print("${_calenderpnlAllData} valval");
       notifyListeners();
@@ -1596,7 +1548,6 @@ class LDProvider extends DefaultChangeNotifier {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
     }
   }
 
@@ -1629,8 +1580,6 @@ class LDProvider extends DefaultChangeNotifier {
         // await OpenFile.open(downloadsDir);
 
         _pdfdownloadloading = false;
-      } else {
-        print("$_pdfresponse Error occurred");
       }
 
       _pdfdownloadloading = false;
@@ -1640,7 +1589,6 @@ class LDProvider extends DefaultChangeNotifier {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
     }
   }
 
@@ -1660,7 +1608,6 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _pdfdownloadloading = false;
       notifyListeners();
-      debugPrint("downloadDocForWeb error: $e");
     }
   }
 
@@ -1682,7 +1629,6 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _taxpnlloading = false;
       notifyListeners();
-      debugPrint("Error downloading tax pnl: $e");
     }
   }
 
@@ -1753,7 +1699,6 @@ class LDProvider extends DefaultChangeNotifier {
       _ledgerloading = false;
         warningMessage(context, 'Error occurred try again later'
       );
-      debugPrint("$e");
     }
   }
 
@@ -1781,7 +1726,6 @@ class LDProvider extends DefaultChangeNotifier {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
     }
   }
 
@@ -1804,7 +1748,6 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _reportsloading = false;
-      debugPrint("fdfdffdfdfd: $e");
       // if (context.mounted) {
       //   ScaffoldMessenger.of(context).showSnackBar(
       //     warningMessage(context, 'Error occurred try again later'),
@@ -1826,7 +1769,6 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _allPdfLoading = false;
       notifyListeners();
-      debugPrint("fetchAllPdfDownloads error: $e");
     }
   }
 
@@ -1851,14 +1793,11 @@ class LDProvider extends DefaultChangeNotifier {
         _pledgeandunpledge!.data!.isNotEmpty) {
       for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
         final value = _pledgeandunpledge!.data![i];
-        print(
-            "${value.initiated == "0" && value.status == 'Ok' && (double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt()) != 0}pledgevavavavava");
         if (value.initiated == "0" &&
             value.status == 'Ok' &&
             (double.parse(value.nSOHQTY.toString()).toInt()) +
                     (double.parse(value.sOHQTY.toString()).toInt()) !=
                 0) {
-          print("pledgevavavavava");
         }
       }
     }
@@ -1874,7 +1813,6 @@ class LDProvider extends DefaultChangeNotifier {
       if (_pledgesegmentcheck?.str != null) {}
       _segresponse =
           jsonDecode(decryptionFunction(_pledgesegmentcheck!.str.toString()));
-      print("$_segresponse response32e3423");
       // final dummy = [];
       // for (var i = 0; i < _pdfdownload!.data!.length; i++) {
       //   dummy.add(_pdfdownload!.data![i].docType);
@@ -1886,7 +1824,6 @@ class LDProvider extends DefaultChangeNotifier {
       _pledgeloader = false;
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
       _pledgeloader = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
@@ -1901,7 +1838,6 @@ class LDProvider extends DefaultChangeNotifier {
       _approvepledge = await api.getapprovepledge();
 
     } catch (e) {
-      print("approve pledge error $e");
       rethrow;
     }finally{
       _approvepledgeloader = false;
@@ -1926,7 +1862,6 @@ class LDProvider extends DefaultChangeNotifier {
       _caeventloading = false;
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
       _caeventloading = false;
 
       // ScaffoldMessenger.of(context).showSnackBar(
@@ -2021,8 +1956,6 @@ class LDProvider extends DefaultChangeNotifier {
         _taxderloading = false;
         notifyListeners();
 
-        print("${_taxpnleq} mainresponse");
-        print("Assertsvalva $charges");
 
         // notifyListeners();
       } catch (e) {
@@ -2031,7 +1964,6 @@ class LDProvider extends DefaultChangeNotifier {
         // ScaffoldMessenger.of(context).showSnackBar(
         //   warningMessage(context, 'Error occurred try again later'),
         // );
-        debugPrint("Error fetching tax pnl data: $e");
       }
     } else {
         warningMessage(context, 'Cant move already in $_yearforTaxpnlDummy'
@@ -2054,7 +1986,6 @@ class LDProvider extends DefaultChangeNotifier {
       // }
       // formatedList(_ledgerBillData!.fullStat!);
     } catch (e) {
-      debugPrint("$e");
       _ledgerloading = false;
 
         warningMessage(context, 'Error occurred try again later'
@@ -2084,7 +2015,6 @@ class LDProvider extends DefaultChangeNotifier {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
-      debugPrint("$e");
     }
   }
 
@@ -2111,7 +2041,6 @@ class LDProvider extends DefaultChangeNotifier {
       _pledgeloader = false;
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
       _pledgeloader = false;
 
         warningMessage(context, 'Error occurred try again later'
@@ -2144,7 +2073,6 @@ class LDProvider extends DefaultChangeNotifier {
 
         warningMessage(context, 'Error occurred try again later'
       );
-      debugPrint("$e");
     }
   }
 
@@ -2155,7 +2083,6 @@ class LDProvider extends DefaultChangeNotifier {
       _pnlsegCharge =
           await api.getpnlsegcharge(seg, _startDate, _today, _valforcheck);
       _pnlAllData!.expenseAmt = _pnlsegCharge!.expenseAmt;
-      print("${_pnlsegCharge?.expenseAmt} expense");
       // if (_ledgerAllData!.stat == "Ok") {
       //   // for (var element in _ledgerAllData!.topSchemes!) {
 
@@ -2169,7 +2096,6 @@ class LDProvider extends DefaultChangeNotifier {
 
         warningMessage(context, 'Error in getting charges'
       );
-      debugPrint("$e");
     }
   }
 
@@ -2187,7 +2113,6 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _calendarChargesLoading = false;
       warningMessage(context, 'Error fetching charges');
-      debugPrint('$e');
     }
   }
 
@@ -2206,7 +2131,6 @@ class LDProvider extends DefaultChangeNotifier {
         _taxpnleqCharge = await api.GettaxpnleqCharge('eq', from);
 
         // _pnlAllData!.expenseAmt = _pnlsegCharge!.expenseAmt;
-        print("${from}  expensevalvalvalval");
 
         // if (_ledgerAllData!.stat == "Ok") {
         //   // for (var element in _ledgerAllData!.topSchemes!) {
@@ -2220,7 +2144,6 @@ class LDProvider extends DefaultChangeNotifier {
         _reportsloadingforcharges = false;
           warningMessage(context, 'Error occurred try again later'
         );
-        debugPrint("$e");
       }
     } else {
       warningMessage(
@@ -3135,7 +3058,6 @@ class LDProvider extends DefaultChangeNotifier {
     selectnetpledge.text = setnet;
 
     if (setnet != 'null') {
-      print("setnet ${int.tryParse(setnet)} net ${int.tryParse(net)}");
 
       if (((int.tryParse(setnet) != null ? int.tryParse(setnet)! : 0) <=
               (int.tryParse(net) != null ? int.tryParse(net)! : 0)) &&
@@ -3183,7 +3105,6 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   void changesegvaldummy(String seg) {
-    print("object ${_listforpledge}");
     if (_listforpledge == []) {
       _segmentvaluedummy = '';
     } else {
@@ -3223,7 +3144,6 @@ class LDProvider extends DefaultChangeNotifier {
         successMessage(context, 'Script Added'
       );
     }
-    print("${_listforpledge.length}loakdsdejkvh");
     notifyListeners();
   }
 
@@ -3360,7 +3280,6 @@ class LDProvider extends DefaultChangeNotifier {
       String net,
       String type,
       dynamic index) {
-    print("object");
     bool found = false;
     if (type == 'pledge') {
       index.segmentselect = seg;
@@ -3413,7 +3332,6 @@ class LDProvider extends DefaultChangeNotifier {
         );
       }
     }
-    print("$_listforpledge listforpledgefunction");
     notifyListeners();
   }
 
@@ -3672,7 +3590,6 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _isContractCalendarLoading = false;
       notifyListeners();
-      debugPrint("Error fetching contract documents: $e");
     }
   }
 
@@ -3689,14 +3606,12 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       _contractNoteModel = await api.getContractNote(from, to);
-      debugPrint("Contract note settlement: ${_contractNoteModel?.data?.settlement?.keys}");
 
       _isContractNoteLoading = false;
       notifyListeners();
     } catch (e) {
       _isContractNoteLoading = false;
       notifyListeners();
-      debugPrint("Error fetching contract note: $e");
     }
   }
 
@@ -3962,7 +3877,6 @@ class LDProvider extends DefaultChangeNotifier {
       // Clear segment-specific loading state on error
       setCalendarPnlLoadingForSegment(type, false);
       _calendarpnlloading = false;
-      debugPrint("$e");
     }
   }
 
@@ -4033,7 +3947,6 @@ class LDProvider extends DefaultChangeNotifier {
             final dateKey = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
             _heatmapData[dateKey] = double.tryParse(element.realisedpnl ?? "0.0") ?? 0.0;
           } catch (e) {
-            print("Error parsing journal date: ${element.tRADEDATE} - $e");
           }
         }
       }
@@ -4052,7 +3965,6 @@ class LDProvider extends DefaultChangeNotifier {
             }
             grouped[dateKey]!.add(trade);
           } catch (e) {
-            print("Error parsing trade date: ${trade.tRADEDATE} - $e");
           }
           }
       }

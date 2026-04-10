@@ -1155,7 +1155,6 @@ class _PositionHoldingsCardWebState
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -1170,7 +1169,6 @@ class _PositionHoldingsCardWebState
         }
       }
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

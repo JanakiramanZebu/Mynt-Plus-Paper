@@ -98,7 +98,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         screenClass: 'WatchList_screen_web',
       );
     } catch (e) {
-      debugPrint('Firebase Analytics not ready: $e');
     }
 
     _swipeController = SwipeActionController(
@@ -278,7 +277,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       if (!mounted) return;
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
-      debugPrint('Error preloading watchlists: $e');
     }
   }
 
@@ -316,7 +314,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
-      debugPrint('Error changing watchlist: $e');
     }
   }
 
@@ -350,7 +347,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -366,7 +362,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -510,7 +505,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                   try {
                     pageScrips = jsonDecode(cachedData);
                   } catch (e) {
-                    debugPrint('Error parsing cached data for $pageName: $e');
                     pageScrips = [];
                   }
                 }
@@ -1570,7 +1564,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         }
       }
     } catch (e) {
-      debugPrint('Error changing watchlist: $e');
     }
   }
 
@@ -2023,7 +2016,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     try {
       await marketWatch.fetchWatchListRename(oldName, newName, dialogContext);
     } catch (e) {
-      debugPrint('Error renaming watchlist: $e');
     }
   }
 
@@ -2034,7 +2026,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     try {
       await marketWatch.deleteWatchList(watchlistName, context);
     } catch (e) {
-      debugPrint('Error deleting watchlist: $e');
     }
   }
 
@@ -2044,7 +2035,6 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     try {
       await marketWatch.addWatchList(name, context);
     } catch (e) {
-      debugPrint('Error creating watchlist: $e');
     }
   }
 
@@ -2139,7 +2129,6 @@ class _WatchlistIndexSlotWebState
       await widget.marketWatch
           .requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
-      debugPrint("Error in index slot tap: $e");
     }
   }
 
@@ -2175,7 +2164,6 @@ class _WatchlistIndexSlotWebState
         await widget.marketWatch.calldepthApis(context, depthArgs, "");
       }
     } catch (e) {
-      debugPrint("Error in index click: $e");
     }
   }
 

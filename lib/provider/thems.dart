@@ -143,7 +143,6 @@ class ThemesProvider extends DefaultChangeNotifier {
 // Getting a default app theme
 
   void getThemeData() async {
-    print("THEME :::  ${pref.userAppTheme} $themeMode");
     _deviceTheme = pref.userAppTheme!;
     if (pref.userAppTheme == "Dark") {
       themeMode = ThemeMode.dark;

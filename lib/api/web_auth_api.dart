@@ -74,7 +74,6 @@ class WebAuthApi {
         ResponsiveSnackBar.showError(context, "Server error. Please try again later.");
       }
     } catch (e) {
-      debugPrint("Web Login error: $e");
       ResponsiveSnackBar.showError(context, "An error occurred. Please try again.");
     }
     return null;
@@ -111,7 +110,6 @@ class WebAuthApi {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Send OTP error: $e");
       ResponsiveSnackBar.showError(context, "Failed to send OTP. Please try again.");
     }
     return null;
@@ -164,7 +162,6 @@ class WebAuthApi {
         ResponsiveSnackBar.showError(context, "Server error. Please try again later.");
       }
     } catch (e) {
-      debugPrint("Web OTP Verify error: $e");
       ResponsiveSnackBar.showError(context, "OTP verification failed. Please try again.");
     }
     return null;
@@ -198,7 +195,6 @@ class WebAuthApi {
         }
       }
     } catch (e) {
-      debugPrint("Get TOTP Key error: $e");
     }
     return null;
   }
@@ -229,7 +225,6 @@ class WebAuthApi {
         return TotpData.fromJson(json as Map<String, dynamic>);
       }
     } catch (e) {
-      debugPrint("Gen TOTP Key error: $e");
       ResponsiveSnackBar.showError(context, "Failed to generate TOTP. Please try again.");
     }
     return null;
@@ -291,7 +286,6 @@ class WebAuthApi {
         return MobileOtpModel.fromJson(json as Map<String, dynamic>);
       }
     } catch (e) {
-      debugPrint("QR Login error: $e");
     }
     return null;
   }
@@ -325,7 +319,6 @@ class WebAuthApi {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Forgot Password error: $e");
       ResponsiveSnackBar.showError(context, "Failed to process request. Please try again.");
     }
     return null;
@@ -362,7 +355,6 @@ class WebAuthApi {
         ResponsiveSnackBar.showError(context, "Failed to create webhook. Please try again.");
       }
     } catch (e) {
-      debugPrint("Create Webhook error: $e");
       ResponsiveSnackBar.showError(context, "An error occurred while creating webhook.");
     }
     return null;
@@ -395,7 +387,6 @@ class WebAuthApi {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("List Webhooks error: $e");
     }
     return null;
   }
@@ -428,7 +419,6 @@ class WebAuthApi {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Enable Webhook error: $e");
     }
     return null;
   }
@@ -461,7 +451,6 @@ class WebAuthApi {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Disable Webhook error: $e");
     }
     return null;
   }
@@ -497,7 +486,6 @@ class WebAuthApi {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Webhook Logs error: $e");
     }
     return null;
   }
@@ -526,7 +514,6 @@ class WebAuthApi {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Validate Session error: $e");
     }
     return null;
   }

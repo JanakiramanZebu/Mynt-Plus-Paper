@@ -48,7 +48,6 @@ mixin AuthApi on ApiCore {
           error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
-      debugPrint("Login error: $e");
           error(context, "An error occurred. Please try again.");
       return null;
     }
@@ -80,7 +79,6 @@ mixin AuthApi on ApiCore {
           error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
-      debugPrint("OTP error: $e");
           error(context, "An error occurred. Please try again.");
       return null;
     }
@@ -94,28 +92,11 @@ mixin AuthApi on ApiCore {
       final uri = Uri.parse(apiLinks.logout);
       final payload = '''jData={"uid":"${prefs.clientId}","source":"WEB" }&jKey=${prefs.clientSession}''';
 
-      // ===== LOGOUT API DEBUG INFO =====
-      print('╔════════════════════════════════════════════════════════════════╗');
-      print('║                    LOGOUT API REQUEST                          ║');
-      print('╠════════════════════════════════════════════════════════════════╣');
-      print('║ Endpoint: ${apiLinks.logout}');
-      print('║ Method: POST');
-      print('║ Headers: $defaultHeaders');
-      print('║ Payload: $payload');
-      print('║ Client ID: ${prefs.clientId}');
-      print('║ Session Token: ${prefs.clientSession?.substring(0, 20)}... (truncated)');
-      print('╚════════════════════════════════════════════════════════════════╝');
+    
 
       final res = await apiClient.post(uri, headers: defaultHeaders, body: payload);
 
-      // ===== LOGOUT API RESPONSE =====
-      print('╔════════════════════════════════════════════════════════════════╗');
-      print('║                    LOGOUT API RESPONSE                         ║');
-      print('╠════════════════════════════════════════════════════════════════╣');
-      print('║ Status Code: ${res.statusCode}');
-      print('║ Response Body: ${res.body}');
-      print('╚════════════════════════════════════════════════════════════════╝');
-
+     
       final json = jsonDecode(res.body);
 
       return LogoutModel.fromJson(json as Map<String, dynamic>);
@@ -126,7 +107,6 @@ mixin AuthApi on ApiCore {
     } on TimeoutException catch (_) {
       return null;
     } catch (e) {
-      debugPrint("Logout error: $e");
       return null;
     }
   }
@@ -141,17 +121,7 @@ mixin AuthApi on ApiCore {
         "token": prefs.token ?? ""
       };
 
-      // ===== DESK LOGOUT API DEBUG INFO =====
-      print('╔════════════════════════════════════════════════════════════════╗');
-      print('║                 DESK LOGOUT API REQUEST                        ║');
-      print('╠════════════════════════════════════════════════════════════════╣');
-      print('║ Endpoint: ${apiLinks.deskLogout}');
-      print('║ Method: POST');
-      print('║ Headers: $defaultHeaders');
-      print('║ Payload: ${jsonEncode(payload)}');
-      print('║ Client ID: ${prefs.clientId}');
-      print('║ Token: ${prefs.clientSession?.substring(0, 20)}... (truncated)');
-      print('╚════════════════════════════════════════════════════════════════╝');
+      
 
       final res = await apiClient.post(
         uri,
@@ -159,28 +129,18 @@ mixin AuthApi on ApiCore {
         body: jsonEncode(payload),
       );
 
-      // ===== DESK LOGOUT API RESPONSE =====
-      print('╔════════════════════════════════════════════════════════════════╗');
-      print('║                 DESK LOGOUT API RESPONSE                       ║');
-      print('╠════════════════════════════════════════════════════════════════╣');
-      print('║ Status Code: ${res.statusCode}');
-      print('║ Response Body: ${res.body}');
-      print('╚════════════════════════════════════════════════════════════════╝');
+     
 
       final json = jsonDecode(res.body);
 
       return DeskLogoutModel.fromJson(json as Map<String, dynamic>);
     } on SocketException catch (_) {
-      print('❌ Desk Logout: SocketException');
       return null;
     } on HttpException catch (_) {
-      print('❌ Desk Logout: HttpException');
       return null;
     } on TimeoutException catch (_) {
-      print('❌ Desk Logout: TimeoutException');
       return null;
     } catch (e) {
-      debugPrint("Desk Logout error: $e");
       return null;
     }
   }
@@ -206,7 +166,6 @@ mixin AuthApi on ApiCore {
           error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
-      debugPrint("Forget password error: $e");
           error(context, "An error occurred. Please try again.");
       return null;
     }
@@ -229,7 +188,6 @@ mixin AuthApi on ApiCore {
           error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
-      debugPrint("App version error: $e");
           error(context, "An error occurred. Please try again.");
       return null;
     }
@@ -253,7 +211,6 @@ mixin AuthApi on ApiCore {
           error(context, "Connection timed out. Please try again.");
       return null;
     } catch (e) {
-      debugPrint("Order preference error: $e");
           error(context, "An error occurred. Please try again.");
       return null;
     }

@@ -54,7 +54,6 @@ class Data {
     }
 
 
-    print("json data ${ double.parse(tradingTurnover!) + double.parse(tradingTotal!)}");
 
     if (json['ASSETS'] != null) {
       aSSETS = <ASSETS>[];

@@ -127,8 +127,6 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
               ledgerdata.changesegvaldummy('');
             }
             Navigator.pop(context);
-            print(
-                "objectobjectobjectobjectobjectobjectobjectobject ${screenheight * 0.00038}");
             return true;
           },
           child: SafeArea(

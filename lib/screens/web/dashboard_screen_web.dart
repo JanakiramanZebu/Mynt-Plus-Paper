@@ -1790,26 +1790,17 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
                     onTap: () {
-                      debugPrint(
-                          "See all clicked, route: ${Routes.tradeActionScreen}, tabIndex: $tabIndex");
-                      debugPrint(
-                          "WebNavigationHelper.isAvailable: ${WebNavigationHelper.isAvailable}");
 
                       if (WebNavigationHelper.isAvailable) {
                         try {
                           WebNavigationHelper.navigateTo(
                               Routes.tradeActionScreen,
                               arguments: tabIndex);
-                          debugPrint(
-                              "Navigation called via WebNavigationHelper with tabIndex: $tabIndex");
                         } catch (e) {
-                          debugPrint("WebNavigationHelper error: $e");
                           // Fallback to direct navigation
                           _navigateToTradeAction(context, tabIndex);
                         }
                       } else {
-                        debugPrint(
-                            "WebNavigationHelper not available, using direct navigation");
                         _navigateToTradeAction(context, tabIndex);
                       }
                     },
@@ -1899,9 +1890,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         Routes.tradeActionScreen,
         arguments: tabIndex,
       );
-      debugPrint("Direct navigation attempted with tabIndex: $tabIndex");
     } catch (e) {
-      debugPrint("Direct navigation error: $e");
       // Last resort: try MaterialPageRoute
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -1950,12 +1939,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
-              debugPrint('Portfolio Analysis card tapped');
               if (WebNavigationHelper.isAvailable) {
-                debugPrint('Navigating to portfolio analysis');
                 WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
-              } else {
-                debugPrint('WebNavigationHelper not available');
               }
             },
             child: Container(
@@ -2075,7 +2060,6 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       final marketWatch = ref.read(marketWatchProvider);
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
-      debugPrint("Error showing all indices bottom sheet: $e");
     }
   }
 }
@@ -2238,7 +2222,6 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
               await marketWatch.calldepthApis(context, depthArgs, "");
             }
           } catch (e) {
-            debugPrint("Error tapping index: $e");
           }
         },
         child: LayoutBuilder(
@@ -2475,7 +2458,6 @@ class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
               await marketWatch.calldepthApis(context, depthArgs, "");
             }
           } catch (e) {
-            debugPrint("Error tapping stock: $e");
           }
         },
         child: Container(
@@ -2733,7 +2715,6 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                   await marketWatch.calldepthApis(context, depthArgs, "");
                 }
               } catch (e) {
-                debugPrint("Error tapping stock: $e");
               }
             },
             child: Container(

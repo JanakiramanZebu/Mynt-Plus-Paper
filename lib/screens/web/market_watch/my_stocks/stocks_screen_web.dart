@@ -205,7 +205,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                             .calldepthApis(context, depthArgs, "");
                       });
                     } catch (e) {
-                      debugPrint('Error opening chart: $e');
                     } finally {
                       if (mounted) {
                         Future.delayed(const Duration(milliseconds: 500), () {
@@ -409,7 +408,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                       try {
                                         await _placeOrderInput(context, true);
                                       } catch (e) {
-                                        debugPrint('Buy button error: $e');
                                       }
                                     },
                                   ),
@@ -430,7 +428,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                       try {
                                         await _placeOrderInput(context, false);
                                       } catch (e) {
-                                        debugPrint('Sell button error: $e');
                                       }
                                     },
                                   ),
@@ -467,7 +464,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                               .calldepthApis(context, depthArgs, "");
                                         });
                                       } catch (e) {
-                                        debugPrint('Error opening chart: $e');
                                       } finally {
                                         if (mounted) {
                                           Future.delayed(
@@ -502,9 +498,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
 
       setState(() => _isNavigating = true);
 
-      print('==================== PLACE ORDER DEBUG ====================');
-      print('Symbol: $_tsym | Token: $_token | Exchange: $_exch');
-      print('Transaction Type: ${transType ? "BUY" : "SELL"}');
 
       // Fetch scrip info first
       await ref
@@ -522,14 +515,10 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
 
       // Get fresh quote data
       final freshQuoteData = ref.read(marketWatchProvider).getQuotes;
-      print(
-          'Fresh Quote Data: lp=${freshQuoteData?.lp ?? "NULL"}, c=${freshQuoteData?.c ?? "NULL"}, pc=${freshQuoteData?.pc ?? "NULL"}');
 
       // Also check websocket data for the current token
       final wsProvider = ref.read(websocketProvider);
       final socketData = wsProvider.socketDatas[_token];
-      print(
-          'Websocket Data: ${socketData != null ? "lp=${socketData['lp']}, pc=${socketData['pc']}" : "NO WEBSOCKET DATA"}');
 
       // Priority: Websocket data > Fresh quote data > Holding data
       String? ltp;
@@ -553,12 +542,7 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
         if (isValidPrice(wsLtp)) {
           ltp = wsLtp;
           perChange = wsPc;
-          print('✓ Using WEBSOCKET data: ltp=$ltp');
-        } else {
-          print('✗ Websocket data invalid: ltp=$wsLtp');
         }
-      } else {
-        print('✗ No websocket data available');
       }
 
       // Fallback to fresh quote data
@@ -567,9 +551,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
         if (isValidPrice(quoteLtp)) {
           ltp = quoteLtp;
           perChange = freshQuoteData.pc;
-          print('✓ Using QUOTE data: ltp=$ltp');
-        } else {
-          print('✗ Quote data invalid: ltp=$quoteLtp');
         }
       }
 
@@ -579,13 +560,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
         if (isValidPrice(holdingLtp)) {
           ltp = holdingLtp;
           perChange = widget.holding.exchTsym?[0].perChange?.toString();
-          print('✓ Using HOLDING data: ltp=$ltp');
-        } else {
-          print('✗ Holding data invalid: ltp=$holdingLtp');
         }
       }
 
-      print('Holding Data Raw: ${widget.holding.exchTsym?[0].lp}');
 
       // Use lot size from scripInfo or quote data
       final lotSize = _safeParseLotSize(scripInfo.ls, freshQuoteData?.ls, "1");
@@ -594,12 +571,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
       final safeLtp = _safeParseNumeric(ltp, "0.00");
       final safePerChange = _safeParseNumeric(perChange, "0.00");
 
-      print('Final Values: safeLtp=$safeLtp, safePerChange=$safePerChange');
-      print('===========================================================');
 
       // If we still don't have valid LTP data after all fallbacks, show error
       if (safeLtp == "0.00" || safeLtp.isEmpty) {
-        print('⚠️ ERROR: No valid price data - blocking order screen');
         if (mounted) {
           ResponsiveSnackBar.showError(
             context,
@@ -609,7 +583,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
         return;
       }
 
-      print('✓ Opening order screen with LTP: $safeLtp');
 
       OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: _exch,
@@ -638,7 +611,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
         },
       );
     } catch (e) {
-      debugPrint('Place order error: $e');
       if (mounted) {
         ResponsiveSnackBar.showError(
             context, 'Error placing order: ${e.toString()}');

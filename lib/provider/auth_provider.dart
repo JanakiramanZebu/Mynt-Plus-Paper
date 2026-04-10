@@ -105,7 +105,6 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   removeUsers(user, i, context) {
-    print("object $user $i");
 
     showDialog(
       barrierDismissible: false,
@@ -500,7 +499,6 @@ class AuthProvider extends DefaultChangeNotifier {
 
   switchbackbutton(bool value) {
     _switchback = value;
-    print("switchback $value");
     notifyListeners();
   }
 
@@ -527,7 +525,6 @@ class AuthProvider extends DefaultChangeNotifier {
 // Validate OTP
   bool validateOtp(String otp) {
     if (otp == 'wrong' || otp == 'TOTP') {
-      print(" otp is not a valid $otp");
       optError = "Invalid / wrong ${otp == 'TOTP' ? 'TOTP' : 'OTP'}";
     } else if (otp.length <= (_totp ? 5 : 3) || otp.isEmpty) {
       optError = "Please enter ${_totp ? 6 : 4} digit OTP";
@@ -578,7 +575,6 @@ class AuthProvider extends DefaultChangeNotifier {
       String s, String imei, bool totp,
       {bool preventNavigation = false}) async {
     try {
-      print('def $imei');
       pref.setImei(imei);
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
@@ -792,7 +788,6 @@ class AuthProvider extends DefaultChangeNotifier {
       // }
       notifyListeners();
     } catch (e) {
-      print(e);
       _handleNetworkFailure(
           context, "Network error. Please check your connection.");
     } finally {
@@ -813,7 +808,6 @@ class AuthProvider extends DefaultChangeNotifier {
           imei: pref.imei!,
           totp: _totp);
 
-      print('def ${pref.imei!}');
       otpCtrl.clear();
       _isDisableOtpBtn = true;
       if (_mobileLogin!.stat == "Ok" &&
@@ -836,7 +830,6 @@ class AuthProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      print(e);
     } finally {
       toggleLoadingOn(false);
     }
@@ -963,13 +956,6 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   fetchLogout(BuildContext context) async {
-    print('╔════════════════════════════════════════════════════════════════╗');
-    print('║              LOGOUT FLOW STARTED (auth_provider)               ║');
-    print('╠════════════════════════════════════════════════════════════════╣');
-    print('║ Calling both logout APIs in parallel...');
-    print('║ 1. api.getLogout() - Main logout API');
-    print('║ 2. api.getDeskLogout() - Desk logout API');
-    print('╚════════════════════════════════════════════════════════════════╝');
 
     try {
       // Call both logout APIs in parallel
@@ -980,20 +966,10 @@ class AuthProvider extends DefaultChangeNotifier {
       _logoutModel = await logoutFuture;
       final deskLogoutModel = await deskLogoutFuture;
 
-      print('╔════════════════════════════════════════════════════════════════╗');
-      print('║              LOGOUT RESPONSES RECEIVED                         ║');
-      print('╠════════════════════════════════════════════════════════════════╣');
-      print('║ [API 1] LogoutModel.stat: ${_logoutModel?.stat}');
-      print('║ [API 1] LogoutModel.emsg: ${_logoutModel?.emsg}');
-      print('║ [API 1] LogoutModel.requestTime: ${_logoutModel?.requestTime}');
-      print('╠────────────────────────────────────────────────────────────────╣');
-      print('║ [API 2] DeskLogoutModel.msg: ${deskLogoutModel?.msg}');
-      print('╚════════════════════════════════════════════════════════════════╝');
 
       // Treat session expired as successful logout — session is already gone on server
       if (_logoutModel!.stat == "Ok" ||
           _logoutModel!.emsg == "Session Expired :  Invalid Session Key") {
-        print('✅ Logout successful (or session already expired). Cleaning up...');
         // Close all open order/modify/GTT dialogs (web only)
         if (kIsWeb) {
           OverlayManager.closeAll();
@@ -1054,7 +1030,6 @@ class AuthProvider extends DefaultChangeNotifier {
         try {
           Navigator.pop(context);
         } catch (e) {
-          print("Error during navigation pop: $e");
         }
 
         if (currentRouteName != Routes.loginScreen) {
@@ -1095,7 +1070,6 @@ class AuthProvider extends DefaultChangeNotifier {
 
           activeBtnLogin();
         } catch (e) {
-          print('Failed to get mobile number because of: $e');
         }
       }
     }
@@ -1359,7 +1333,6 @@ class AuthProvider extends DefaultChangeNotifier {
       );
     }
   } on PlatformException catch (e) {
-    debugPrint('LocalAuth error: ${e.code} | ${e.message}');
 
     switch (e.code) {
       case 'NotAvailable':
@@ -2081,7 +2054,6 @@ class AuthProvider extends DefaultChangeNotifier {
                   api.setAppversion(data, context);
                 });
               } catch (e) {
-                print("Error loading background data: $e");
               }
             });
           } else {
@@ -2221,7 +2193,6 @@ class AuthProvider extends DefaultChangeNotifier {
 
   // Helper method to handle network failures and redirect to login
   void _handleNetworkFailure(BuildContext context, String errorMessage) {
-    print("Network failure: $errorMessage");
 
     // Clear user session
     pref.clearClientSession();

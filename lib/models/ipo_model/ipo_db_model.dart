@@ -23,7 +23,6 @@ class DashbordIposIPOS {
             }
           }
         } catch (e) {
-          print("Error parsing data string: $e");
         }
       }
     }
@@ -108,7 +107,6 @@ class Data {
             }
           }
         } catch (e) {
-          print("Error parsing categoryDetails string: $e");
         }
       }
     }
@@ -157,7 +155,6 @@ class Data {
             }
           }
         } catch (e) {
-          print("Error parsing subCategorySettings string: $e");
         }
       }
     }

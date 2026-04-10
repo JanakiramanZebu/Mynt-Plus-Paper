@@ -98,7 +98,6 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
         }
       });
     } catch (e) {
-      debugPrint("Error setting up socket subscription: $e");
     }
   }
 

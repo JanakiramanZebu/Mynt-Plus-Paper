@@ -891,7 +891,6 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
             }
           } catch (e) {
             // If we can't parse the error, treat as manual cancellation to be safe
-            print("Error parsing error details: $e");
             isManualCancel = true;
           }
         }
@@ -968,14 +967,11 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                         : null;
             
             // Log for debugging
-            print("Razorpay Error Details: $errorMap");
-            print("Extracted Error Reason: $extractedErrorReason");
             
             if (extractedErrorReason != null && extractedErrorReason.isEmpty) {
               extractedErrorReason = null;
             }
           } catch (e) {
-            print("Error extracting error reason: $e");
             // Try to get string representation of error
             try {
               extractedErrorReason = error.toString();
@@ -1098,7 +1094,6 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
           checkoutInstance.callMethod('on', ['payment.cancelled', cancelledHandler]);
         } catch (e) {
           // payment.cancelled might not be available in all Razorpay versions
-          print("payment.cancelled event not available: $e");
         }
         
         // Open checkout

@@ -122,7 +122,6 @@ mixin LedgerApi on ApiCore {
             "from": from, "to": to
           }));
 
-      print('getLedgerdata response: ' + res.body);
       final json = jsonDecode((res.body));
       // print("${json['stat']}");
       if (json['stat'] != 'Not Ok') {
@@ -264,7 +263,6 @@ mixin LedgerApi on ApiCore {
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
           body: jsonEncode(data));
-      print("res.body ${res.body}");
       final json = jsonDecode((res.body));
       if (json['msg'] == 'success') {
         return placeOrderResponseCopModel
@@ -565,11 +563,9 @@ mixin LedgerApi on ApiCore {
       // File file = File(filePath);
       // await file.writeAsBytes(response.bodyBytes);
 
-      print("File downloaded successfully");
       // return 'Success';
       return "File downloaded successfully";
     } catch (e) {
-      print("Error downloading file: $e");
       rethrow;
     }
   }
@@ -623,7 +619,6 @@ mixin LedgerApi on ApiCore {
         return "Error: Server returned ${res.statusCode}";
       }
     } catch (e) {
-      print("Error downloading doc: $e");
       rethrow;
     }
   }
@@ -671,7 +666,6 @@ mixin LedgerApi on ApiCore {
         return "Error: Server returned ${res.statusCode}";
       }
     } catch (e) {
-      print("Error downloading tax pnl: $e");
       rethrow;
     }
   }
@@ -750,7 +744,6 @@ mixin LedgerApi on ApiCore {
 
       // return 'Success';
     } catch (e) {
-      print("Error downloading file: $e");
       rethrow;
     }
   }
@@ -787,7 +780,6 @@ mixin LedgerApi on ApiCore {
         return json['msg'];
       }
     } catch (e) {
-      print("Error downloading file: $e");
       rethrow;
     }
   }
@@ -820,7 +812,6 @@ mixin LedgerApi on ApiCore {
         return json['msg'];
       }
     } catch (e) {
-      print("Error downloading file: $e");
       rethrow;
     }
   }
@@ -886,10 +877,8 @@ mixin LedgerApi on ApiCore {
           headers: defaultHeaders,
           );
       final json = jsonDecode((res.body));
-      print("Approved list $json");
       return ApprovedPledgeListModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("Approved list error ${e}");
       rethrow;
     }
   }
@@ -1006,7 +995,6 @@ mixin LedgerApi on ApiCore {
             'withopen': yrn
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
       // log("MF Master ==>$json");
       return PnlSegCharge.fromJson(json as Map<String, dynamic>);
 
@@ -1033,7 +1021,6 @@ mixin LedgerApi on ApiCore {
             'seg': seg
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
       // log("MF Master ==>$json");
       return TaxPnlEqCharges.fromJson(json as Map<String, dynamic>);
 
@@ -1058,7 +1045,6 @@ mixin LedgerApi on ApiCore {
             "pledgeReq": list
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
 
       // log("MF Master ==>$json");
       return json;
@@ -1080,7 +1066,6 @@ mixin LedgerApi on ApiCore {
             "reqid": response,
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
 
       // log("MF Master ==>$json");
       return CdslReponseModel.fromJson(json as Map<String, dynamic>);
@@ -1107,7 +1092,6 @@ mixin LedgerApi on ApiCore {
             'withopen': yrn
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
       // log("MF Master ==>$json");
       return PnlSegCharge.fromJson(json as Map<String, dynamic>);
 
@@ -1134,7 +1118,6 @@ mixin LedgerApi on ApiCore {
             "cocd": comcode
           }));
       final json = jsonDecode((res.body));
-      print("${json}");
       // log("MF Master ==>$json");
 
       return PnlSummaryModel.fromJson({'data': json});
@@ -1158,7 +1141,6 @@ mixin LedgerApi on ApiCore {
           }));
       if (res.statusCode == 200) {
         final json = jsonDecode((res.body));
-        print("${json}");
         // log("MF Master ==>$json");
         return json;
       } else {
@@ -1178,7 +1160,6 @@ mixin LedgerApi on ApiCore {
           body: jsonEncode({"clientid": uccid, "ISIN": list}));
       if (res.statusCode == 200) {
         final json = jsonDecode((res.body));
-        print("${json}");
         // log("MF Master ==>$json");
         return json;
       } else {
@@ -1219,7 +1200,6 @@ mixin LedgerApi on ApiCore {
       // return TaxPnlEqModel.fromJson(json as Map<String, dynamic>);
       // log("MF Master ==>$json");
     } catch (e) {
-      print("${e} errorerror");
       rethrow;
     }
   }

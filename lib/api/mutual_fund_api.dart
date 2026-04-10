@@ -340,7 +340,6 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("pause res p resss ==>$json");
 
       return pause_spi_res.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -401,7 +400,6 @@ mixin MutualFundApi on ApiCore {
 
   Future<RedemptionModel> getMFRedemption(String scheme, String qty) async {
     try {
-      print("remm apiii");
 
       final uri = Uri.parse(apiLinks.mfredemptionenew);
       final res = await apiClient.post(uri,
@@ -455,7 +453,6 @@ mixin MutualFundApi on ApiCore {
           headers: defaultHeaders,
           body: jsonEncode(payload));
 
-      print("MF X-sip PlaceOrder ==>${res.body}");
 
       final json = jsonDecode((res.body));
 
@@ -677,7 +674,6 @@ mixin MutualFundApi on ApiCore {
       // if (res.statusCode == 200) {
       final json = jsonDecode((res.body));
       // }
-      print("UPI Payment Status Check Response: $json");
       //log("X-SIP OREDER CANCEL RESONE ==>$json");
 
       return UPIPaymentStatusCheck.fromJson(json as Map<String, dynamic>);
@@ -821,7 +817,6 @@ mixin MutualFundApi on ApiCore {
             "allow_loop_back": "Y"
           }));
       final json = jsonDecode((res.body));
-      print("mf======>$json");
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -940,9 +935,7 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("mfsingle orfderrrrrr$json");
       final PAYLOAD = {"ClientCode": "${prefs.clientId}", "OrderId": orderid};
-      print("Request::$PAYLOAD");
       // print("mflisttt Type MF ==>$json.total_sip_amount");
 
       return mf_order_sig_det.fromJson(json);
@@ -1003,7 +996,6 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      print("All MF Holdings ==> $json");
 
       return AllMfModel.fromJson(json);
     } catch (e) {

@@ -1,5 +1,6 @@
 class AlertPendingModel {
   String? stat;
+  String? emsg;
   String? aiT;
   String? alId;
   String? tsym;
@@ -21,6 +22,7 @@ class AlertPendingModel {
 
   AlertPendingModel({
     this.stat,
+    this.emsg,
     this.aiT,
     this.alId,
     this.tsym,
@@ -43,6 +45,7 @@ class AlertPendingModel {
 
   AlertPendingModel.fromJson(Map<String, dynamic> json) {
     stat = json['stat'];
+    emsg = json['emsg'];
     aiT = json['ai_t'];
     alId = json['al_id'];
     tsym = json['tsym'];
@@ -66,6 +69,7 @@ class AlertPendingModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['stat'] = stat;
+    data['emsg'] = emsg;
     data['ai_t'] = aiT;
     data['al_id'] = alId;
     data['tsym'] = tsym;

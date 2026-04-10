@@ -403,10 +403,8 @@ class ScalperProvider extends ChangeNotifier {
       final result = await _api.fetchAllOptScripts();
       if (result.stat == 'Ok' && result.values != null) {
         _availableSymbols = result.values!;
-        debugPrint('ScalperProvider: Fetched ${_availableSymbols.length} available symbols');
       }
     } catch (e) {
-      debugPrint('ScalperProvider: Error fetching available symbols: $e');
     } finally {
       _isLoadingSymbols = false;
       notifyListeners();
@@ -520,7 +518,6 @@ class ScalperProvider extends ChangeNotifier {
         final quote = await _api.getScripQuote(index.token, index.exch);
         if (quote.stat == 'Ok' && quote.lp != null) {
           final ltp = double.tryParse(quote.lp!) ?? 0.0;
-          debugPrint('ScalperProvider: Got quote for ${index.name}: LTP=$ltp, chng=${quote.chng}, pc=${quote.pc}');
 
           // Store data for all indices
           _indicesData[index.token] = {
@@ -534,7 +531,6 @@ class ScalperProvider extends ChangeNotifier {
           }
         }
       } catch (e) {
-        debugPrint('ScalperProvider: Error fetching quote for ${index.name}: $e');
       }
     }
     notifyListeners();
@@ -550,7 +546,6 @@ class ScalperProvider extends ChangeNotifier {
     try {
       final index = selectedIndex;
 
-      debugPrint('ScalperProvider: Loading expiries for ${index.name} (token: ${index.token}, exch: ${index.exch})');
 
       // First, fetch the initial quote for the selected index
       try {
@@ -565,10 +560,8 @@ class ScalperProvider extends ChangeNotifier {
             'chng': quote.chng ?? '0.00',
             'pc': quote.pc ?? '0.00',
           };
-          debugPrint('ScalperProvider: Got initial LTP: $_currentIndexLTP');
         }
       } catch (e) {
-        debugPrint('ScalperProvider: Error fetching quote: $e');
       }
 
       if (_loadGeneration != gen) return; // Stale — a newer switch happened
@@ -600,12 +593,8 @@ class ScalperProvider extends ChangeNotifier {
               )
             : null;
         _selectedExpiry = matchingExpiry ?? sortedExpiries.first;
-        debugPrint('ScalperProvider: Got ${_expiryDates.length} expiries, selected: ${_selectedExpiry?.exd}');
-      } else {
-        debugPrint('ScalperProvider: No expiries found! stat=${linkedScrips.stat}');
       }
     } catch (e) {
-      debugPrint('ScalperProvider: Error loading index data: $e');
     } finally {
       _isLoadingExpiries = false;
       if (_loadGeneration == gen) {
@@ -661,7 +650,6 @@ class ScalperProvider extends ChangeNotifier {
   /// Load option chain for selected index and expiry using direct API calls
   Future<void> loadOptionChain(BuildContext context) async {
     if (_selectedExpiry == null) {
-      debugPrint('ScalperProvider: loadOptionChain called but no expiry selected');
       return;
     }
 
@@ -678,7 +666,6 @@ class ScalperProvider extends ChangeNotifier {
           ? _currentIndexLTP.toStringAsFixed(2)
           : '0';
 
-      debugPrint('ScalperProvider: Loading option chain - strPrc: $strPrc, tsym: ${_selectedExpiry!.tsym}, exch: ${index.optExch}');
 
       // Fetch option chain using direct API call - 35 strikes to ensure we have 15 above and below ATM
       final chainData = await _api.getOptionChain(
@@ -703,7 +690,6 @@ class ScalperProvider extends ChangeNotifier {
             .where((o) => o.optt == 'PE')
             .toList();
 
-        debugPrint('ScalperProvider: Got ${_callOptions.length} calls and ${_putOptions.length} puts');
 
         // Get lot size from first option
         if (_callOptions.isNotEmpty) {
@@ -716,7 +702,6 @@ class ScalperProvider extends ChangeNotifier {
         // Calculate ATM
         _calculateATM();
 
-        debugPrint('ScalperProvider: ATM strike: $_atmStrike, Sorted strikes: ${_sortedStrikes.length}');
 
         // Auto-select strike based on default offset if not already selected
         if (_selectedStrike.isEmpty && _atmStrike.isNotEmpty) {
@@ -733,14 +718,12 @@ class ScalperProvider extends ChangeNotifier {
           }
         }
       } else {
-        debugPrint('ScalperProvider: Option chain empty or failed. stat=${chainData?.stat}');
         if (chainData?.emsg == "Session Expired :  Invalid Session Key" &&
             chainData?.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
     } catch (e) {
-      debugPrint('ScalperProvider: Error loading option chain: $e');
     } finally {
       // Always reset loading flag — even on generation mismatch, so the UI doesn't stay stuck.
       // The newer load call will set it back to true when it starts.
@@ -1036,7 +1019,6 @@ class ScalperProvider extends ChangeNotifier {
       _gttOrders = orders != null ? List.from(orders) : [];
       notifyListeners();
     } catch (e) {
-      debugPrint('ScalperProvider: fetchGttOrders error: $e');
     }
   }
 
@@ -1143,7 +1125,6 @@ class ScalperProvider extends ChangeNotifier {
         await ref.read(orderProvider).modifyGTTOrder(input, context);
         await fetchGttOrders(context);
       } catch (e) {
-        debugPrint('ScalperProvider: modifyGttPrice error: $e');
         await fetchGttOrders(context);
       }
     });
@@ -1159,7 +1140,6 @@ class ScalperProvider extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('ScalperProvider: cancelGttOrderSilent error: $e');
       return false;
     }
   }

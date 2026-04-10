@@ -71,7 +71,6 @@ class _ProfileDropdownState extends ConsumerState<ProfileDropdown> {
             },
           ).future.then((_) {
             if (kDebugMode) {
-              print('Profile dropdown closed');
             }
           });
         },
@@ -148,7 +147,6 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -163,7 +161,6 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

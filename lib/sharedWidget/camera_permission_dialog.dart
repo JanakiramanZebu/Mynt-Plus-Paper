@@ -205,7 +205,6 @@ class CameraPermissionDialog extends ConsumerWidget {
             }
           } catch (e4) {
             // If all else fails, show a message to user
-            print('Unable to open settings: $e4');
           }
         }
       }

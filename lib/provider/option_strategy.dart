@@ -280,7 +280,6 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
       }
     }
     notifyListeners();
-    print("Stategy ${_optStrgyStrike.length}");
   }
 
   optionStrategyOrderPlace(BuildContext context) async {
