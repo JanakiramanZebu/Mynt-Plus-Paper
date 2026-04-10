@@ -242,7 +242,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: resolveThemeColor(context,
-                            dark: MyntColors.primaryDark,
+                            dark: MyntColors.secondary,
                             light: MyntColors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
@@ -497,7 +497,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                     shadowColor:
                                         Colors.transparent,
                                     backgroundColor: resolveThemeColor(context,
-                                        dark: MyntColors.primaryDark,
+                                        dark: MyntColors.secondary,
                                         light: MyntColors.primary),
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 24),
@@ -1372,7 +1372,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: Text(
-              'View Scripts',
+              'Hover to view scripts',
               style: MyntWebTextStyles.bodySmall(
                 context,
                 color: resolveThemeColor(context,
@@ -1380,7 +1380,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                     light: MyntColors.primary),
                 fontWeight: MyntFonts.medium,
               ).copyWith(
-                decoration: TextDecoration.underline,
+                // decoration: TextDecoration.underline,
                 decorationColor: resolveThemeColor(context,
                     dark: MyntColors.primaryDark,
                     light: MyntColors.primary),

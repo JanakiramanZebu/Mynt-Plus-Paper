@@ -23,6 +23,46 @@ class _UnpledgeHistoryScreenState extends State<UnpledgeHistoryScreen> {
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
 
   static const int _totalColumns = 8;
+  static const int _pageSize = 15;
+
+  int _displayedCount = _pageSize;
+  bool _isLoadingMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tableScrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant UnpledgeHistoryScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.searchQuery != oldWidget.searchQuery) {
+      _displayedCount = _pageSize;
+    }
+  }
+
+  void _onScroll() {
+    if (_isLoadingMore) return;
+    final maxScroll = _tableScrollController.position.maxScrollExtent;
+    final currentScroll = _tableScrollController.offset;
+    if (currentScroll >= maxScroll - 200) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    setState(() {
+      _isLoadingMore = true;
+    });
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() {
+        _displayedCount += _pageSize;
+        _isLoadingMore = false;
+      });
+    });
+  }
 
   void _onSort(int columnIndex) {
     setState(() {
@@ -77,6 +117,7 @@ class _UnpledgeHistoryScreenState extends State<UnpledgeHistoryScreen> {
 
   @override
   void dispose() {
+    _tableScrollController.removeListener(_onScroll);
     _tableScrollController.dispose();
     _hoveredRowIndex.dispose();
     super.dispose();
@@ -297,6 +338,11 @@ class _UnpledgeHistoryScreenState extends State<UnpledgeHistoryScreen> {
         );
       }
 
+      // ── Progressive loading: only render up to _displayedCount rows ──
+      final int totalFiltered = dataList.length;
+      final bool hasMore = _displayedCount < totalFiltered;
+      final visibleList = dataList.take(_displayedCount).toList();
+
       return LayoutBuilder(
         builder: (context, constraints) {
           final double totalWidth = constraints.maxWidth - 32;
@@ -348,78 +394,120 @@ class _UnpledgeHistoryScreenState extends State<UnpledgeHistoryScreen> {
                   Expanded(
                     child: SingleChildScrollView(
                       controller: _tableScrollController,
-                      child: shadcn.Table(
-                        defaultRowHeight: const shadcn.FixedTableSize(52),
-                        columnWidths: columnWidths,
-                        rows: dataList.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final item = entry.value;
+                      child: Column(
+                        children: [
+                          shadcn.Table(
+                            defaultRowHeight: const shadcn.FixedTableSize(52),
+                            columnWidths: columnWidths,
+                            rows: visibleList.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final item = entry.value;
 
-                          return shadcn.TableRow(
-                            cells: [
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 0,
-                                child: Text(item.clientid ?? '--',
-                                    style: _getTextStyle(context)),
+                              return shadcn.TableRow(
+                                cells: [
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 0,
+                                    child: Text(item.clientid ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 1,
+                                    child: Text(item.iSIN ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 2,
+                                    child: Text(item.script ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 3,
+                                    alignRight: true,
+                                    child: Text(item.unPlegeQty ?? '--',
+                                        style: _getTextStyle(context)),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 4,
+                                    child: Text(
+                                      item.reqDatTime ?? '--',
+                                      style: _getTextStyle(context),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 5,
+                                    child: Text(
+                                      item.appDatTime ?? '--',
+                                      style: _getTextStyle(context),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 6,
+                                    child:
+                                        _buildStatusBadge(context, item.status),
+                                  ),
+                                  _buildDataCell(
+                                    rowIndex: index,
+                                    columnIndex: 7,
+                                    child: Text(
+                                      item.reason ?? '--',
+                                      style: _getTextStyle(context),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                          // Loading indicator / record count footer
+                          if (_isLoadingMore)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.5),
                               ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 1,
-                                child: Text(item.iSIN ?? '--',
-                                    style: _getTextStyle(context)),
-                              ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 2,
-                                child: Text(item.script ?? '--',
-                                    style: _getTextStyle(context)),
-                              ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 3,
-                                alignRight: true,
-                                child: Text(item.unPlegeQty ?? '--',
-                                    style: _getTextStyle(context)),
-                              ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 4,
-                                child: Text(
-                                  item.reqDatTime ?? '--',
-                                  style: _getTextStyle(context),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                            )
+                          else if (hasMore)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                'Showing ${visibleList.length} of $totalFiltered records — scroll down for more',
+                                style: _getTextStyle(context).copyWith(
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                  fontSize: 12,
                                 ),
                               ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 5,
-                                child: Text(
-                                  item.appDatTime ?? '--',
-                                  style: _getTextStyle(context),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                'Showing all $totalFiltered records',
+                                style: _getTextStyle(context).copyWith(
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                  fontSize: 12,
                                 ),
                               ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 6,
-                                child: _buildStatusBadge(context, item.status),
-                              ),
-                              _buildDataCell(
-                                rowIndex: index,
-                                columnIndex: 7,
-                                child: Text(
-                                  item.reason ?? '--',
-                                  style: _getTextStyle(context),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
