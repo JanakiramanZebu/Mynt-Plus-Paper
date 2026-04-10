@@ -451,9 +451,9 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
           } else if (routeName == "mtfDetails") {
-            _replaceScreenInPanel(ScreenType.mtfDetails);
-          } else {
-            debugPrint("Unknown route: $routeName");
+            _navigateToScreen(ScreenType.mtfDetails);
+          } else if (routeName == "myAccount") {
+            _navigateToScreen(ScreenType.myAccount);
           }
         },
         replaceScreen: (routeName, {arguments}) {
@@ -533,7 +533,9 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
           } else if (routeName == "mtfDetails") {
-            _replaceScreenInPanel(ScreenType.mtfDetails);
+            _navigateToScreen(ScreenType.mtfDetails);
+          } else if (routeName == "myAccount") {
+            _navigateToScreen(ScreenType.myAccount);
           } else {
             debugPrint("Unknown route: $routeName");
           }
