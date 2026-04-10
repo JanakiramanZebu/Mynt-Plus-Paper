@@ -32,7 +32,6 @@ mixin MarketWatchApi on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-       print("Market Watchlist => ${res.body}");
       final json = jsonDecode(res.body);
 
       return MarketWatchlist.fromJson(json as Map<String, dynamic>);
@@ -63,9 +62,7 @@ mixin MarketWatchApi on ApiCore {
       body:
           '''jData={"uid":"${prefs.clientId}","exch":"${exchange ?? 'NSE'}","token":"${token ?? 'Nifty%2050'}","st":"$fromDate / 1000","et":"$toDate","intrv":"${timeframe ?? '5'}"}&jKey=${prefs.clientSession}''',
     );
-print("res.body: ${res.body}");
     final json = jsonDecode(res.body);
-    print("json: $json");
     if (json is List) {
       return TpSeries.fromJson({"data": json});
     } else if (json is Map) {
@@ -248,7 +245,6 @@ print("res.body: ${res.body}");
           body:
               '''jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"$categ","fil":${exchs.toList()},"opt":"${opt.toString()}"}&jKey=${prefs.clientSession}''');
 
-       print('''jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"$categ","fil":${exchs.toList()},"opt":"$opt"}&jKey=${prefs.clientSession}''');
       //  print("Search Scrip => ${res.body}");
       final json = jsonDecode(res.body);
       //  print("Search Scrip => ${json['values'].length}");
@@ -270,7 +266,6 @@ print("res.body: ${res.body}");
           body:
               '''jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"","fil":${jsonEncode(exchanges)},"opt":"false"}&jKey=${prefs.clientSession}''');
 
-      print('''[StrategyBuilder] jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"","fil":${jsonEncode(exchanges)},"opt":"false"}&jKey=${prefs.clientSession}''');
       final json = jsonDecode(res.body);
       return SearchScripNewModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -367,7 +362,6 @@ print("res.body: ${res.body}");
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","exch":"$exch","tsym":"${UrlUtils.encodeParameter(tsym)}"}&jKey=${prefs.clientSession}''');
-print("Tech Data API => ${res.body}");
       final json = jsonDecode(res.body);
 
       // log(" Tech Data   => ${res.body}");
@@ -514,12 +508,9 @@ print("Tech Data API => ${res.body}");
       final fromTimestamp = fromDate.millisecondsSinceEpoch ~/ 1000;
       final toTimestamp = now.millisecondsSinceEpoch ~/ 1000;
       
-      print("API Request for $timeframe: from $fromDate to $now");
-      print("Timestamps: from $fromTimestamp to $toTimestamp");
       
       final payload = '''jData={"sym": "$formattedSymbol","from": "$fromTimestamp","to": "$toTimestamp"}&jKey=${prefs.clientSession}''';
       
-      print("EOD CHART DATA API Payload: $payload");
       
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
@@ -528,27 +519,30 @@ print("Tech Data API => ${res.body}");
       // print("EOD CHART DATA RESPONSE: ${res.body}");
       
       final json = jsonDecode(res.body);
-      
-      print("API Response for $timeframe: ${json.runtimeType} with ${json is List ? json.length : 1} items");
-      
+
+      // print("API Response for $timeframe: ${json.runtimeType} with ${json is List ? json.length : 1} items");
+
+    
+      if (json is Map &&
+          json['stat'] == 'Not_Ok' &&
+          json['emsg'] == 'Session Expired :  Invalid Session Key') {
+        throw Exception('Session Expired :  Invalid Session Key');
+      }
+
       // Handle list response
       if (json is List) {
         final result = json.map((item) {
           final itemData = jsonDecode(item as String);
           return EodChartData.fromJson(itemData as Map<String, dynamic>);
         }).toList();
-        print("Converted ${result.length} EOD chart data items for $timeframe");
         return result;
       } else if (json is Map) {
         final result = [EodChartData.fromJson(json as Map<String, dynamic>)];
-        print("Converted 1 EOD chart data item for $timeframe");
         return result;
       } else {
         throw Exception("Unexpected response format");
       }
     } catch (e) {
-      print("EOD CHART DATA API ERROR: ${e.toString()}");
-      print("Error Type: ${e.runtimeType}");
       rethrow;
     }
   }

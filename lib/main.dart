@@ -98,7 +98,6 @@ class FirebaseHelper {
       container.read(firebaseInitializedProvider.notifier).state = value;
     } catch (e) {
       // Silently handle provider update errors
-      print("Provider update error: $e");
     }
   }
 }
@@ -127,19 +126,12 @@ void handleNotificationMessage(RemoteMessage message) {
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  if (!kIsWeb) {
-    print("Handling a background message: ${message.messageId}");
-    print('Message data: ${message.data}');
-    print('Message notification: ${message.notification?.title}');
-    print('Message notification: ${message.notification?.body}');
-  }
+  await Firebase.initializeApp(); 
 }
 
 // Separated Firebase initialization function for better control and performance
 Future<void> initializeFirebaseAsync() async {
   final firebaseStartTime = DateTime.now();
-  print("Firebase initialization started at: $firebaseStartTime");
 
   try {
     // Initialize Firebase with appropriate platform options
@@ -153,7 +145,6 @@ Future<void> initializeFirebaseAsync() async {
 
     final coreInitTime = DateTime.now();
     final coreInitDuration = coreInitTime.difference(firebaseStartTime);
-    print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
 
     final Preferences pref = locator<Preferences>();
 
@@ -197,7 +188,7 @@ Future<void> initializeFirebaseAsync() async {
         if (message.data["url"] != null) {
           final Uri url = Uri.parse(message.data["url"]);
           if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-            print("Could not launch URL");
+            // print("Could not launch URL");
           }
         }
       }
@@ -208,21 +199,13 @@ Future<void> initializeFirebaseAsync() async {
       if (message.data["url"] != null) {
         final Uri url = Uri.parse(message.data["url"]);
         if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-          print("Could not launch URL");
         }
       }
     });
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (!kIsWeb) {
-        print("Message $message");
-        print('Handling a foreground message: ${message.messageId}');
-        print('Message data: ${message.data}');
-        print('Message notification: ${message.notification?.title}');
-        print('Message notification: ${message.notification?.body}');
-        print('Message notification: ${message.data["imageUrl"]}');
-      }
+   
 
       handleNotificationMessage(message);
       _messageStreamController.sink.add(message);
@@ -233,10 +216,7 @@ Future<void> initializeFirebaseAsync() async {
 
     final firebaseEndTime = DateTime.now();
     final totalFirebaseDuration = firebaseEndTime.difference(firebaseStartTime);
-    print(
-        "Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
   } catch (e) {
-    print("Firebase initialization error: $e");
     // Don't update the provider state if initialization fails
   }
 }
@@ -250,7 +230,6 @@ void _clearBadgeOnStartup() async {
 void main() async {
   // Track startup time
   final startTime = DateTime.now();
-  print("App startup began at: $startTime");
 
   // Enable path-based URLs for web (removes #/ from URLs)
   // This allows proper browser history and shareable links
@@ -287,12 +266,10 @@ void main() async {
   try {
     _clearBadgeOnStartup();
   } catch (e) {
-    print("Error in notification clearing $e");
   }
   // Run the app first without waiting for Firebase
   final beforeFirebase = DateTime.now();
   final startupDuration = beforeFirebase.difference(startTime);
-  print("App ready to launch in: ${startupDuration.inMilliseconds}ms");
 
   if (!kIsWeb) {
     await SystemChrome.setPreferredOrientations([

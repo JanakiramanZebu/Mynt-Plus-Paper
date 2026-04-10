@@ -66,7 +66,6 @@ class _CancelAllOrdersDialogWebState
         '$orderCount order${orderCount > 1 ? 's' : ''} cancelled successfully',
       );
     } catch (e) {
-      debugPrint('Error cancelling orders: $e');
       ResponsiveSnackBar.showError(
         context,
         'Failed to cancel orders. Please try again.',

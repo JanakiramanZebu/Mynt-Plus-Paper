@@ -31,13 +31,11 @@ Future<bool> _ensureDigioSdkLoaded() async {
     // Give a small delay for the script to initialize globals
     Future.delayed(const Duration(milliseconds: 300), () {
       final loaded = js.context['Digio'] != null;
-      print('Digio SDK dynamic load result: $loaded');
       if (!completer.isCompleted) completer.complete(loaded);
     });
   });
 
   script.onError.listen((_) {
-    print('Digio SDK script failed to load');
     if (!completer.isCompleted) completer.complete(false);
   });
 
@@ -46,7 +44,6 @@ Future<bool> _ensureDigioSdkLoaded() async {
   // Timeout after 10 seconds
   Future.delayed(const Duration(seconds: 10), () {
     if (!completer.isCompleted) {
-      print('Digio SDK load timed out');
       completer.complete(false);
     }
   });
@@ -72,7 +69,6 @@ Future<String> startDigioEsign({
   // Ensure Digio SDK is loaded
   final sdkLoaded = await _ensureDigioSdkLoaded();
   if (!sdkLoaded) {
-    print('Digio SDK could not be loaded');
     return 'failure';
   }
 
@@ -127,7 +123,6 @@ Future<String> startDigioEsign({
 
     js.context.callMethod('eval', [jsCode]);
   } catch (e) {
-    print('Digio SDK launch error: $e');
     _restoreFlutterOverlay();
     sub.cancel();
     if (!completer.isCompleted) completer.complete('failure');

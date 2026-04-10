@@ -110,7 +110,6 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
         ],
       );
     } catch (e, stackTrace) {
-      debugPrint('_buildGroupsContent error: $e\n$stackTrace');
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

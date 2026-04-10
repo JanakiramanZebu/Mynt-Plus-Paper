@@ -121,7 +121,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         _inactiveTimer?.cancel();
         // Ensure navbar is always visible when resuming from background
         ref.read(userProfileProvider).profileloaderfun(false);
-        print("app resumed - enabling WebSocket auto-reconnect");
         
         // Don't use await to avoid blocking the UI thread
         // Refresh data in the background when app resumes
@@ -152,7 +151,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Handle WebSocket connections
             _handleWebSocketConnections();
           } catch (e) {
-            print("Error during app resume: $e");
           }
         });
 
@@ -182,17 +180,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         _inactiveTimer = Timer(const Duration(milliseconds: 500), () {
           if (mounted) {
             ref.read(chartProvider.notifier).hideChart();
-            print("app in inactive - chart hidden after delay");
           }
         });
-        print("app in inactive");
         break;
 
       case AppLifecycleState.paused:
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
-        print("app in paused - pausing WebSocket auto-reconnect");
         break;
 
       case AppLifecycleState.detached:
@@ -200,14 +195,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ref.read(portfolioProvider).cancelTimer();
         }
         ref.read(chartProvider.notifier).hideChart();
-        print("app in detached");
         break;
 
       case AppLifecycleState.hidden:
         if (ref.read(indexListProvider).selectedBtmIndx == 2) {
           ref.read(portfolioProvider).cancelTimer();
         }
-        print("app in hidden - pausing WebSocket auto-reconnect");
     }
   }
 

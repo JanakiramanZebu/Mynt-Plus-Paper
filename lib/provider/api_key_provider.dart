@@ -58,7 +58,6 @@ class ApikeyProvider extends DefaultChangeNotifier {
 
   hiddenPass() {
     _hidePass = !_hidePass;
-    print("object ::: $_hidePass");
     notifyListeners();
   }
 
@@ -104,11 +103,7 @@ class ApikeyProvider extends DefaultChangeNotifier {
 
   // Generate new secret code for existing API key (when user clicks regenerate)
   void generateNewSecretCode() {
-    print("=== REGENERATING SECRET CODE ===");
-    print("Before: URL=${_urlController.text}, PrimaryIP=${_primaryIpController.text}, BackupIP=${_backupIpController.text}");
     _generatedSecretCode = generateSecretCode();
-    print("After: URL=${_urlController.text}, PrimaryIP=${_primaryIpController.text}, BackupIP=${_backupIpController.text}");
-    print("New Secret Code: $_generatedSecretCode");
     notifyListeners();
   }
 

@@ -100,7 +100,6 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                   : colors.primaryLight,
                             ),
                             onPressed: () {
-                              print('🔵 Add Money button pressed!');
                               // trancation.changebool(true);
                               Navigator.pushNamed(context, Routes.fundscreen,
                                   arguments: trancation);
@@ -136,7 +135,6 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                                           : colors.fundbuttonBg,
                             ),
                             onPressed: () async {
-                              print('🟢 Withdraw button pressed!');
                               await trancation.fetchValidateToken(context);
                               Future.delayed(
                                 const Duration(milliseconds: 100),

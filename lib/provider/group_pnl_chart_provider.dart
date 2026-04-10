@@ -84,7 +84,6 @@ class GroupPnlChartProvider extends ChangeNotifier {
       _resultCache[cacheKey] = _dataPoints;
     } catch (e) {
       _error = 'Failed to load chart data';
-      debugPrint('GroupPnlChart error: $e');
     } finally {
       _loading = false;
       notifyListeners();
@@ -116,7 +115,6 @@ class GroupPnlChartProvider extends ChangeNotifier {
       _resultCache[cacheKey] = _dataPoints;
     } catch (e) {
       _error = 'Failed to load chart data';
-      debugPrint('GroupPnlChart interval switch error: $e');
     } finally {
       _loading = false;
       notifyListeners();
@@ -396,7 +394,6 @@ class GroupPnlChartProvider extends ChangeNotifier {
       _tpCache.putIfAbsent(token, () => {});
       _tpCache[token]![interval] = result.data ?? [];
     } catch (e) {
-      debugPrint('TPSeries fetch failed for token $token: $e');
       _tpCache.putIfAbsent(token, () => {});
       _tpCache[token]![interval] = [];
     }

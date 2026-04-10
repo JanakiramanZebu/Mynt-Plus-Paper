@@ -50,7 +50,6 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month, String apistatus
           body:
               '''jData={"app_key":"${prefs.clientId}_U"}&jKey=${prefs.clientSession}''');
         
-      print('getapikeynew response: ${res.body}');
       final json = jsonDecode(res.body);
       return GenerateNewApiKeyModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
@@ -81,14 +80,12 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month, String apistatus
       String sessionKey = prefs.clientSession ?? '';
       final body = 'jData=' + jsonEncode(jDataMap) + '&jKey=' + sessionKey;
 
-      print('=== AppKeyStore REQUEST === $body');
       final res = await apiClient.post(
         uri,
         headers: defaultHeaders,
         body: body,
       );
 
-      print('=== AppKeyStore RESPONSE === Status Code: ${res.statusCode} | Response: ${res.body}');
       
       final json = jsonDecode(res.body);
         return GenerateNewApiKeyModel.fromJson(json as Map<String, dynamic>);
@@ -104,7 +101,6 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month, String apistatus
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}", "valTime":"$month"}&jKey=${prefs.clientSession}''');
-      print((res.body));
       final json = jsonDecode(res.body);
 
       return GenerateApikeyModel.fromJson(json as Map<String, dynamic>);

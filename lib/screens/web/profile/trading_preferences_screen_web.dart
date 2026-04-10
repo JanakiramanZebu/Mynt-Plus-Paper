@@ -621,7 +621,6 @@ class _TradingPreferencesScreenWebState
 
     setState(() => _segmentEsignLoading = true);
 
-    debugPrint("Starting Digio esign: fileId=$fileId, email=$email");
 
     try {
       // Call Digio JS SDK directly (opens inline overlay)

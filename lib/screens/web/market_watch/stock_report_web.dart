@@ -161,6 +161,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             widget.wlValue.symbol,
             widget.wlValue.exch,
             timeframe: "5Y",
+            context: context,
           ),
         ]).then((_) {
           // Fetch technical data for returns calculation after other data is loaded
@@ -179,7 +180,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             });
           }
         }).catchError((error) {
-          debugPrint("Error loading data: $error");
           if (mounted) {
             setState(() {
               _isLoadingNewData = false;
@@ -274,7 +274,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             date = DateTime.parse(time);
           }
         } catch (e) {
-          print("Error parsing date: $time, error: $e");
           date = DateTime.now();
         }
       } else {
@@ -361,8 +360,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               description: announcement.agenda ?? 'Board meeting scheduled',
             ));
           } catch (e) {
-            print(
-                'Error parsing announcement date: ${announcement.boardMeetingDate}');
           }
         }
       }
@@ -383,7 +380,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   '${dividend.dividendPercent ?? 'N/A'}% - ${dividend.dividendpershare ?? 'N/A'} per share',
             ));
           } catch (e) {
-            print('Error parsing dividend date: ${dividend.dividendDate}');
           }
         }
       }
@@ -403,7 +399,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   '${bonus.ratioD ?? 'N/A'}:${bonus.ratioN ?? 'N/A'} bonus ratio',
             ));
           } catch (e) {
-            print('Error parsing bonus date: ${bonus.recordDate}');
           }
         }
       }
@@ -422,7 +417,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               description: 'Price: ₹${rights.offerPrice ?? 'N/A'}',
             ));
           } catch (e) {
-            print('Error parsing rights date: ${rights.exRightsDate}');
           }
         }
       }
@@ -442,7 +436,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   '${split.fvChangeFrom ?? 'N/A'} to ${split.fvChangeTo ?? 'N/A'}',
             ));
           } catch (e) {
-            print('Error parsing split date: ${split.exDate}');
           }
         }
       }

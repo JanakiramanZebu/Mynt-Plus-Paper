@@ -48,7 +48,6 @@ class _LoggedUserListWebState extends ConsumerState<LoggedUserListWeb> {
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -63,7 +62,6 @@ class _LoggedUserListWebState extends ConsumerState<LoggedUserListWeb> {
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

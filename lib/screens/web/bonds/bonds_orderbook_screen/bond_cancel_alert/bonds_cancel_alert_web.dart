@@ -214,5 +214,4 @@ _handleCancelOrder(BuildContext context, WidgetRef ref, BondsOrderBookModel bond
     }
 
     await ref.read(bondsProvider).cancelBondOrder(context, bondOrderData);
-    print('cancel bond data :::::::; $bondOrderData');
   }

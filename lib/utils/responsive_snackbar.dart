@@ -113,8 +113,6 @@ class ResponsiveSnackBar {
             final navigatorState = getNavigatorState();
             if (navigatorState?.overlay != null) {
               navigatorState!.overlay!.insert(_overlayEntry!);
-            } else {
-              debugPrint('ResponsiveSnackBar: No overlay found for toast display');
             }
           }
         });

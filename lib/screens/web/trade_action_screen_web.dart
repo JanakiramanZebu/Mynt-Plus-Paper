@@ -1067,7 +1067,6 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
         await marketWatch.calldepthApis(context, depthArgs, "");
       }
     } catch (e) {
-      debugPrint("Error tapping stock: $e");
     }
   }
 }

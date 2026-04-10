@@ -31,7 +31,6 @@ mixin UserProfileAPI on ApiCore {
 
       return UserDetailModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print('[UserDetail API] ERROR: $e');
       rethrow;
     }
   }
@@ -70,7 +69,6 @@ mixin UserProfileAPI on ApiCore {
           }));
 
       final json = jsonDecode(res.body);
-      print(json);
       return QrLoginResponces.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -151,10 +149,8 @@ mixin UserProfileAPI on ApiCore {
       }
       
       for (int i = 0; i < request.files.length; i++) {
-        print("    File $i: ${request.files[i].field} - ${request.files[i].filename} (${request.files[i].length} bytes)");
       }
       
-      print("📡 Sending request...");
       final streamedResponse = await apiClient.send(request);
       final response = await http.Response.fromStream(streamedResponse);
       if (response.statusCode == 200) {
@@ -200,34 +196,17 @@ mixin UserProfileAPI on ApiCore {
       }
       
       // Print raw request details
-      print("🔍 RAW UPDATE REQUEST DETAILS:");
-      print("  URL: ${request.url}");
-      print("  Method: ${request.method}");
-      print("  Headers: ${request.headers}");
-      print("  Fields: ${request.fields}");
-      print("  Files count: ${request.files.length}");
       for (int i = 0; i < request.files.length; i++) {
-        print("    File $i: ${request.files[i].field} - ${request.files[i].filename} (${request.files[i].length} bytes)");
       }
       
-      print("📡 Sending update request...");
       final streamedResponse = await apiClient.send(request);
       final response = await http.Response.fromStream(streamedResponse);
       
-      print("📥 RAW UPDATE RESPONSE RECEIVED:");
-      print("  Status Code: ${response.statusCode}");
-      print("  Status Message: ${response.reasonPhrase}");
-      print("  Headers: ${response.headers}");
-      print("  Content Length: ${response.contentLength}");
-      print("  Body (Raw): ${response.body}");
-      print("  Body Length: ${response.body.length} characters");
       
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        print("✅ Parsed Update Response: $responseData");
         return responseData;
       } else {
-        print("❌ Error Update Response: ${response.body}");
         throw Exception('Failed to update algo strategy: ${response.statusCode}');
       }
     } catch (e) {
@@ -284,7 +263,6 @@ Future uploadImage(File imageFile) async {
         return {'data': 'ServerSide error'};
       }
     } catch (e) {
-      print("error in upload image $e");
       rethrow;
     }
 }

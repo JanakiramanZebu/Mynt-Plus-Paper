@@ -615,7 +615,6 @@ class _StrategyDashboardScreenState
 
       widget.onBacktestStrategy?.call(strategyName, funds);
     } catch (e) {
-      print('Error navigating to backtest: $e');
     }
   }
 
@@ -652,9 +651,6 @@ class _StrategyDashboardScreenState
   }
 
   void _showDeleteConfirmation(Data strategyData) {
-    print('=== DELETE DIALOG ===');
-    print('Strategy: ${strategyData.basketName}, uuid: ${strategyData.uuid}, name: ${strategyData.name}');
-    print('Full data: ${strategyData.toJson()}');
     showDialog(
       context: context,
       builder: (dialogContext) {

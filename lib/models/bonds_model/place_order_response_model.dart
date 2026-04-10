@@ -53,7 +53,6 @@ class PlacedBondOrderResp {
       this.verificationStatus});
 
   PlacedBondOrderResp.fromJson(Map<String, dynamic> json) {
-    print('json data :::::::::::;   ${json["totalAmountPayable"].runtimeType}');
     lastActionTime = json['LastActionTime'];
     applicationNumber = json['applicationNumber'];
     clearingReason = json['clearingReason'];

@@ -395,7 +395,6 @@ class FundProvider extends DefaultChangeNotifier {
 
       return _fundDetailModel;
     } catch (e) {
-      print(e);
       ref
           .read(indexListProvider)
           .logError
@@ -441,7 +440,6 @@ class FundProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -470,7 +468,6 @@ class FundProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -487,7 +484,6 @@ class FundProvider extends DefaultChangeNotifier {
     } catch (e) {
       _isLoadingPledgeDetails = false;
       notifyListeners();
-      debugPrint("$e");
     }
   }
 

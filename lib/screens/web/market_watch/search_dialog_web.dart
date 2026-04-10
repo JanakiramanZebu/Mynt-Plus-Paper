@@ -152,7 +152,6 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -167,7 +166,6 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -852,7 +850,6 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                               !perchangisAscending;
                                           pref.setMWPerchnage(perchangisAscending);
                                         } catch (e) {
-                                          print("Error in sorting: $e");
                                         }
                                       }
                                     }
@@ -999,8 +996,6 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
         },
       );
     } catch (e, stackTrace) {
-      print("Error in _handleBuySellClick: $e");
-      print("Stack trace: $stackTrace");
       if (context.mounted) {
         showResponsiveErrorMessage(
             context, "Failed to open order screen: ${e.toString()}");

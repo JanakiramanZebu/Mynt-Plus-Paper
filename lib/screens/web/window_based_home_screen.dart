@@ -145,7 +145,6 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         jsonDecode(layoutJson) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint('Error loading window layout: $e');
     }
   }
 
@@ -171,7 +170,6 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       };
       await prefs.setString('window_layout', jsonEncode(layout));
     } catch (e) {
-      debugPrint('Error saving window layout: $e');
     }
   }
 
@@ -960,7 +958,6 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
             }
             _handleWebSocketConnections();
           } catch (e) {
-            debugPrint("Error during app resume: $e");
           }
         });
         break;

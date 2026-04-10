@@ -117,9 +117,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
         }
       }
       html.document.body?.style.cursor = 'default';
-      debugPrint('[OptionFlash] _disableAllChartIframes called, isVisible: ${ref.read(optionFlashProvider).isVisible}');
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -129,16 +127,13 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
       int count = 0;
       for (var iframe in iframes) {
         if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
-          debugPrint('[OptionFlash] Enabling iframe: ${iframe.id}, current pointerEvents: ${iframe.style.pointerEvents}');
           iframe.style.pointerEvents = 'auto';
           iframe.style.cursor = '';
           count++;
         }
       }
       html.document.body?.style.cursor = '';
-      debugPrint('[OptionFlash] _enableAllChartIframes: enabled $count iframes, guard locked: ${ChartIframeGuard.isLocked}');
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -198,13 +193,11 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
       // Use reset() instead of release() to clear all locks since multiple
       // acquire() calls may have stacked (panel + dropdown overlays)
       if (previous?.isVisible == true && next.isVisible == false) {
-        debugPrint('[OptionFlash] Panel closing — running cleanup');
         _removeSymbolOverlay();
         _removeExpiryOverlay();
         _removeStrikeOverlay();
         ChartIframeGuard.reset();
         _enableAllChartIframes();
-        debugPrint('[OptionFlash] Panel closed — cleanup done');
       }
 
       // Sync Qty (only if changed and mismatch)

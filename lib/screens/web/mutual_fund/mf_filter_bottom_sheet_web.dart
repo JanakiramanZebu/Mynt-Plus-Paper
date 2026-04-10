@@ -68,7 +68,6 @@ class _MFFilterBottomSheetStateWeb extends ConsumerState<MFFilterBottomSheetWeb>
         investedPriceIsAscending = currentMFSortOption == "INVESTEDASC";
       }
     } catch (e) {
-      print("Error initializing MF sort state: $e");
       // Fallback to default values
       currentSortType = "";
       // Variables are already initialized with default values above

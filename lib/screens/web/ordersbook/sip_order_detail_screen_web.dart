@@ -88,7 +88,6 @@ class _SipOrderDetailScreenWebState
         }
       });
     } catch (e) {
-      debugPrint("Error setting up socket subscription: $e");
     }
   }
 

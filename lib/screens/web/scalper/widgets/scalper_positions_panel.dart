@@ -3084,7 +3084,6 @@ class _ScalperGttDialogState extends ConsumerState<_ScalperGttDialog> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      debugPrint('_ScalperGttDialog: submit error: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -3483,7 +3482,6 @@ class _ScalperExitPositionDialogState
 
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      debugPrint('Error exiting position: $e');
       if (mounted) Navigator.of(context).pop();
     }
   }
@@ -3668,7 +3666,6 @@ class _ScalperCancelOrdersDialogState
         );
       }
     } catch (e) {
-      debugPrint('Error cancelling order: $e');
       if (mounted) Navigator.of(context).pop();
     }
   }

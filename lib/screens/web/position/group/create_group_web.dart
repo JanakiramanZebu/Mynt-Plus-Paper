@@ -50,9 +50,6 @@ class _CreateGroupPosState extends ConsumerState<CreateGroupPos> {
       final portfolioProv = ref.read(portfolioProvider);
 
       try {
-        debugPrint('═══ CREATE GROUP START ═══');
-        debugPrint('Group Name: $groupName');
-        debugPrint('Time: ${DateTime.now()}');
 
         // Close dialog first (like watchlist pattern)
         Navigator.of(context).pop();
@@ -60,15 +57,7 @@ class _CreateGroupPosState extends ConsumerState<CreateGroupPos> {
         // Then call create function
         await portfolioProv.fetchGroupName(groupName, context, true);
 
-        debugPrint('═══ CREATE GROUP SUCCESS ═══');
-        debugPrint('Group Name: $groupName');
-        debugPrint('Time: ${DateTime.now()}');
       } catch (e, stackTrace) {
-        debugPrint('═══ CREATE GROUP ERROR ═══');
-        debugPrint('Group Name: $groupName');
-        debugPrint('Error: $e');
-        debugPrint('Stack Trace: $stackTrace');
-        debugPrint('Time: ${DateTime.now()}');
       }
     }
   }

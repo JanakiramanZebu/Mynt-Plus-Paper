@@ -105,7 +105,6 @@ class _ProductSettingsState extends State<ProductSettings> {
                           NotifyCustomSwitch(
                             value: isActiveOrder[index],
                             onChanged: (value) {
-                              print("VALUE : $value");
                               setState(() {
                                 isActiveOrder[index] = value;
                               });

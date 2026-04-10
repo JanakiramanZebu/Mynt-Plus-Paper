@@ -1839,8 +1839,6 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         );
       }
     } catch (e, stackTrace) {
-      print("Error in _handleBuySellClick: $e");
-      print("Stack trace: $stackTrace");
       if (context.mounted) {
         ResponsiveSnackBar.showError(
             context, "Failed to open order screen: ${e.toString()}");

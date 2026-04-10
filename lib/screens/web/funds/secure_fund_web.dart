@@ -125,7 +125,6 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
       }
       html.window.open(url, '_blank');
     } catch (e) {
-      print("Error opening fund page: $e");
       showResponsiveWarningMessage(
           context, "Error opening fund page. Please try again.");
     }
