@@ -31,6 +31,7 @@ import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../utils/rupee_convert_format.dart';
+import '../../../../utils/pip_service.dart';
 import '../../../../provider/strategy_builder_provider.dart';
 import '../strategy_builder/strategy_builder_screen.dart';
 
@@ -455,6 +456,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           const Spacer(),
           // Only show search, filter, exit all, refresh when Positions view is shown
           if (!_showGroupsView) ...[
+            // PiP toggle icon (only if browser supports Document PiP API)
+            if (PipService.isSupported) ...[
+              _buildPipToggleIcon(theme, positionBook),
+              SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+            ],
             // Search Bar - Use shadcn.TextField to match Holdings exactly
             SizedBox(
               width: context.responsiveValue<double>(
@@ -720,6 +726,35 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           ),
         ),
       ),
+    );
+  }
+
+  /// PiP toggle icon — reflects active state via pipVisibilityNotifier.
+  /// Clicking it toggles the Document PiP window with current P&L data.
+  Widget _buildPipToggleIcon(
+      ThemesProvider theme, PortfolioProvider positionBook) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: pipVisibilityNotifier,
+      builder: (context, isPipActive, _) {
+        return _buildIconButton(
+          icon: isPipActive
+              ? Icons.picture_in_picture_alt
+              : Icons.picture_in_picture_alt_outlined,
+          onPressed: () async {
+            final positions = PipService.buildPositionItems(
+              groupedBySymbol: positionBook.groupedBySymbol,
+              groupPositionSym: positionBook.groupPositionSym,
+            );
+            await PipService.togglePip(
+              pnl: positionBook.totPnL,
+              mtm: positionBook.totMtM,
+              positions: positions,
+              isDarkMode: theme.isDarkMode,
+            );
+          },
+          theme: theme,
+        );
+      },
     );
   }
 

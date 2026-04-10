@@ -15,6 +15,7 @@ import 'core/default_change_notifier.dart';
 import 'user_profile_provider.dart';
 import 'market_watch_provider.dart';
 import '../screens/web/chart/web_chart_manager.dart';
+import '../utils/pip_service.dart';
 
 final themeProvider = ChangeNotifierProvider((ref) => ThemesProvider(ref));
 
@@ -245,6 +246,8 @@ class ThemesProvider extends DefaultChangeNotifier {
           isDarkMode: isDarkMode,
         );
       }
+      // Update PiP window theme if open
+      PipService.updateTheme(isDarkMode);
     }
     notifyListeners();  // This will trigger rebuild of both MaterialApp (mobile) and ShadcnApp (web)
   }

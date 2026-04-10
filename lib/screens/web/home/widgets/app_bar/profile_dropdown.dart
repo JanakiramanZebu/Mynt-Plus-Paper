@@ -693,6 +693,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
     return MenuButton(
       onPressed: (ctx) async {
         final portfolio = ref.read(portfolioProvider);
+        final themeState = ref.read(themeProvider);
         final positions = PipService.buildPositionItems(
           groupedBySymbol: portfolio.groupedBySymbol,
           groupPositionSym: portfolio.groupPositionSym,
@@ -701,6 +702,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
           pnl: portfolio.totPnL,
           mtm: portfolio.totMtM,
           positions: positions,
+          isDarkMode: themeState.isDarkMode,
         );
         setState(() {}); // Refresh the menu to show updated state
       },
