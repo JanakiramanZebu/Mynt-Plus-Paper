@@ -569,7 +569,6 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
         }
       } catch (e) {
         // Handle any errors during the process
-        print("Error restoring user data: $e");
         if (mounted && context.mounted) {
           userProfile.profilePageloader(false);
         }

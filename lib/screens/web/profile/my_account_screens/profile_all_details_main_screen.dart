@@ -194,7 +194,6 @@ class _ProfileDetailsMainScreenState extends ConsumerState<ProfileDetailsMainScr
             activeTab = tab;
           });
           _tabController.animateTo(tab);
-          print("object act tab $tab");
         },
         style: ElevatedButton.styleFrom(
             elevation: 0,

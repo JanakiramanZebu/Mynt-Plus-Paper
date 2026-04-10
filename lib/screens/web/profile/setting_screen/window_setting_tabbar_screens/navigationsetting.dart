@@ -93,7 +93,6 @@ class _NavigationSettingsState extends State<NavigationSettings> {
                           NotifyCustomSwitch(
                             value: isActiveOrder[index],
                             onChanged: (value) {
-                              print("VALUE : $value");
                               setState(() {
                                 isActiveOrder[index] = value;
                               });

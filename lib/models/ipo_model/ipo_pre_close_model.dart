@@ -6,7 +6,6 @@ class IpoPreCloseModel {
   IpoPreCloseModel({required this.msg});
 
   IpoPreCloseModel.fromJson(Map<String, dynamic> json) {
-    print("precloseresp:: $json");
     if (json['msg'] != "no data") {
       msg = <Msg>[];
       // Check if msg is a List or String
@@ -24,7 +23,6 @@ class IpoPreCloseModel {
             }
           }
         } catch (e) {
-          print("Error parsing msg string: $e");
         }
       }
     } else {

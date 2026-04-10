@@ -1223,11 +1223,7 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchmfCommonsearch(String value, BuildContext context) async {
     try {
-      print("[MF SEARCH] Query: '$value'");
       var mutualFundsearch = await api.getSearchMf(value);
-      print("[MF SEARCH] API Request Body: {\"text\": \"$value\"}");
-      print("[MF SEARCH] API Response: ");
-      print(mutualFundsearch.data);
       _mutualFundsearchdata = mutualFundsearch.data ?? [];
       for (var masterMf in _mfWatchlist!) {
         _mutualFundsearchdata!
@@ -1300,7 +1296,6 @@ class MFProvider extends DefaultChangeNotifier {
       // print("ETF Category ==>${_etfCategorydata}");
       notifyListeners();
     } catch (e) {
-      debugPrint("Error fetching ETF Category: $e");
     } finally {
       _investloader = false;
     }
@@ -1421,7 +1416,6 @@ class MFProvider extends DefaultChangeNotifier {
       // print("{{{{{{{{{{}}}}}}}}}}${_bestMFModel}");
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -1443,7 +1437,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     } finally {
       _bestmfloader = false;
       notifyListeners();
@@ -1470,7 +1463,6 @@ class MFProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e, stackTrace) {
-      debugPrint("Error fetching MF Best List: $e\n$stackTrace");
     } finally {
       _bestmfloader = false;
       notifyListeners();
@@ -1486,7 +1478,6 @@ class MFProvider extends DefaultChangeNotifier {
       // print("sipppppres${_mfsiporderlist?.toJson()}");
       notifyListeners();
     } catch (e, stackTrace) {
-      debugPrint("Error fetching siplist: $e\n$stackTrace");
     } finally {
       _bestmfloader = false;
       notifyListeners();
@@ -1501,7 +1492,6 @@ class MFProvider extends DefaultChangeNotifier {
       // print("sipppppres${_mfsiporderlist?.toJson()}");
       notifyListeners();
     } catch (e, stackTrace) {
-      debugPrint("Error fetching siplist: $e\n$stackTrace");
     } finally {
       _bestmfloader = false;
       notifyListeners();
@@ -1518,7 +1508,6 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e, stackTrace) {
       _bestmfloader = false;
-      debugPrint("Error fetching siplist: $e\n$stackTrace");
       notifyListeners();
 
       // print("apii errror");
@@ -1548,7 +1537,6 @@ class MFProvider extends DefaultChangeNotifier {
       return notifyListeners();
     } catch (e, stackTrace) {
       _bestmfloader = false;
-      debugPrint("Error fetching siplist: $e\n$stackTrace");
       // print("apii errror");
     } finally {
       _bestmfloader = false;
@@ -1576,7 +1564,6 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e, stackTrace) {
       _bestmfloader = false;
-      debugPrint("Error fetching siplist: $e\n$stackTrace");
       // print("apii errror");
     } finally {
       _bestmfloader = false;
@@ -1596,7 +1583,6 @@ class MFProvider extends DefaultChangeNotifier {
       // notifyListeners();
     } catch (e, stackTrace) {
       _holdstatload = false;
-      debugPrint("Error fetching mfliiist: $e\n$stackTrace");
       // print("apii errror");
     } finally {
       _holdstatload = false;
@@ -1795,11 +1781,10 @@ class MFProvider extends DefaultChangeNotifier {
       log('Time taken 5: ${stopwatch.elapsedMilliseconds} ms');
 
       if (_navGraph!.stat == "Ok") {
-      } else {}
+      }
 
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     } finally {
       toggleLoadingOn(false);
       _fundDetailLoader = false;
@@ -1833,7 +1818,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -1844,7 +1828,6 @@ class MFProvider extends DefaultChangeNotifier {
       if (_sheetGraph!.stat == "Ok") {}
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -1891,7 +1874,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     } finally {
       notifyListeners();
     }
@@ -1978,7 +1960,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("rererer $e");
       toggleLoadingOn(false);
     } finally {
       toggleLoadingOn(false);
@@ -1994,15 +1975,10 @@ class MFProvider extends DefaultChangeNotifier {
 
       _dateList = [];
       _mfSIPModel = await api.getMFSip(isin, schemeCode);
-      print("object ${_mfSIPModel!.toJson()}");
       if (_mfSIPModel!.stat == "Ok") {
         if (_mfSIPModel!.data!.isNotEmpty) {
           // Debug print all available frequencies
-          print("=== SIP DATA DEBUG ===");
-          print("Total entries: ${_mfSIPModel!.data!.length}");
           for (int i = 0; i < _mfSIPModel!.data!.length; i++) {
-            print(
-                "Index $i: Frequency = '${_mfSIPModel!.data![i].sIPFREQUENCY}', Pause Flag = '${_mfSIPModel!.data![i].pAUSEFLAG}'");
           }
 
           // Find the index where frequency is MONTHLY
@@ -2017,13 +1993,6 @@ class MFProvider extends DefaultChangeNotifier {
           // Use MONTHLY index if found, otherwise fallback to first index
           int indexToUse = monthlyIndex != -1 ? monthlyIndex : 0;
 
-          print("MONTHLY index found: $monthlyIndex");
-          print("Using index: $indexToUse");
-          print(
-              "Selected frequency: '${_mfSIPModel!.data![indexToUse].sIPFREQUENCY}'");
-          print(
-              "Selected pause flag: '${_mfSIPModel!.data![indexToUse].pAUSEFLAG}'");
-          print("=====================");
 
           _freqName = "${_mfSIPModel!.data![indexToUse].sIPFREQUENCY}";
 
@@ -2101,7 +2070,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     } finally {
       _investloader = false;
 
@@ -2154,7 +2122,6 @@ class MFProvider extends DefaultChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint("installmentDuration $e");
     }
   }
 
@@ -2179,7 +2146,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     } finally {
       _investloader = false;
       _mandateDataLoaded = true;
@@ -2691,7 +2657,6 @@ class MFProvider extends DefaultChangeNotifier {
       //     warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
       // notifyListeners();
     } catch (e) {
-      debugPrint("$e");
       Navigator.pop(context);
       warningMessage(context, "Something Went Wrong");
       notifyListeners();
@@ -2867,15 +2832,6 @@ class MFProvider extends DefaultChangeNotifier {
       String mandateId, [bool isAdditional = false, bool firstInstallment = false]) async {
     try {
       // Debug print before API call
-      print("=== CALLING SIP SETUP API ===");
-      print("Scheme Code: $schemecode");
-      print("Start Date: $startDate");
-      print("Frequency Type: $freqtype");
-      print("Amount: $amt");
-      print("No of Installments: $noofinstallment");
-      print("End Date: $enddate");
-      print("Mandate ID: $mandateId");
-      print("=============================");
 
       _investloader = true;
       notifyListeners();
@@ -2884,11 +2840,6 @@ class MFProvider extends DefaultChangeNotifier {
           freqtype, amt, noofinstallment, endDate, mandateId, isAdditional, firstInstallment);
 
       // Debug print after API call
-      print("=== SIP SETUP API RESPONSE RECEIVED ===");
-      print("Response Status: ${_xsipOrderResponces?.stat}");
-      print("Response Remarks: ${_xsipOrderResponces?.remarks}");
-      print("Full Response: ${_xsipOrderResponces?.toJson()}");
-      print("======================================");
 
       if (_xsipOrderResponces?.stat == 'Ok') {
         notifyListeners();
@@ -2923,7 +2874,6 @@ class MFProvider extends DefaultChangeNotifier {
       fetchmfsiplist();
       fetchMfOrderbook(context);
     } catch (e) {
-      debugPrint("Failed to Place X-sip :: ${e.toString()}");
       _investloader = false;
       toggleLoadingOn(false);
       _loadingMessage = null;
@@ -2944,7 +2894,6 @@ class MFProvider extends DefaultChangeNotifier {
       // print("object ${_xsipOrderCancleResone?.data![0].id}");
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -2987,7 +2936,6 @@ class MFProvider extends DefaultChangeNotifier {
       // print("object ${_xsipOrderCancleResone?.data![0].id}");
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -3000,10 +2948,9 @@ class MFProvider extends DefaultChangeNotifier {
       if (_xsipOrderCancleResponces?.stat == "Not Ok") {
         Navigator.pop(context);
         warningMessage(context, "${_xsipOrderCancleResponces!.emsg}");
-      } else {}
+      }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -3403,7 +3350,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     } finally {
       _investloader = false;
 
@@ -3438,7 +3384,6 @@ class MFProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     } finally {
       _investloader = false;
 
@@ -3656,7 +3601,6 @@ class MFProvider extends DefaultChangeNotifier {
     }
     // notifyListeners();
     catch (e) {
-      debugPrint("rererer $e");
       toggleLoadingOn(false);
     } finally {
       toggleLoadingOn(false);

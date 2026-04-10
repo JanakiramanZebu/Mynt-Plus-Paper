@@ -64,7 +64,6 @@ class WebChartManager {
             _currentDarkMode = _pendingSymbol!['isDarkMode'];
             // Mark that a user-selected symbol was loaded (via URL, not postMessage)
             _hasLoadedUserSymbol = true;
-            debugPrint('WebChartManager: Creating iframe with pending symbol: ${_pendingSymbol!['tsym']}');
             // NOTE: Don't clear _pendingSymbol - keep it so subsequent iframes
             // also use the correct symbol (multiple HtmlElementView widgets may exist)
           } else {
@@ -92,14 +91,11 @@ class WebChartManager {
           // Mark iframe as created so changeSymbol knows the DOM is ready
           _isIframeCreated = true;
 
-          debugPrint('WebChartManager: Iframe #$viewId created with URL for token: $_currentToken');
           return _iframe!;
         },
       );
       _isRegistered = true;
-      debugPrint('WebChartManager: Iframe factory registered');
     } catch (e) {
-      debugPrint('WebChartManager: Registration error: $e');
     }
   }
 
@@ -108,7 +104,6 @@ class WebChartManager {
     if (!_isVisible) {
       _isVisible = true;
       onVisibilityChanged?.call();
-      debugPrint('WebChartManager: Chart shown');
     }
   }
 
@@ -117,7 +112,6 @@ class WebChartManager {
     if (_isVisible) {
       _isVisible = false;
       onVisibilityChanged?.call();
-      debugPrint('WebChartManager: Chart hidden');
     }
   }
 
@@ -134,7 +128,6 @@ class WebChartManager {
     // This prevents skipping when we failed to load the first symbol due to timing issues
     // Also allow through when dark mode changed (theme toggle)
     if (token == _currentToken && _hasLoadedUserSymbol && isDarkMode == _currentDarkMode) {
-      debugPrint('WebChartManager: Same token ($token) and same theme, skipping');
       return;
     }
 
@@ -144,7 +137,6 @@ class WebChartManager {
     final isFirstUserSymbol = !_hasLoadedUserSymbol;
     final previousToken = _currentToken;
 
-    debugPrint('WebChartManager: Changing symbol from $previousToken to $token ($tsym), isFirstUserSymbol: $isFirstUserSymbol, hasLoadedUserSymbol: $_hasLoadedUserSymbol');
 
     // ALWAYS store as pending symbol - this ensures any NEW iframe created
     // (e.g., when panel renders ChartScreenWebViews) will use the correct symbol
@@ -163,12 +155,9 @@ class WebChartManager {
       // Iframe might not be in DOM yet - will use pending symbol when created
       // DON'T update _currentToken here - we haven't actually changed the symbol
       if (!_isIframeCreated) {
-        debugPrint('WebChartManager: Iframe not created yet, stored pending symbol: $tsym');
       } else {
-        debugPrint('WebChartManager: No iframes found in DOM, stored pending symbol: $tsym');
         // Try to find iframe using stored reference if available
         if (_iframe != null) {
-          debugPrint('WebChartManager: Using stored iframe reference for reload');
           final prefs = locator<Preferences>();
           final newUrl = _buildUrl(
             exch: exch,
@@ -182,9 +171,7 @@ class WebChartManager {
             _currentToken = token;
             _currentDarkMode = isDarkMode;
             _hasLoadedUserSymbol = true;
-            debugPrint('WebChartManager: Reloaded stored iframe with $tsym');
           } catch (e) {
-            debugPrint('WebChartManager: Failed to reload stored iframe: $e');
           }
         }
       }
@@ -195,7 +182,6 @@ class WebChartManager {
     // use URL reload instead of postMessage to ensure it loads correctly
     // (TradingView may not be ready to receive postMessage yet)
     if (isFirstUserSymbol) {
-      debugPrint('WebChartManager: First user symbol, using URL reload for: $tsym');
       _reloadAllIframesWithUrl(allChartIframes, exch, token, tsym, isDarkMode);
       _currentToken = token;
       _currentDarkMode = isDarkMode;
@@ -219,20 +205,14 @@ class WebChartManager {
               '{"action":"changeScript","exch":"$exch","token":"$token","tsym":"$tsym","dark":"${isDarkMode.toString()}"}';
           contentWindow.postMessage(jsonMessage, '*');
           successCount++;
-          debugPrint('WebChartManager: Posted JSON to iframe ${iframe.id}: $jsonMessage');
-        } else {
-          debugPrint('WebChartManager: contentWindow is null for iframe ${iframe.id}');
         }
       } catch (e) {
-        debugPrint('WebChartManager: postMessage failed for iframe ${iframe.id}: $e');
       }
     }
 
-    debugPrint('WebChartManager: Posted changeSymbol to $successCount/${allChartIframes.length} iframes');
 
     // If postMessage failed for all iframes, fallback to URL reload
     if (successCount == 0 && allChartIframes.isNotEmpty) {
-      debugPrint('WebChartManager: All postMessage failed, falling back to URL reload');
       _reloadAllIframesWithUrl(allChartIframes, exch, token, tsym, isDarkMode);
     }
   }
@@ -251,7 +231,6 @@ class WebChartManager {
         }
       }
     } catch (e) {
-      debugPrint('WebChartManager: Error finding iframes: $e');
     }
     return iframes;
   }
@@ -276,9 +255,7 @@ class WebChartManager {
     for (final iframe in iframes) {
       try {
         iframe.src = newUrl;
-        debugPrint('WebChartManager: Reloaded iframe ${iframe.id}');
       } catch (e) {
-        debugPrint('WebChartManager: Failed to reload iframe ${iframe.id}: $e');
       }
     }
   }

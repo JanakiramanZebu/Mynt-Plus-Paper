@@ -1260,7 +1260,6 @@ class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDi
       // Also reset cursor on iframes to default
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -1273,7 +1272,6 @@ class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDi
         }
       }
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

@@ -63,7 +63,6 @@ class CamsWebViewState extends ConsumerState<CamsWebView> {
                   },
                   onLoadStart: (InAppWebViewController controller, Uri? uri) {
                     String redirUrl = uri.toString();
-                    print(redirUrl);
                     Uri url = Uri.parse(redirUrl);
                     Map<String, String> queryParams = url.queryParameters;
                     String? query = queryParams['response'];
@@ -71,7 +70,6 @@ class CamsWebViewState extends ConsumerState<CamsWebView> {
                     if (redirUrl.contains('profile.mynt.in') &&
                         query == 'update success') {
                       //  if (query == 'update success') { }
-                      print('web is');
                       if (mounted) {
                         // Future.microtask(() {
                         ref

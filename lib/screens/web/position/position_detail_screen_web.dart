@@ -155,7 +155,6 @@ class _PositionDetailScreenWebState
         }
       });
     } catch (e) {
-      print("Error setting up socket subscription: $e");
     }
   }
 
@@ -562,7 +561,6 @@ class _PositionDetailScreenWebState
           showResponsiveWarningMessage(
               rootCtx, "Error exiting position: ${e.toString()}");
         } catch (displayError) {
-          print("Failed to show error message: $displayError");
         }
       }
     }
@@ -570,65 +568,42 @@ class _PositionDetailScreenWebState
 
   // Handle convert position
   Future<void> _handleConvert() async {
-    debugPrint('=== POSITION DETAIL: _handleConvert STARTED ===');
-    debugPrint('Position data: ${_positionData.tsym}');
-    debugPrint('Position token: ${_positionData.token}');
-    debugPrint('Position product: ${_positionData.sPrdtAli}');
-    debugPrint('Position netqty: ${_positionData.netqty}');
-    debugPrint('Widget mounted: $mounted');
 
     try {
       // Get root context before closing the sheet
       final rootContext = getNavigatorContext();
-      debugPrint('Root context obtained: ${rootContext != null}');
 
       if (rootContext == null) {
-        debugPrint('ERROR: rootContext is null');
         if (mounted) {
           showResponsiveWarningMessage(context, "Unable to access root context");
         }
         return;
       }
 
-      debugPrint('Root context mounted: ${rootContext.mounted}');
 
       // Close the sheet first
       if (!mounted) {
-        debugPrint('ERROR: Widget not mounted before closing sheet');
         return;
       }
 
-      debugPrint('Closing sheet...');
       shadcn.closeSheet(context);
-      debugPrint('Sheet close called');
 
       // Show dialog after sheet closes using post-frame callback
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        debugPrint('=== POST FRAME CALLBACK ===');
-        debugPrint('Root context still mounted: ${rootContext.mounted}');
 
         if (rootContext.mounted) {
-          debugPrint('Showing convert dialog...');
           showDialog(
             context: rootContext,
             barrierColor: resolveThemeColor(rootContext,
                 dark: MyntColors.modalBarrierDark,
                 light: MyntColors.modalBarrierLight),
             builder: (BuildContext dialogContext) {
-              debugPrint('Dialog builder called');
-              debugPrint('Dialog context mounted: ${dialogContext.mounted}');
               return ConvertPositionDialogueWeb(convertPosition: _positionData);
             },
           );
-          debugPrint('showDialog called successfully');
-        } else {
-          debugPrint('ERROR: Root context not mounted in post-frame callback');
         }
       });
     } catch (e, stackTrace) {
-      debugPrint('=== POSITION DETAIL: EXCEPTION in _handleConvert ===');
-      debugPrint('Error: $e');
-      debugPrint('Stack trace: $stackTrace');
     }
   }
 

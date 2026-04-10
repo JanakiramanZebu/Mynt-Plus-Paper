@@ -233,9 +233,7 @@ class IPOProvider extends DefaultChangeNotifier {
       return _mainsme = mainsme;
       //return _mainsme;
     } catch (e) {
-      print("Error in mergemainsme: $e");
     }
-    print(' main sme :::::::::::::::::::::::: "  : $_mainsme');
   }
 
   IpoSinglePage? _ipoSinglePage;
@@ -358,7 +356,6 @@ class IPOProvider extends DefaultChangeNotifier {
   }
 
   dynamic getIpoDetails(String searchCompany) {
-    print("searchCommonIpo :: $searchCompany");
     dynamic returnData;
     if (searchCompany.length > 1) {
       returnData = _ipoCommonSearchAllIpos
@@ -370,14 +367,12 @@ class IPOProvider extends DefaultChangeNotifier {
                   .toUpperCase()
                   .contains(searchCompany.toUpperCase()))
           .toList();
-      print("returnData :: ${inspect(returnData)}");
     }
     return returnData;
     // notifyListeners();
   }
 
   searchCommonIpo(String value, BuildContext context) {
-    print("searchCommonIpo :: $value");
     if (value.length > 1) {
       _ipoCommonSearchList = [];
       // ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -1327,7 +1322,6 @@ class IPOProvider extends DefaultChangeNotifier {
           DateTime dateB = DateTime.parse(b.responseDatetime.toString());
           return dateA.compareTo(dateB); // Newest first (descending order)
         } catch (e) {
-          print("Error parsing datetime in openorder sort: $e");
           return 0; // Keep original order if parsing fails
         }
       });
@@ -1347,12 +1341,10 @@ class IPOProvider extends DefaultChangeNotifier {
           DateTime dateB = DateTime.parse(b.responseDatetime.toString());
           return dateA.compareTo(dateB); // Newest first (descending order)
         } catch (e) {
-          print("Error parsing datetime in closeorder sort: $e");
           return 0; // Keep original order if parsing fails
         }
       });
     } catch (e) {
-      print("ordersplit :: $e");
     } finally {
       togglefundLoadingOn(false);
     }
@@ -1373,7 +1365,6 @@ class IPOProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _ipoOrderBookModel;
     } catch (e) {
-      print("IPOs ORDERBOOK error:: $e");
     } finally {
       _displayload = false;
     }
@@ -1386,10 +1377,8 @@ class IPOProvider extends DefaultChangeNotifier {
       ordersplit();
       //  print("IPO RES ORDERBOOK ::: ${_ipoOrderBookModel![0].bidDetail![0].amount}");
       notifyListeners();
-      print('upcoming data ::::::::::::::    $upcomingModel');
       return _upcomingModel;
     } catch (e) {
-      print("IPOs Upcoming error:: $e");
     } finally {
       // _displayload = false;
     }
@@ -1404,7 +1393,6 @@ class IPOProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _ipoOrderBookModel;
     } catch (e) {
-      print("IPOs ORDERBOOK error:: $e");
       // ScaffoldMessenger.of(context).showSnackBar(
       //     error(context, "Error in fetching IPO Order Book"));
       _myBidsload = false;
@@ -1483,7 +1471,6 @@ class IPOProvider extends DefaultChangeNotifier {
 
       return _ipoOrderResponcesModel;
     } catch (e) {
-      print("IPOs placeorder error:: $e");
       notifyListeners();
     }
   }
@@ -1495,7 +1482,6 @@ class IPOProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _ipoPerformanceModel;
     } catch (e) {
-      print("IPOs Perfomance error:: $e");
     } finally {
       toggleLoadingOn(false);
     }
@@ -1511,7 +1497,6 @@ class IPOProvider extends DefaultChangeNotifier {
 
       return _mainStreamIpoModel;
     } catch (e) {
-      print("MainStream IPOs error:: $e");
     } finally {
       if (showLoader) toggleLoadingOn(false);
     }
@@ -1526,7 +1511,6 @@ class IPOProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _smeIpoModel;
     } catch (e) {
-      print("SME IPOs error:: $e");
     } finally {
       if (showLoader) toggleLoadingOn(false);
     }
@@ -1550,7 +1534,6 @@ class IPOProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _dashboardIpoModel;
     } catch (e) {
-      print("Dashboard IPOs error:: $e");
     }
   }
 
@@ -1566,7 +1549,6 @@ class IPOProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _ipoSinglePage;
     } catch (e) {
-      print("SINGLE PAGE error:: $e");
     } finally {
       togglefundLoadingOn(false);
     }
@@ -1580,7 +1562,6 @@ class IPOProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _ipoPreClose;
     } catch (e) {
-      print("fetchIpoPreClose error:: $e");
     } finally {
       togglefundLoadingOn(false);
     }

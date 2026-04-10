@@ -699,7 +699,6 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
         channel: 'WEB',
       );
 
-      print('Scalper Order Payload: exch=${orderInput.exch}, tsym=${orderInput.tsym}, qty=${orderInput.qty}, prc=${orderInput.prc}, prctype=${orderInput.prctype}, trantype=${orderInput.trantype}, prd=${orderInput.prd}, ret=${orderInput.ret}, amo=${orderInput.amo}, mktProt=${orderInput.mktProt}, channel=${orderInput.channel}');
 
       final result = await ref.read(orderProvider).fetchPlaceOrder(
             context,

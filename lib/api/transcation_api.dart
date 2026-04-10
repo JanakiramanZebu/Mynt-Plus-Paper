@@ -48,13 +48,11 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode(
               {"VPA": upiId, "clientID": clientId, "bank_acc": accno}));
       final json = jsonDecode(res.body);
-      print("bankName123:: $bankName");
       // log("getUPIIDPayment => ${res.body}");
       final hdfcbankpayment = HdfcPaymentModel.fromJson(json);
       try {
         await updateUpiId(accno, upiId, bankName);
       } catch (updateError) {
-        print("updateUpiId failed but continuing flow: $updateError");
       }
 
       return hdfcbankpayment;
@@ -123,12 +121,10 @@ mixin TranscationApi on ApiCore {
         headers: razorpaytHeaders,
       );
 
-      print("Razorpay API Raw Response => statusCode: ${res.statusCode}, body: ${res.body}");
       final json = jsonDecode(res.body);
       final razorpay = Razorpays.fromJson(json);
       return razorpay;
     } catch (e) {
-      print("Razorpay API Error => $e");
       rethrow;
     }
   }
@@ -143,12 +139,10 @@ mixin TranscationApi on ApiCore {
         headers: razorpaytHeaders,
       );
 
-      print("Razorpay Status API Raw Response => statusCode: ${res.statusCode}, body: ${res.body}");
       final json = jsonDecode(res.body);
       final razorpay = RazorpayTranstationRes.fromJson(json);
       return razorpay;
     } catch (e) {
-      print("Razorpay Status API Error => $e");
       rethrow;
     }
   }
@@ -238,7 +232,6 @@ mixin TranscationApi on ApiCore {
         return PayoutDetails.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {
-      debugPrint("PAYOUT ERROR $e");
       rethrow;
     }
   }
@@ -271,7 +264,6 @@ mixin TranscationApi on ApiCore {
     final decre = decryptionFunction(
         "mVMBKEzQyO1npWs7mdLchfJKFRBwM3at30m6tjToqhuUThQLEh1QVlMB+cYpTC4WTbvUhaTlJL3MAj+HYF1kf78LDUHH7PZIvYVWiqcET24KgqfbukuqEXsqWk1kt7FfzNJt/1OUoHNpKLKmhdSHyIyISAHf8K0U7L2D80TmaSY=");
 
-    print("deryptedresp:: $decre");
     try {
       final uri = Uri.parse(apiLinks.fundUpiIdView);
       final res = await apiClient.post(uri,
@@ -305,7 +297,6 @@ mixin TranscationApi on ApiCore {
     final decre = decryptionFunction(
         "mVMBKEzQyO1npWs7mdLchfJKFRBwM3at30m6tjToqhuUThQLEh1QVlMB+cYpTC4WTbvUhaTlJL3MAj+HYF1kf78LDUHH7PZIvYVWiqcET24KgqfbukuqEXsqWk1kt7FfzNJt/1OUoHNpKLKmhdSHyIyISAHf8K0U7L2D80TmaSY=");
 
-    print("deryptedresp:: $bankName");
     try {
       final uri = Uri.parse(apiLinks.upiIdUpdate);
       final res = await apiClient.post(uri,
@@ -315,7 +306,6 @@ mixin TranscationApi on ApiCore {
 
       final decryptedData = decryptionFunction(json["str"]);
       List<dynamic> myList = jsonDecode(decryptedData);
-      print("decryptedData:: $decryptedData");
 
       return decryptedData;
     } catch (e) {
@@ -369,7 +359,6 @@ mixin TranscationApi on ApiCore {
           return [msg];
         }
       } catch (e) {
-        print(e.toString());
       }
       return data;
     } catch (e) {

@@ -152,7 +152,6 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
             _isReconnecting = false;
           });
         }
-        print("Error during reconnection: $e");
       }
     } catch (e) {
       if (mounted) {
@@ -161,7 +160,6 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
           _isReconnecting = false;
         });
       }
-      print("Error during reconnection: $e");
     }
   }
 

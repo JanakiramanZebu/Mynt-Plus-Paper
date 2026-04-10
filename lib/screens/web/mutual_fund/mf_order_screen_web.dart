@@ -1006,21 +1006,6 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
       final String sipResolvedCode =
           sipAmt >= 200000 ? sipL1Code! : sipBaseCode;
 
-      print("=== MF SIP ORDER DEBUG ===");
-      print(
-          "Fund Name: ${widget.mfData.fSchemeName ?? widget.mfData.name ?? widget.mfData.schemeName}");
-      print("Scheme Type: $_selectedSchemeType");
-      print("API Scheme Code (from fund list): ${widget.mfData.schemeCode}");
-      print("IDCW Scheme Code: ${widget.mfData.iDCWSchemeCode}");
-      print("Reinv Scheme Code: ${widget.mfData.reinvSchemeCode}");
-      print("Base Code: $sipBaseCode");
-      print("Resolved Code (sent to API): $sipResolvedCode");
-      print("Installment Amount: ${mfOrder.installmentAmt.text}");
-      print("Mandate ID: ${mfOrder.mandateId}");
-      print("Frequency: ${mfOrder.freqName}");
-      print("Start Date: ${mfOrder.dates}");
-      print("Is Additional: ${widget.isAdditional}");
-      print("==========================");
 
       // Place SIP order directly
       await mfOrder.fetchXsipPlaceOrder(
@@ -1197,23 +1182,6 @@ mfPlaceorder(
   //   mfOrder.fetchVerifyUpi(context, "", input);
   // }
 
-  print("=== MF ORDER DEBUG ===");
-  print("Fund Name: ${mfData.fSchemeName ?? mfData.name ?? mfData.schemeName}");
-  print("Scheme Type: $schemeType");
-  print("API Scheme Code (from fund list): ${mfData.schemeCode}");
-  print("IDCW Scheme Code: ${mfData.iDCWSchemeCode}");
-  print("Reinv Scheme Code: ${mfData.reinvSchemeCode}");
-  print("L1 Scheme Code: ${mfData.l1SchemeCode}");
-  print("IDCW L1 Scheme Code: ${mfData.iDCWL1SchemeCode}");
-  print("Reinv L1 Scheme Code: ${mfData.reinvL1SchemeCode}");
-  print("Base Code: $baseCode");
-  print("Resolved Code (sent to API): $resolvedCode");
-  print("Order Amount: $orderAmt");
-  print("Is Additional: $isAdditional");
-  print("Order Type: ${mfOrder.mfOrderTpye}");
-  print(
-      "Full Payload: {transcode: ${input.transcode}, schemecode: ${input.schemecode}, buysell: ${input.buysell}, buyselltype: ${input.buyselltype}, dptxn: ${input.dptxn}, amount: ${input.amount}, allredeem: ${input.allredeem}, kycstatus: ${input.kycstatus}, qty: ${input.qty}, euinflag: ${input.euinflag}, minredeem: ${input.minredeem}, dpc: ${input.dpc}}");
-  print("=======================");
 }
 
 _showBottomSheet(BuildContext context, Widget bottomSheet) {

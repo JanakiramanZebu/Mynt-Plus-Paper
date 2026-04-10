@@ -94,7 +94,6 @@ class ReportsScreen extends ConsumerWidget {
               } else if (index == 4) {
                 await ledgerdate.getYearlistTaxpnl();
                 ledgerdate.getCurrentDate('');
-                print("year${ledgerdate.taxpnlyeararray[0]}");
 
                 ledgerdate.fetchtaxpnleqdata(context, ledgerdate.yearforTaxpnl);
                 //  ledgerdate.chargesforpnlseg();

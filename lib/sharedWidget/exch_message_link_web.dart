@@ -233,7 +233,6 @@ class LinkExtractorWeb extends StatelessWidget {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
             } catch (e) {
-              debugPrint('Error launching URL: $e');
             }
           },
           child: Container(

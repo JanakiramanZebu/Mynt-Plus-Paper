@@ -1773,7 +1773,6 @@ class _ProfileSectionScreenWebState
 
     setState(() => _ddpiEsignLoading = true);
 
-    debugPrint("Starting DDPI Digio esign: fileId=$fileId, email=$email");
 
     try {
       final result = await startDigioEsign(
@@ -2543,7 +2542,6 @@ color: resolveThemeColor(context,
 
     setState(() => _mtfEsignLoading = true);
 
-    debugPrint("Starting MTF Digio esign: fileId=$fileId, email=$email");
 
     try {
       final result = await startDigioEsign(

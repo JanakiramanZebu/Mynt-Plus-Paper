@@ -71,7 +71,6 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -86,7 +85,6 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -744,7 +742,6 @@ class _IndexListItemWithStreamWebState
       // Handle any exceptions
       Navigator.pop(context);
       ResponsiveSnackBar.showError(context, "Error loading index details");
-      debugPrint("Error in index onTap: $e");
     }
   }
 }

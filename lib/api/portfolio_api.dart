@@ -163,7 +163,6 @@ mixin PortfolioAPI on ApiCore {
       }
       return allholds;
     } catch (e) {
-      print("ERROR TOTALBROKER ::: $e");
       rethrow;
     }
   }

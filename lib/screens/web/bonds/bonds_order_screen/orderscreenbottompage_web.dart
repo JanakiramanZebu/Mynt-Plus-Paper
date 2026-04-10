@@ -475,8 +475,6 @@ class _BondOrderScreenbottomPageState
                                                 int.parse(bondDetails.bidprice);
                                             bonds.placeBondOrder(
                                                 context, bondOrderData);
-                                            print(
-                                                'bondOrderData ::::::::::::::; $bondOrderData');
                                             bonds.toggleOrderLoad(false);
                                           }
                                         : () {

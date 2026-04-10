@@ -23,14 +23,12 @@ void openRazorpayWeb({
     final paymentId = (response['razorpay_payment_id'] as JSString?)?.toDart;
     final orderId = (response['razorpay_order_id'] as JSString?)?.toDart;
     final signature = (response['razorpay_signature'] as JSString?)?.toDart;
-    print("Razorpay Success Response => paymentId: $paymentId, orderId: $orderId, signature: $signature");
     onSuccess(paymentId, orderId, signature);
   }).toJS;
 
   // Set modal dismiss handler
   final modal = JSObject();
   modal['ondismiss'] = (() {
-    print("Razorpay Modal Dismissed => Payment cancelled by user");
     onError('MODAL_CLOSED', 'Payment cancelled by user', null);
   }).toJS;
   jsOptions['modal'] = modal;

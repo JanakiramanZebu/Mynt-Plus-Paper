@@ -37,7 +37,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       _clientAllDetails = await api.getClientProfileAllDetailsApi();
     } catch (e) {
-      debugPrint("Error fetching client details: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -210,8 +209,6 @@ class ProfileProvider extends DefaultChangeNotifier {
 
   void openInWebURL(BuildContext context, String urlArgs) async {
     await ref.read(fundProvider).fetchHstoken(context);
-    debugPrint(
-        '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
     String url = 'https://profile.mynt.in/$urlArgs/?sAccountId=${pref.clientId}&sToken=${ref.read(fundProvider).fundHstoken!.hstk}';
     
     Navigator.of(context).push(
@@ -222,8 +219,6 @@ class ProfileProvider extends DefaultChangeNotifier {
   }
   void openInWebURLWithbank(BuildContext context, String urlArgs, String type, String bankAcNo) async {
     await ref.read(fundProvider).fetchHstoken(context);
-    debugPrint(
-        '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
     String url = 'https://profile.zebuetrade.com/$urlArgs/?uid=${pref.clientId}&token=${pref.token}&type=$type&acno=$bankAcNo&src=mobileapp';
     
      Navigator.push(
@@ -245,10 +240,7 @@ class ProfileProvider extends DefaultChangeNotifier {
 
   void openInWebURLk(BuildContext context, String urlArgs, String type) async {
     await ref.read(fundProvider).fetchHstoken(context);
-    debugPrint(
-        '$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
     String url = 'https://profile.zebuetrade.com/$urlArgs/?uid=${pref.clientId}&token=${pref.token}&type=$type&src=mobileapp';
-    print("jdhfdfhhfdjksjhdjurl ::: $url");
      Navigator.push(
       context,
       PageRouteBuilder(
@@ -302,7 +294,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       notifyListeners();
     } 
     catch (e) {
-      debugPrint("error fetchpendig :::: $e");
     } finally {
       notifyListeners();
     }
@@ -311,7 +302,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     bool get cancelpendingloader => _cancelpendingloader;
     cancelPendingloader(bool value){
       _cancelpendingloader = value;
-      print("cancelpendingloader :::: $_cancelpendingloader");
       notifyListeners();
     }
 
@@ -330,7 +320,6 @@ class ProfileProvider extends DefaultChangeNotifier {
         warningMessage(context, "Esign Cancellation Failed");
       }
     } catch (e) {
-      debugPrint("error cancel pending status :::: $e");
       warningMessage(context, "Something Went Wrong");
     } finally {
       cancelPendingloader(false);
@@ -352,7 +341,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       _mobEmailStatus = await api.fetchMobEmailStatusApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("error fetchMobEmailStatus :::: $e");
     }
   }
 
@@ -396,7 +384,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       await fetchMobEmailStatus();
       return result;
     } catch (e) {
-      debugPrint("error submitSegmentChange :::: $e");
       return null;
     } finally {
       _segmentSubmitting = false;
@@ -418,7 +405,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       );
       await fetchMobEmailStatus();
     } catch (e) {
-      debugPrint("error reportFiledownload :::: $e");
     }
   }
 
@@ -430,7 +416,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       // _mobileotpo = response;
       notifyListeners();
 
-      print("emaileotpfun $response");
     } finally {
       notifyListeners();
     }
@@ -442,7 +427,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       // _emilotpres = response;
       notifyListeners();
 
-      print("object $response");
     } finally {
       notifyListeners();
     }
@@ -469,7 +453,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       // _mobileotpverres = response;
       notifyListeners();
 
-      print("mobileotpverify $response");
     } catch (e) {
       // debugPrint("$e");
     } finally {
@@ -485,7 +468,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       // _manualaddbank = response;
       notifyListeners();
 
-      print("addmanbankverf $response");
     } catch (e) {
       // debugPrint("$e");
     } finally {
@@ -499,7 +481,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       notifyListeners();
       return response;
     } catch (e) {
-      debugPrint("ddpiledgerbaapi error: $e");
       return 0;
     }
   }
@@ -510,7 +491,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       notifyListeners();
       return response is Map<String, dynamic> ? response : null;
     } catch (e) {
-      debugPrint("ddpifinalstep error: $e");
       return null;
     }
   }
@@ -519,10 +499,8 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       final response = await api.mtfenabapipage(fulldataprf);
       notifyListeners();
-      print("mtfenbprovi $response");
       return response;
     } catch (e) {
-      debugPrint("mtfenbprovi error: $e");
       return null;
     } finally {
       notifyListeners();
@@ -533,10 +511,8 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       String response = await api.incomeotesendapi(mobilno);
       notifyListeners();
-      print("incomeotpsenpro $response");
       return response;
     } catch (e) {
-      print("incomeotpsenpro error: $e");
       return null;
     } finally {
       notifyListeners();
@@ -549,7 +525,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       String response = await api.incomeotpverfapi(
           otpno, fulldataprf, chipval, "", proftye ?? "");
       notifyListeners();
-      print("incomeotpverpro $response");
       if (response == "otp valid") {
         // Submit income update after OTP verified
         final result = await api.incomeupdateaapi(
@@ -561,7 +536,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       }
       return response;
     } catch (e) {
-      print("incomeotpverpro error: $e");
       return null;
     } finally {
       notifyListeners();
@@ -572,7 +546,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       return await api.pdfLockCheckApi(fileBytes: fileBytes, fileName: fileName);
     } catch (e) {
-      print("pdfLockCheck error: $e");
       return null;
     }
   }
@@ -587,7 +560,6 @@ class ProfileProvider extends DefaultChangeNotifier {
         fileBytes: fileBytes, fileName: fileName, password: password,
       );
     } catch (e) {
-      print("pdfPasswordCheck error: $e");
       return null;
     }
   }
@@ -597,7 +569,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       return await api.mobileOtpVerifyWebApi(newMobile, otp, clientData);
     } catch (e) {
-      print("mobileOtpVerifyWeb error: $e");
       return null;
     }
   }
@@ -607,7 +578,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       return await api.emailOtpVerifyWebApi(otp, newEmail);
     } catch (e) {
-      print("emailOtpVerifyWeb error: $e");
       return null;
     }
   }
@@ -621,7 +591,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       }
       return result;
     } catch (e) {
-      print("mobileFileWriteWeb error: $e");
       return null;
     }
   }
@@ -635,7 +604,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       }
       return result;
     } catch (e) {
-      print("emailFileWriteWeb error: $e");
       return null;
     }
   }
@@ -645,7 +613,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       return await api.kraImageCheckApi();
     } catch (e) {
-      print("kraImageCheck error: $e");
       return null;
     }
   }
@@ -655,7 +622,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       return await api.imgUploadApi(imageBytes: imageBytes);
     } catch (e) {
-      print("uploadKraSelfie error: $e");
       return null;
     }
   }
@@ -664,7 +630,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       String response = await api.ifsccodecheckapi(ifsccode);
       notifyListeners();
-      print("ifscapiporov $response");
     } catch (e) {
       // debugPrint("$e");
     } finally {
@@ -677,7 +642,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       return await api.ifscLookupApi(ifscCode);
     } catch (e) {
-      print("ifscLookup error: $e");
       return null;
     }
   }
@@ -687,7 +651,6 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       return await api.pincodeLookupApi(pincode);
     } catch (e) {
-      print("pincodeLookup error: $e");
       return null;
     }
   }
@@ -726,7 +689,6 @@ class ProfileProvider extends DefaultChangeNotifier {
 
       return result;
     } catch (e) {
-      print("addressChangeWeb error: $e");
       return null;
     } finally {
       notifyListeners();
@@ -755,7 +717,6 @@ class ProfileProvider extends DefaultChangeNotifier {
 
       return result;
     } catch (e) {
-      print("addressChangeDigilocker error: $e");
       return null;
     } finally {
       notifyListeners();
@@ -788,7 +749,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       _nomineeStatus = await api.nomineeStatusApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("fetchNomineeStatus error: $e");
     }
   }
 
@@ -804,7 +764,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       }
       return result;
     } catch (e) {
-      debugPrint("submitNominee error: $e");
       return null;
     } finally {
       notifyListeners();
@@ -868,7 +827,6 @@ class ProfileProvider extends DefaultChangeNotifier {
 
       return result;
     } catch (e) {
-      print("addBankWeb error: $e");
       return null;
     } finally {
       notifyListeners();
@@ -890,7 +848,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       // _banksumbres = response;
       notifyListeners();
 
-      print("addbankprovui $response");
     } catch (e) {
       // debugPrint("$e");
     } finally {
@@ -906,7 +863,6 @@ class ProfileProvider extends DefaultChangeNotifier {
       // _banksumbres = response;
       notifyListeners();
 
-      print("addfamilaccprov $response");
     } catch (e) {
       // debugPrint("$e");
     } finally {
@@ -918,10 +874,8 @@ class ProfileProvider extends DefaultChangeNotifier {
     try {
       dynamic chackaccbalace = await api.closeacbalapi(resaqon, fulldataprf);
       notifyListeners();
-      print("_banksumbres $chackaccbalace");
       return chackaccbalace;
     } catch (e) {
-      debugPrint("$e");
       return null;
     } finally {
       notifyListeners();
@@ -934,10 +888,8 @@ class ProfileProvider extends DefaultChangeNotifier {
       dynamic chackaccClosureResp = await api.acccloserapi(
           dpid, boid, filepath, reason, fulldataprf, bankdata);
       notifyListeners();
-      print("_banksumbres $chackaccClosureResp");
       return chackaccClosureResp;
     } catch (e) {
-      debugPrint("$e");
       return null;
     } finally {
       notifyListeners();

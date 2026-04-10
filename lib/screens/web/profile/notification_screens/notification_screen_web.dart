@@ -43,7 +43,6 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
     // Mark this screen as visible
     _isScreenVisible = true;
     if (kDebugMode) {
-      debugPrint('[NotificationScreen] Screen opened');
     }
 
     // Subscribe to navigation events stream
@@ -65,7 +64,6 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('[NotificationScreen] Error fetching broker messages: $e');
         }
       }
 
@@ -75,7 +73,6 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('[NotificationScreen] Error fetching exchange messages: $e');
         }
       }
 
@@ -85,7 +82,6 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('[NotificationScreen] Error fetching information messages: $e');
         }
       }
 
@@ -95,7 +91,6 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('[NotificationScreen] Error fetching exchange status: $e');
         }
       }
     });
@@ -114,13 +109,11 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
     final tabIndex = event.getNotificationTabIndex();
     if (tabIndex == null) {
       if (kDebugMode) {
-        debugPrint('[NotificationScreen] Invalid tab index for event: $event');
       }
       return;
     }
 
     if (kDebugMode) {
-      debugPrint('[NotificationScreen] Handling navigation event: $event');
     }
 
     try {
@@ -152,7 +145,6 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[NotificationScreen] Error handling navigation event: $e');
       }
     }
   }
@@ -178,15 +170,12 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
       } else {
       
         if (kDebugMode) {
-          debugPrint('[NotificationScreen] ⚠️ Message NOT found in API response: $messageId');
         }
        
       }
     } else {
       // Data is null or empty (API call might have failed)
       if (kDebugMode) {
-        debugPrint('[NotificationScreen] ⚠️ Information messages are null or empty');
-        debugPrint('[NotificationScreen] Cannot highlight - no data available');
       }
       // Don't set highlight - no data to check against
     }
@@ -197,7 +186,6 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
     // Mark screen as no longer visible
     _isScreenVisible = false;
     if (kDebugMode) {
-      debugPrint('[NotificationScreen] Screen closed');
     }
 
     // Cancel stream subscription

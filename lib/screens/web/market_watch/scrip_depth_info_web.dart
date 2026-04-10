@@ -112,7 +112,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -128,7 +127,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -2960,7 +2958,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 }
                 scripInfo.toggleFuturesExpansion();
               } catch (e) {
-                debugPrint('Error toggling futures: $e');
               }
             },
             child: Padding(
@@ -3149,7 +3146,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         return DateTime(year, month, day);
       }
     } catch (e) {
-      debugPrint('Error parsing expiry date: $exd - $e');
     }
     return null;
   }

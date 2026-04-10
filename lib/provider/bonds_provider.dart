@@ -322,7 +322,6 @@ class BondsProvider extends DefaultChangeNotifier {
           DateTime dateB = DateTime.parse(b.responseDatetime.toString());
           return dateA.compareTo(dateB); // Newest first (descending order)
         } catch (e) {
-          print("Error parsing datetime in openOrderBook sort: $e");
           return 0; // Keep original order if parsing fails
         }
       });
@@ -342,21 +341,15 @@ class BondsProvider extends DefaultChangeNotifier {
           DateTime dateB = DateTime.parse(b.responseDatetime.toString());
           return dateA.compareTo(dateB); // Newest first (descending order)
         } catch (e) {
-          print("Error parsing datetime in closeOrderBook sort: $e");
           return 0; // Keep original order if parsing fails
         }
       });
-      print("ordersplit :: Open Orders (${_openOrderBook?.length}):");
       for (var order in _openOrderBook ?? []) {
-        print(order.toJson());
       }
 
-      print("ordersplit :: Close Orders (${_closeOrderBook?.length}):");
       for (var order in _closeOrderBook ?? []) {
-        print(order.toJson());
       }
     } catch (e) {
-      print("ordersplit :: $e");
     } finally {
       togglefundLoadingOn(false);
     }
@@ -409,7 +402,6 @@ class BondsProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -418,7 +410,6 @@ class BondsProvider extends DefaultChangeNotifier {
       _govtBonds = await api.getGovtBondApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("Error fetching bonds: $e");
     }
   }
 
@@ -427,7 +418,6 @@ class BondsProvider extends DefaultChangeNotifier {
       _treasuryBonds = await api.getTreasuryBondApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -436,7 +426,6 @@ class BondsProvider extends DefaultChangeNotifier {
       _stateBonds = await api.getStateBondApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -445,7 +434,6 @@ class BondsProvider extends DefaultChangeNotifier {
       _sovereignGoldBonds = await api.getGoldBondApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -455,7 +443,6 @@ class BondsProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -465,12 +452,9 @@ class BondsProvider extends DefaultChangeNotifier {
       _bondsOrderBook = await api.getBondsOrderBookApi();
       // _bondsOrderBook.bondsOrderBook.forEach()
       // print("fetchBondsOrderBook called :: $_bondsOrderBook. ");
-      print(
-          "fetchBondsOrderBook called :: ${_bondsOrderBook?.length} orders fetched.");
       ordersplit();
       notifyListeners();
     } catch (e) {
-      print("fetchBondsOrderBook :: $e ");
     } finally {
       _bondsMyBidsload = false;
     }
@@ -527,7 +511,6 @@ class BondsProvider extends DefaultChangeNotifier {
       // Navigator.pushReplacementNamed(context, Routes.bonds, arguments: 1);
       // return _ipoOrderResponcesModel;
     } catch (e) {
-      print("bonds placeorder error:: $e");
     } finally {
       toggleLoad(false);
     }
@@ -545,12 +528,9 @@ class BondsProvider extends DefaultChangeNotifier {
       String clientApplicationNumber = bondOrderData["clientApplicationNumber"];
       String orderNumber = bondOrderData["orderNumber"];
 
-      print('Cancel API call initiated with bondOrderData: $bondOrderData');
       _bondOrderResponcesModel = await api.cancelBondOrderApi(
           symbol, investmentValue, price, clientApplicationNumber, orderNumber);
-      print('Cancel API response: ${_bondOrderResponcesModel?.toJson()}');
       await fetchBondsOrderBook();
-      print('Updated bonds order book fetched successfully.');
       notifyListeners();
 
       successMessage(
@@ -560,7 +540,6 @@ class BondsProvider extends DefaultChangeNotifier {
       // Navigator.pushNamed(context, Routes.bondsorderbook);
       // return _ipoOrderResponcesModel;
     } catch (e) {
-      print("bonds cancelBondOrder error:: $e");
     } finally {
       toggleLoad(false);
       _bondsMyBidsload = false;

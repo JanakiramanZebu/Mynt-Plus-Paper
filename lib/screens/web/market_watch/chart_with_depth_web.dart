@@ -180,8 +180,6 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
         }
       } catch (e) {
         // Depth will be cleaned up when scrip changes anyway
-        print(
-            '⚠️ [ChartWithDepthWeb] Error unsubscribing from depth in dispose: $e');
       }
     }
 
@@ -1249,7 +1247,6 @@ class _ScripInfoDialogWrapperState extends State<_ScripInfoDialogWrapper> {
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -1266,7 +1263,6 @@ class _ScripInfoDialogWrapperState extends State<_ScripInfoDialogWrapper> {
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

@@ -425,7 +425,6 @@ mixin OrderAPI on ApiCore {
       // if (input.trailprc.isNotEmpty) {
       //   payload.addAll({"trailprc": input.trailprc});
       // }
-      print('order modify $payload');
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,

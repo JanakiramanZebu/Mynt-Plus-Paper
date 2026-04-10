@@ -670,7 +670,6 @@ class IndexListProvider extends DefaultChangeNotifier {
     try {
       await api.getNotifyMsg();
     } catch (e) {
-      print("   $e");
     }
   }
 }

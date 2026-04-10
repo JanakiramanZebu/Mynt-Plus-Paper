@@ -158,7 +158,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           break;
       }
     } catch (e) {
-      debugPrint("Error refreshing orders: $e");
     } finally {
       if (mounted) {
         setState(() {
@@ -187,7 +186,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       screenClass: 'OrderBookScreenWeb',
     );
     } catch (e) {
-      debugPrint('Analytics logging error: $e');
     }
 
     // Defer heavy operations until after UI renders
@@ -269,7 +267,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         });
       }
     } catch (e) {
-      print('Error initializing Order Book components: $e');
       // Fallback initialization
       if (mounted) {
         setState(() {
