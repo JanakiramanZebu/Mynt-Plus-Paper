@@ -23,6 +23,7 @@ import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
+import 'package:mynt_plus/utils/pip_service.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:uuid/uuid.dart';
 import '../api/core/api_core.dart';
@@ -1007,6 +1008,9 @@ class AuthProvider extends DefaultChangeNotifier {
         // Close WebSocket connections and unsubscribe from market data
         ref.read(websocketProvider).closeSocket(true, force: true);
         ref.read(websocketProvider).websockConn(false);
+
+        // Close PiP window if open
+        PipService.closePipWindow();
 
         // Save the current page index before cleanup (for restoration after login)
         // We don't reset currentWatchlistPageIndex to preserve the user's last position
@@ -2353,6 +2357,9 @@ class AuthProvider extends DefaultChangeNotifier {
       if (kIsWeb) {
         OverlayManager.closeAll();
       }
+
+      // Close PiP window if open
+      PipService.closePipWindow();
 
       // Clear all session data first
       pref.clearClientSession();
