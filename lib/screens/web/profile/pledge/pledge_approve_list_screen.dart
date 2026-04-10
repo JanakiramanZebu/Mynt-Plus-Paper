@@ -14,6 +14,7 @@ import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
+import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 
 class PledgeApproveListScreen extends StatefulWidget {
   const PledgeApproveListScreen({super.key});
@@ -36,6 +37,43 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
 
   String _selectedCategory = 'Cash';
   String? _lastSelectedCategory;
+
+  // ── Pagination state ──
+  static const int _pageSize = 15;
+  int _displayedCount = _pageSize;
+  bool _isLoadingMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tableScrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_isLoadingMore) return;
+    final maxScroll = _tableScrollController.position.maxScrollExtent;
+    final currentScroll = _tableScrollController.offset;
+    if (currentScroll >= maxScroll - 200) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    setState(() {
+      _isLoadingMore = true;
+    });
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() {
+        _displayedCount += _pageSize;
+        _isLoadingMore = false;
+      });
+    });
+  }
+
+  void _resetPagination() {
+    _displayedCount = _pageSize;
+  }
 
   void _onSort(int columnIndex) {
     setState(() {
@@ -86,6 +124,7 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
 
   @override
   void dispose() {
+    _tableScrollController.removeListener(_onScroll);
     _searchController.dispose();
     _tableScrollController.dispose();
     _hoveredRowIndex.dispose();
@@ -267,10 +306,11 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
         return indexA.compareTo(indexB);
       });
 
-      // Reset activeTab when category changes
+      // Reset activeTab and pagination when category changes
       if (_lastSelectedCategory != _selectedCategory) {
         activeTab = 0;
         _lastSelectedCategory = _selectedCategory;
+        _resetPagination();
       }
 
       // Clamp activeTab to valid range
@@ -292,7 +332,11 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Row(
                     children: [
-                      const CustomBackBtn(),
+                      CustomBackBtn(
+                        onBack: () {
+                          Navigator.pop(context);
+                        },
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Approved Securities',
@@ -376,12 +420,14 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value;
+                  _resetPagination();
                 });
               },
               onClear: () {
                 _searchController.clear();
                 setState(() {
                   _searchQuery = '';
+                  _resetPagination();
                 });
               },
             ),
@@ -405,6 +451,7 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
             activeTab = index;
             _sortColumnIndex = null;
             _sortAscending = true;
+            _resetPagination();
           });
         },
         child: Container(
@@ -441,7 +488,7 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () => _showCategoryPopup(buttonContext, theme),
-            child: Container(
+            child: Container(width: 140,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6),
@@ -500,13 +547,13 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
           child: shadcn.ModalContainer(
             padding: const EdgeInsets.all(8),
             child: SizedBox(
-              width: 160,
+              width: 130,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildFilterMenuItem('Cash', theme),
-                  _buildFilterMenuItem('Non Cash', theme),
+                  _buildFilterMenuItem('Cash', theme, context),
+                  _buildFilterMenuItem('Non Cash', theme, context),
                 ],
               ),
             ),
@@ -550,7 +597,7 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
     );
   }
 
-  Widget _buildFilterMenuItem(String value, ThemesProvider theme) {
+  Widget _buildFilterMenuItem(String value, ThemesProvider theme, BuildContext popoverContext) {
     final isSelected = _selectedCategory == value;
     return Material(
       color: Colors.transparent,
@@ -561,7 +608,7 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
               _selectedCategory = value;
             });
           }
-          shadcn.closeOverlay(context);
+          shadcn.closeOverlay(popoverContext);
         },
         splashColor: resolveThemeColor(
           context,
@@ -647,12 +694,17 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
       );
     }
 
+    // ── Progressive loading: only render up to _displayedCount rows ──
+    final int totalFiltered = filteredList.length;
+    final bool hasMore = _displayedCount < totalFiltered;
+    final visibleList = filteredList.take(_displayedCount).toList();
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth - 32;
         final double isinWidth = totalWidth * 0.18;
-        final double symbolWidth = totalWidth * 0.15;
-        final double nameWidth = totalWidth * 0.37;
+        final double symbolWidth = totalWidth * 0.22;
+        final double nameWidth = totalWidth * 0.30;
         final double haircutWidth = totalWidth * 0.15;
         final double collateralWidth = totalWidth * 0.15;
 
@@ -689,58 +741,99 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
                 Expanded(
                   child: SingleChildScrollView(
                     controller: _tableScrollController,
-                    child: shadcn.Table(
-                      defaultRowHeight: const shadcn.FixedTableSize(52),
-                      columnWidths: columnWidths,
-                      rows: filteredList.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final item = entry.value;
-                        final haircut =
-                            double.tryParse(item.haircut ?? '0') ?? 0.0;
-                        final collateral = 100 - haircut;
+                    child: Column(
+                      children: [
+                        shadcn.Table(
+                          defaultRowHeight: const shadcn.FixedTableSize(52),
+                          columnWidths: columnWidths,
+                          rows: visibleList.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final item = entry.value;
+                            final haircut =
+                                double.tryParse(item.haircut ?? '0') ?? 0.0;
+                            final collateral = 100 - haircut;
 
-                        return shadcn.TableRow(
-                          cells: [
-                            _buildDataCell(
-                              rowIndex: index,
-                              columnIndex: 0,
-                              child: Text(item.iSIN ?? '--',
-                                  style: _getTextStyle(context)),
+                            return shadcn.TableRow(
+                              cells: [
+                                _buildDataCell(
+                                  rowIndex: index,
+                                  columnIndex: 0,
+                                  child: Text(item.iSIN ?? '--',
+                                      style: _getTextStyle(context)),
+                                ),
+                                _buildDataCell(
+                                  rowIndex: index,
+                                  columnIndex: 1,
+                                  child: Text(item.symbol ?? '--',
+                                      style: _getTextStyle(context)),
+                                ),
+                                _buildDataCell(
+                                  rowIndex: index,
+                                  columnIndex: 2,
+                                  child: Text(
+                                    item.name ?? '--',
+                                    style: _getTextStyle(context),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                _buildDataCell(
+                                  rowIndex: index,
+                                  columnIndex: 3,
+                                  alignRight: true,
+                                  child: Text('${item.haircut ?? '0'} %',
+                                      style: _getTextStyle(context)),
+                                ),
+                                _buildDataCell(
+                                  rowIndex: index,
+                                  columnIndex: 4,
+                                  alignRight: true,
+                                  child: Text(
+                                      '${collateral.toStringAsFixed(2)} %',
+                                      style: _getTextStyle(context)),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                        // Loading indicator / record count footer
+                        if (_isLoadingMore)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2.5),
                             ),
-                            _buildDataCell(
-                              rowIndex: index,
-                              columnIndex: 1,
-                              child: Text(item.symbol ?? '--',
-                                  style: _getTextStyle(context)),
-                            ),
-                            _buildDataCell(
-                              rowIndex: index,
-                              columnIndex: 2,
-                              child: Text(
-                                item.name ?? '--',
-                                style: _getTextStyle(context),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                          )
+                        else if (hasMore)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Showing ${visibleList.length} of $totalFiltered records — scroll down for more',
+                              style: _getTextStyle(context).copyWith(
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                                fontSize: 12,
                               ),
                             ),
-                            _buildDataCell(
-                              rowIndex: index,
-                              columnIndex: 3,
-                              alignRight: true,
-                              child: Text('${item.haircut ?? '0'} %',
-                                  style: _getTextStyle(context)),
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Showing all $totalFiltered records',
+                              style: _getTextStyle(context).copyWith(
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                                fontSize: 12,
+                              ),
                             ),
-                            _buildDataCell(
-                              rowIndex: index,
-                              columnIndex: 4,
-                              alignRight: true,
-                              child: Text(
-                                  '${collateral.toStringAsFixed(2)} %',
-                                  style: _getTextStyle(context)),
-                            ),
-                          ],
-                        );
-                      }).toList(),
+                          ),
+                      ],
                     ),
                   ),
                 ),

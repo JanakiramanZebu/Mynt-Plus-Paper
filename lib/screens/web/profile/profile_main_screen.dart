@@ -874,7 +874,9 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
               child: Text(
                 changePassword.oldPasswordError!,
                 style: MyntWebTextStyles.caption(context,
-                    color: MyntColors.loss),
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.lossDark,
+                        light: MyntColors.loss)),
               ),
             ),
           const SizedBox(height: 16),
@@ -924,7 +926,9 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
               child: Text(
                 changePassword.newPasswordError!,
                 style: MyntWebTextStyles.caption(context,
-                    color: MyntColors.loss),
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.lossDark,
+                        light: MyntColors.loss)),
               ),
             ),
           const SizedBox(height: 24),

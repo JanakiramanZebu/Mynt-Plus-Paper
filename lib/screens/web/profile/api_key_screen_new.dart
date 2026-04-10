@@ -396,7 +396,9 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
                       child: Text(
                         _errorMessageUrl!,
                         style: MyntWebTextStyles.caption(context,
-                            color: MyntColors.loss),
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss)),
                       ),
                     ),
                   ],
@@ -448,7 +450,9 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
                                 child: Text(
                                   _errorMessagePrimaryIp!,
                                   style: MyntWebTextStyles.caption(context,
-                                      color: MyntColors.loss),
+                                      color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss)),
                                 ),
                               ),
                             ],
@@ -483,7 +487,9 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
                                   darkColor: MyntColors.textPrimaryDark,
                                   lightColor: MyntColors.textPrimary),
                               errorStyle: MyntWebTextStyles.caption(context,
-                                  color: MyntColors.loss),
+                                  color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss) ),
                               onChanged: (value) {
                                 _validateBackupIp(value);
                               },
@@ -496,7 +502,9 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
                                 child: Text(
                                   _errorMessageBackupIp!,
                                   style: MyntWebTextStyles.caption(context,
-                                      color: MyntColors.loss),
+                                      color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss)),
                                 ),
                               ),
                             ],

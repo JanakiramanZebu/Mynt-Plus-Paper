@@ -45,6 +45,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
   bool _showOtpScreen = false;
   bool _showQrScreen = false;
   bool _showChangePassword = false;
+  bool _isPasswordExpired = false; // Tracks if change password was triggered by password expiry
   
   // OTP Timer Logic
   Timer? _timer;
@@ -277,6 +278,34 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
           // Direct login success - navigation and data loading handled by web_auth_provider
           // No action needed here to avoid duplicate API calls
         }
+      } else if (!success && mounted) {
+        // Handle specific error cases from login response
+        final emsg = webAuth.mobileLogin?.msg;
+        final forpass = ref.read(changePasswordProvider);
+
+        if (emsg == "Invalid Input : User Blocked due to multiple wrong attempts") {
+          // User blocked - show forgot password inline form after delay
+          forpass.forGetloginMethCtrl.text = webAuth.loginController.text.trim().toUpperCase();
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted) {
+              setState(() {
+                _showForgotPassword = true;
+                forpass.clearError();
+              });
+            }
+          });
+        } else if (emsg == "Invalid Input : Change Password" ||
+            emsg == "Invalid Input : Password Expired") {
+          // Password expired or forced change - show change password inline form
+          forpass.userIdController.text = "${webAuth.mobileLogin?.clientid}";
+          if (emsg == "Invalid Input : Password Expired") {
+            forpass.oldPassword.text = webAuth.passwordController.text;
+          }
+          setState(() {
+            _isPasswordExpired = emsg == "Invalid Input : Password Expired";
+            _showChangePassword = true;
+          });
+        }
       }
 
       ledgerprovider.setterfornullallSwitch = null;
@@ -327,6 +356,20 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
         ref.read(authProvider).otpCtrl.clear();
         webAuth.otpController.clear();
         // Note: No need to navigate or call initialLoadMethods here to avoid duplicate API calls
+      } else if (!success && mounted && webAuth.requiresPasswordChange) {
+        // Password change required after OTP verification
+        final forpass = ref.read(changePasswordProvider);
+        final isExpired = webAuth.isPasswordExpiredFlag;
+        forpass.userIdController.text = webAuth.mobileLogin?.clientid ?? '';
+        if (isExpired) {
+          forpass.oldPassword.text = webAuth.passwordController.text;
+        }
+        webAuth.clearPasswordChangeFlags();
+        setState(() {
+          _isPasswordExpired = isExpired;
+          _showOtpScreen = false;
+          _showChangePassword = true;
+        });
       }
     } finally {
       if (mounted) {
@@ -699,7 +742,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               (pref.clientId?.isNotEmpty == true ||
                                   pref.clientMob?.isNotEmpty == true)))
                           Text(
-                            _showChangePassword ? "Change or Reset Password" : "Login to MYNT",
+                            _showChangePassword ? "Change or Reset Password" : _showForgotPassword ? "Forgot Password" : "Login to MYNT",
                             style: webText(
                               context,
                               size: MediaQuery.of(context).size.width < 600 ? 18 : 22,
@@ -1258,6 +1301,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                child: InkWell(
                                  onTap: () {
                                     setState(() {
+                                      // Restore client ID back to login form before clearing
+                                      auth.loginMethCtrl.text = forpass.forGetloginMethCtrl.text;
+                                      auth.passCtrl.clear();
                                       _showForgotPassword = false;
                                       forpass.clearError();
                                       forpass.clearTextField();
@@ -1338,7 +1384,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               ),
                               decoration: InputDecoration(
                                 filled: false,
-                                labelText: "Generated Password",
+                                labelText: _isPasswordExpired ? "Old Password" : "Generated Password",
                                 floatingLabelBehavior: FloatingLabelBehavior.auto,
                                 labelStyle: MyntWebTextStyles.body(
                                   context,
@@ -1526,6 +1572,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 onTap: () {
                                   setState(() {
                                     _showChangePassword = false;
+                                    _isPasswordExpired = false;
                                     forpass.changePassMethod();
                                   });
                                 },

@@ -32,6 +32,55 @@ class PledgeFilter extends StatefulWidget {
 
 class _PledgeFilterState extends State<PledgeFilter> {
   final Set<String> _expandedItems = {};
+  final ScrollController _tableScrollController = ScrollController();
+
+  static const int _pageSize = 15;
+  int _displayedCount = _pageSize;
+  bool _isLoadingMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tableScrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant PledgeFilter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activetabe != oldWidget.activetabe ||
+        widget.searchQuery != oldWidget.searchQuery) {
+      _displayedCount = _pageSize;
+    }
+  }
+
+  @override
+  void dispose() {
+    _tableScrollController.removeListener(_onScroll);
+    _tableScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isLoadingMore) return;
+    final maxScroll = _tableScrollController.position.maxScrollExtent;
+    final currentScroll = _tableScrollController.offset;
+    if (currentScroll >= maxScroll - 200) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    setState(() {
+      _isLoadingMore = true;
+    });
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() {
+        _displayedCount += _pageSize;
+        _isLoadingMore = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +193,11 @@ class _PledgeFilterState extends State<PledgeFilter> {
 
   _mainpage(LDProvider ledgerprovider, ThemesProvider theme,
       BuildContext context, dataval, String tab, ref) {
+    // ── Progressive loading: only render up to _displayedCount rows ──
+    final int totalItems = dataval.length;
+    final bool hasMore = _displayedCount < totalItems;
+    final int visibleCount = _displayedCount < totalItems ? _displayedCount : totalItems;
+
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -195,22 +249,64 @@ class _PledgeFilterState extends State<PledgeFilter> {
                   // Data Rows
                   Expanded(
                     child: SingleChildScrollView(
+                      controller: _tableScrollController,
                       physics: const ClampingScrollPhysics(),
-                      child: shadcn.Table(
-                        defaultRowHeight: const shadcn.FixedTableSize(56),
-                        columnWidths: colWidths,
-                        rows: List.generate(dataval.length, (index) {
-                          final value = dataval[index];
-                          return _buildPledgeTableRow(
-                            value: value,
-                            index: index,
-                            tab: tab,
-                            ledgerprovider: ledgerprovider,
-                            theme: theme,
-                            context: context,
-                            ref: ref,
-                          );
-                        }),
+                      child: Column(
+                        children: [
+                          shadcn.Table(
+                            defaultRowHeight: const shadcn.FixedTableSize(56),
+                            columnWidths: colWidths,
+                            rows: List.generate(visibleCount, (index) {
+                              final value = dataval[index];
+                              return _buildPledgeTableRow(
+                                value: value,
+                                index: index,
+                                tab: tab,
+                                ledgerprovider: ledgerprovider,
+                                theme: theme,
+                                context: context,
+                                ref: ref,
+                              );
+                            }),
+                          ),
+                          // Loading indicator / record count footer
+                          if (_isLoadingMore)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.5),
+                              ),
+                            )
+                          else if (hasMore)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                'Showing $visibleCount of $totalItems records — scroll down for more',
+                                style: MyntWebTextStyles.tableCell(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
+                                  fontWeight: MyntFonts.medium,
+                                ).copyWith(fontSize: 12),
+                              ),
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                'Showing all $totalItems records',
+                                style: MyntWebTextStyles.tableCell(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
+                                  fontWeight: MyntFonts.medium,
+                                ).copyWith(fontSize: 12),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
