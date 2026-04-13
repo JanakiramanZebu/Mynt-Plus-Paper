@@ -150,7 +150,9 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
   void _removeStrikeOverlay() {
     _strikeOverlay?.remove();
     _strikeOverlay = null;
-    ref.read(optionFlashProvider).setStrikeDropdownOpen(false);
+    if (!_isDisposed) {
+      ref.read(optionFlashProvider).setStrikeDropdownOpen(false);
+    }
   }
 
   void _setupWebSocketListener() {

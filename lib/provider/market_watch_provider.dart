@@ -2951,6 +2951,12 @@ getOptionawait(String exch, String token) {
     notifyListeners();
   }
 
+  /// Clears fundamental data without notifying listeners.
+  /// Use in didUpdateWidget to avoid modifying provider during build.
+  void clearFundamentalDataSilent() {
+    _fundamentalData = null;
+  }
+
   // Method to clear cache for a specific token
   void clearCacheForToken(String token) {
     if (storeQuotes.containsKey(token)) {
