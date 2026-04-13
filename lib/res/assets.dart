@@ -5,6 +5,7 @@ class Assets {
   final String mfIcon = "assets/icon/bottomBarIcon/muthualfund_icon.svg";
   final String switch2Icon = "assets/icon/appbarIcon/switchaccount_icon.svg";
 
+  final String boltIcon = "assets/icon/bolt.svg";
   final String bondIcon = "assets/icon/bond_icon.svg";
   final String qrIcon = "assets/icon/qr_new.svg";
   final String notifyIcon = "assets/icon/notify_new.svg";
