@@ -364,18 +364,35 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   /// Handles keyboard up/down arrow to increment/decrement qty by 1 (stocks only).
   KeyEventResult _handleQtyArrowKey(KeyEvent event, TextEditingController ctrl) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
-    if (!_isStock) return KeyEventResult.ignored;
 
     final isUp = event.logicalKey == LogicalKeyboardKey.arrowUp;
     final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
     if (!isUp && !isDown) return KeyEventResult.ignored;
 
-    final current = int.tryParse(ctrl.text) ?? 0;
-    int newVal = isUp ? current + 1 : current - 1;
-    if (newVal < 1) newVal = 1;
-    ctrl.text = newVal.toString();
-    ctrl.selection = TextSelection.collapsed(offset: ctrl.text.length);
+    final int step = _isStock ? 1 : (multiplayer > 0 ? multiplayer : 1);
+    final int current = int.tryParse(ctrl.text) ?? 0;
+    final int snapped =
+        current >= step ? ((current / step).floor()) * step : step;
+
     setState(() {
+      if (isUp) {
+        if (ctrl.text.isEmpty) {
+          ctrl.text = step.toString();
+        } else if (current != snapped) {
+          ctrl.text = snapped.toString();
+        } else {
+          ctrl.text = (current + step).toString();
+        }
+      } else {
+        if (current != snapped) {
+          ctrl.text = snapped.toString();
+        } else if (current > step) {
+          ctrl.text = (current - step).toString();
+        } else {
+          ctrl.text = step.toString();
+        }
+      }
+      ctrl.selection = TextSelection.collapsed(offset: ctrl.text.length);
       _debouncedMarginUpdate();
     });
     return KeyEventResult.handled;
@@ -1284,6 +1301,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           isOco = false;
                                                           orderInput
                                                               .disableCondGTT(false);
+                                                          orderInput.clearOcoFields();
                                                         }
                                                       });
                                                       _debouncedMarginUpdate();
@@ -1331,6 +1349,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           isOco = false;
                                                           orderInput
                                                               .disableCondGTT(false);
+                                                          orderInput.clearOcoFields();
                                                         }
                                                       });
                                                       _debouncedMarginUpdate();
@@ -1607,12 +1626,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             }
                                             if (orderType != "GTT") {
                                               isOco = false;
-                                              // Re-sync provider's _prcType with regular section's local priceType
-                                              // because GTT's chngGTTPriceType may have overwritten it
+                                              _isGTTLotToQty = true;
                                               ref.read(ordInputProvider).chngPriceType(
                                                   priceType, widget.scripInfo.exch ?? "");
                                               _debouncedMarginUpdate();
                                             } else {
+                                              // Reset qty toggles so the GTT tab always opens in Qty mode
+                                              _isQtyToAmount = false;
+                                              _isGTTLotToQty = true;
                                               // ref.read(ordInputProvider)
                                               //     .chngInvesType(
                                               //         widget.scripInfo.seg == "EQT"
@@ -1631,13 +1652,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 ref
                                                     .read(ordInputProvider)
                                                     .setGTTPriceTypeOrderIsMarket(false);
+                                                // MCX qty field accepts lot count; other exchanges accept the lot-size string.
                                                 ref
                                                     .read(ordInputProvider)
                                                     .updatePrcCtrl(
                                                         "${widget.orderArg.ltp}",
-                                                        widget.orderArg.lotSize!
-                                                            .replaceAll(
-                                                                "-", ""));
+                                                        widget.scripInfo.exch == "MCX"
+                                                            ? "1"
+                                                            : widget.orderArg.lotSize!
+                                                                .replaceAll(
+                                                                    "-", ""));
                                                 ref
                                                     .read(ordInputProvider)
                                                     .chngGTTPriceType("Limit");
@@ -2158,7 +2182,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 //                   light: MyntColors.textPrimary))),
                                           ]),
                                           const SizedBox(height: 10),
-                                          SizedBox(
+                                          Focus(
+                                            onKeyEvent: (node, event) => _handlePriceArrowKey(event, orderInput.val1Ctrl),
+                                            child: SizedBox(
                                               height: 40,
                                               width: 200,
                                               child: Semantics(
@@ -2244,6 +2270,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         orderInput.val1Ctrl,
                                                     textAlign: TextAlign.start),
                                               )),
+                                          ),
                                         ]),
                                   ),
 
@@ -2285,7 +2312,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         _isStock) ? () {
                                                       setState(() {
                                                         if (_isStock) {
-                                                          // Stocks: no amount toggle for GTT
+                                                          _isQtyToAmount = !_isQtyToAmount;
+                                                          if (_isQtyToAmount) {
+                                                            // Seed with live LTP for Amount mode
+                                                            double seedLtp = SafeParse.toDouble(widget.orderArg.ltp);
+                                                            final wsD = ref.read(websocketProvider).socketDatas[widget.scripInfo.token];
+                                                            if (wsD != null) {
+                                                              final wl = SafeParse.toDouble(wsD['lp']);
+                                                              if (wl > 0) seedLtp = wl;
+                                                            }
+                                                            orderInput.qtyCtrl.text = seedLtp.ceil().toString();
+                                                          } else {
+                                                            orderInput.qtyCtrl.text = "1";
+                                                          }
                                                         } else {
                                                           // NFO/BFO: Toggle between Lot and Qty
                                                           _isGTTLotToQty = !_isGTTLotToQty;
@@ -2435,23 +2474,32 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             onChanged: (value) {
                                                               if (value.isEmpty || value == "0") {
                                                                 String fieldName = (_isStock)
-                                                                  ? 'Quantity'
+                                                                  ? (_isQtyToAmount ? 'Amount' : 'Quantity')
                                                                   : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                 _showDebouncedWarning(
                                                                     "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
                                                               } else {
                                                                 String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
-                                                                var number = !_isGTTLotToQty
-                                                                  ? int.tryParse(newValue) ?? 0
-                                                                  : ((int.tryParse(newValue) ?? 0) ~/ lotSize);
+                                                                double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
+                                                                var number = (_isStock)
+                                                                  ? (!_isQtyToAmount
+                                                                    ? int.tryParse(newValue) ?? 0
+                                                                    : ((double.tryParse(newValue) ?? 0.0) ~/ ltp))
+                                                                  : (!_isGTTLotToQty
+                                                                    ? int.tryParse(newValue) ?? 0
+                                                                    : ((int.tryParse(newValue) ?? 0) ~/ lotSize));
 
-                                                                bool hasNoFreezeLimit = frezQty <= lotSize;
-                                                                if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
-                                                                  orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
+                                                                if (_isQtyToAmount && number < 1 && _isStock) {
                                                                   _showDebouncedWarning(
-                                                                      "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                      "Minimum Allowed Amount should be greater than $ltp");
                                                                 } else {
-                                                                  _cancelPendingWarning();
+                                                                  bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                  if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
+                                                                    _showDebouncedWarning(
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                  } else {
+                                                                    _cancelPendingWarning();
+                                                                  }
                                                                 }
 
                                                                 if (newValue != value) {
@@ -2464,6 +2512,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             }),
                                                       )),
                                                   ),
+                                                  if (_isQtyToAmount && _isStock)
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(top: 4),
+                                                      child: Text(
+                                                        "Qty : ${getGTTFinalQuantity(orderInput.qtyCtrl.text)}",
+                                                        style: WebTextStyles.para(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: resolveThemeColor(context,
+                                                            dark: MyntColors.textSecondaryDark,
+                                                            light: MyntColors.textSecondary),
+                                                        ),
+                                                      ),
+                                                    ),
                                                   if (_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
                                                     Padding(
                                                       padding: const EdgeInsets.only(top: 4),
@@ -2829,26 +2890,34 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     return;
                                                   }
 
+                                                  final newIsOco = value ?? false;
                                                   setState(() {
-                                                    isOco = value ?? false;
+                                                    isOco = newIsOco;
                                                     orderInput
                                                         .disableCondGTT(isOco);
                                                   });
-                                                  if (orderInput.ocoPrcType !=
-                                                      "MKT") {
-                                                    orderInput
-                                                        .chngOCOPriceType(
-                                                            "Limit");
+                                                  if (newIsOco) {
+                                                    // Seed leg-2 price/qty when enabling OCO.
+                                                    if (orderInput.ocoPrcType !=
+                                                        "MKT") {
+                                                      orderInput
+                                                          .chngOCOPriceType(
+                                                              "Limit");
 
-                                                    ref
-                                                        .read(ordInputProvider)
-                                                        .updateOcoPrcQtyCtrl(
-                                                          "${widget.orderArg.ltp}",
-                                                          widget
-                                                              .orderArg.lotSize!
-                                                              .replaceAll(
-                                                                  "-", ""),
-                                                        );
+                                                      ref
+                                                          .read(ordInputProvider)
+                                                          .updateOcoPrcQtyCtrl(
+                                                            "${widget.orderArg.ltp}",
+                                                            widget.scripInfo.exch == "MCX"
+                                                                ? "1"
+                                                                : widget
+                                                                    .orderArg.lotSize!
+                                                                    .replaceAll(
+                                                                        "-", ""),
+                                                          );
+                                                    }
+                                                  } else {
+                                                    orderInput.clearOcoFields();
                                                   }
                                                 },
                                                 activeColor: theme.isDarkMode
@@ -2908,7 +2977,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   //                 light: MyntColors.textPrimary))),
                                             ]),
                                             const SizedBox(height: 10),
-                                            SizedBox(
+                                            Focus(
+                                              onKeyEvent: (node, event) => _handlePriceArrowKey(event, orderInput.val2Ctrl),
+                                              child: SizedBox(
                                                 height: 40,
                                                 width: 200,
                                                 child: Semantics(
@@ -2994,6 +3065,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       textAlign:
                                                           TextAlign.start),
                                                 )),
+                                            ),
                                           ]),
                                     ),
 
@@ -3017,7 +3089,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           _isStock) ? () {
                                                         setState(() {
                                                           if (_isStock) {
-                                                            // Stocks: no amount toggle for GTT/OCO
+                                                            _isQtyToAmount = !_isQtyToAmount;
+                                                            if (_isQtyToAmount) {
+                                                              double seedLtp = SafeParse.toDouble(widget.orderArg.ltp);
+                                                              final wsD = ref.read(websocketProvider).socketDatas[widget.scripInfo.token];
+                                                              if (wsD != null) {
+                                                                final wl = SafeParse.toDouble(wsD['lp']);
+                                                                if (wl > 0) seedLtp = wl;
+                                                              }
+                                                              orderInput.ocoQtyCtrl.text = seedLtp.ceil().toString();
+                                                            } else {
+                                                              orderInput.ocoQtyCtrl.text = "1";
+                                                            }
                                                           } else {
                                                             // NFO/BFO: Toggle between Lot and Qty
                                                             _isGTTLotToQty = !_isGTTLotToQty;
@@ -3173,23 +3256,32 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               onChanged: (value) {
                                                                 if (value.isEmpty || value == "0") {
                                                                   String fieldName = (_isStock)
-                                                                    ? 'Quantity'
+                                                                    ? (_isQtyToAmount ? 'Amount' : 'Quantity')
                                                                     : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                   _showDebouncedWarning(
                                                                       "OCO $fieldName cannot be ${value == "0" ? '0' : 'empty'}");
                                                                 } else {
                                                                   String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
-                                                                  var number = !_isGTTLotToQty
-                                                                    ? int.tryParse(newValue) ?? 0
-                                                                    : ((int.tryParse(newValue) ?? 0) ~/ lotSize);
+                                                                  double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
+                                                                  var number = (_isStock)
+                                                                    ? (!_isQtyToAmount
+                                                                      ? int.tryParse(newValue) ?? 0
+                                                                      : ((double.tryParse(newValue) ?? 0.0) ~/ ltp))
+                                                                    : (!_isGTTLotToQty
+                                                                      ? int.tryParse(newValue) ?? 0
+                                                                      : ((int.tryParse(newValue) ?? 0) ~/ lotSize));
 
-                                                                  bool hasNoFreezeLimit = frezQty <= lotSize;
-                                                                  if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
-                                                                    orderInput.ocoQtyCtrl.text = orderInput.ocoQtyCtrl.text;
+                                                                  if (_isQtyToAmount && number < 1 && _isStock) {
                                                                     _showDebouncedWarning(
-                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                        "Minimum Allowed Amount should be greater than $ltp");
                                                                   } else {
-                                                                    _cancelPendingWarning();
+                                                                    bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                    if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
+                                                                      _showDebouncedWarning(
+                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                    } else {
+                                                                      _cancelPendingWarning();
+                                                                    }
                                                                   }
 
                                                                   if (newValue != value) {
@@ -3202,6 +3294,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               }),
                                                         )),
                                                     ),
+                                                    if (_isQtyToAmount && _isStock)
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(top: 4),
+                                                        child: Text(
+                                                          "Qty : ${getGTTFinalQuantity(orderInput.ocoQtyCtrl.text)}",
+                                                          style: WebTextStyles.para(
+                                                            isDarkTheme: theme.isDarkMode,
+                                                            color: resolveThemeColor(context,
+                                                              dark: MyntColors.textSecondaryDark,
+                                                              light: MyntColors.textSecondary),
+                                                          ),
+                                                        ),
+                                                      ),
                                                     if (_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
                                                       Padding(
                                                         padding: const EdgeInsets.only(top: 4),
@@ -4432,9 +4537,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   number >
                                                                       frezQtyOrderSliceMaxLimit *
                                                                           frezQty) {
-                                                                qtyCtrl.text =
-                                                                    qtyCtrl
-                                                                        .text;
                                                                 _showDebouncedWarning(
                                                                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                               } else {
@@ -5904,9 +6006,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       //   }
                                                                       // }
                                                                       // else {
-                                                                      double
-                                                                          ltp =
-                                                                          SafeParse.toDouble(widget.orderArg.ltp);
+                                                                      // Use live WebSocket LTP for validation, fallback to orderArg.ltp
+                                                                      double ltp = SafeParse.toDouble(widget.orderArg.ltp);
+                                                                      final wsData = ref.read(websocketProvider).socketDatas[widget.scripInfo.token];
+                                                                      if (wsData != null) {
+                                                                        final wsLtp = SafeParse.toDouble(wsData['lp']);
+                                                                        if (wsLtp > 0) ltp = wsLtp;
+                                                                      }
                                                                       double
                                                                           val1 =
                                                                           SafeParse.toDouble(orderInput
@@ -5918,20 +6024,29 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               .val2Ctrl
                                                                               .text);
 
-                                                                      if (val1 >
-                                                                              ltp &&
-                                                                          val2 <
-                                                                              ltp) {
+                                                                      // SELL OCO: target > LTP, stoploss < LTP. BUY OCO (F&O): target < LTP, stoploss > LTP.
+                                                                      final bool ocoConditionValid = (isBuy ?? false)
+                                                                          ? (val1 < ltp && val2 > ltp)
+                                                                          : (val1 > ltp && val2 < ltp);
+
+                                                                      if (ocoConditionValid) {
                                                                         prepareToPlaceOCOOrder(
                                                                             orderInput);
                                                                       } else {
-                                                                        ResponsiveSnackBar.showWarning(
-                                                                            context,
-                                                                            val1 <= ltp
+                                                                        final String ocoErrorMsg = (isBuy ?? false)
+                                                                            ? (val1 >= ltp
+                                                                                ? "Target trigger price cannot be greater than or equal to LTP"
+                                                                                : val2 <= ltp
+                                                                                    ? "Stoploss trigger price cannot be less than or equal to LTP"
+                                                                                    : "Invalid trigger prices")
+                                                                            : (val1 <= ltp
                                                                                 ? "Target trigger price cannot be less than LTP"
                                                                                 : val2 >= ltp
                                                                                     ? "Stoploss trigger price cannot be greater than LTP"
                                                                                     : "Target trigger price cannot be equal to LTP");
+                                                                        ResponsiveSnackBar.showWarning(
+                                                                            context,
+                                                                            ocoErrorMsg);
                                                                       }
                                                                       // }
                                                                     } else {
@@ -6069,15 +6184,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       //   }
                                                                       // } else {
 
-                                                                      double
-                                                                          ltp =
-                                                                          SafeParse.toDouble(widget.orderArg.ltp);
+                                                                      double ltp = SafeParse.toDouble(widget.orderArg.ltp);
+                                                                      final wsDataGtt = ref.read(websocketProvider).socketDatas[widget.scripInfo.token];
+                                                                      if (wsDataGtt != null) {
+                                                                        final wsLtpGtt = SafeParse.toDouble(wsDataGtt['lp']);
+                                                                        if (wsLtpGtt > 0) ltp = wsLtpGtt;
+                                                                      }
                                                                       double
                                                                           val1 =
                                                                           SafeParse.toDouble(orderInput
                                                                               .val1Ctrl
                                                                               .text);
-                                                                      // double val2 = SafeParse.toDouble(orderInput.val2Ctrl.text);
 
                                                                       if (val1 >
                                                                           ltp) {
@@ -7133,7 +7250,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             ],
           ),
           const SizedBox(height: 10),
-          SizedBox(
+          Focus(
+            onKeyEvent: (node, event) => _handlePriceArrowKey(event, targetCtrl),
+            child: SizedBox(
               height: 40,
               width: 200,
               child: Semantics(
@@ -7150,15 +7269,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     onChanged: (value) {
                       if (value.isNotEmpty && SafeParse.toDouble(value) > 0) {
                         final regex = RegExp(
-                            r'^(\d+)?(\.\d{0,2})?$'); // Allows numbers with up to 2 decimal places
+                            r'^(\d+)?(\.\d{0,2})?$');
                         if (!regex.hasMatch(value)) {
                           targetCtrl.text = value.substring(
                               0,
-                              value.length -
-                                  1); // Revert to previous valid input
+                              value.length - 1);
                           targetCtrl.selection = TextSelection.collapsed(
-                              offset: targetCtrl
-                                  .text.length); // Keep cursor at the end
+                              offset: targetCtrl.text.length);
                         }
                       }
 
@@ -7184,14 +7301,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           ? MyntColors.textPrimaryDark
                           : MyntColors.textPrimary,
                     ),
-                    // prefixIcon: Container(
-                    //   margin: const EdgeInsets.all(12),
-                    //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                    //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
-                    // ),
                     controller: targetCtrl,
                     textAlign: TextAlign.start),
-              )),
+              ),
+            ),
+          ),
           const SizedBox(height: 10)
         ],
       ),
@@ -7212,7 +7326,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   light: MyntColors.textPrimary))),
           ],),
           const SizedBox(height: 10),
-          SizedBox(
+          Focus(
+            onKeyEvent: (node, event) => _handlePriceArrowKey(event, stopLossCtrl),
+            child: SizedBox(
               height: 40,
               width: 200,
               child: Semantics(
@@ -7227,16 +7343,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         : const Color(0xffF1F3F8),
                     onChanged: (value) {
                       if (value.isNotEmpty && SafeParse.toDouble(value) > 0) {
-                        final regex = RegExp(
-                            r'^(\d+)?(\.\d{0,2})?$'); // Allows numbers with up to 2 decimal places
+                        final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
                         if (!regex.hasMatch(value)) {
                           stopLossCtrl.text = value.substring(
-                              0,
-                              value.length -
-                                  1); // Revert to previous valid input
+                              0, value.length - 1);
                           stopLossCtrl.selection = TextSelection.collapsed(
-                              offset: stopLossCtrl
-                                  .text.length); // Keep cursor at the end
+                              offset: stopLossCtrl.text.length);
                         }
                       }
                       if (value.isEmpty) {
@@ -7262,14 +7374,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           ? MyntColors.textPrimaryDark
                           : MyntColors.textPrimary,
                     ),
-                    // prefixIcon: Container(
-                    //   margin: const EdgeInsets.all(12),
-                    //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                    //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
-                    // ),
                     controller: stopLossCtrl,
                     textAlign: TextAlign.start),
-              )),
+              ),
+            ),
+          ),
           const SizedBox(height: 10)
         ],
       ),
@@ -7290,7 +7399,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   light: MyntColors.textPrimary))),
           ],),
           const SizedBox(height: 10),
-          SizedBox(
+          Focus(
+            onKeyEvent: (node, event) => _handlePriceArrowKey(event, trailingTicksCtrl),
+            child: SizedBox(
               height: 40,
               width: 200,
               child: Semantics(
@@ -7346,7 +7457,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     ),
                     controller: trailingTicksCtrl,
                     textAlign: TextAlign.start),
-              ))
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -8173,23 +8286,24 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             : "",
         alid: '');
 
-    // Get close callback before async call
     final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+    final orderProv = ref.read(orderProvider);
+    orderProv.setOrderloader(true);
+    try {
+      await orderProv.placeGTTOrder(input, context);
 
-    await ref.read(orderProvider).placeGTTOrder(input, context);
+      final placeResult = orderProv.placeGttOrderModel;
+      final wasSuccessful = placeResult?.stat == "OI created";
 
-    // Check if placement was successful
-    final placeResult = ref.read(orderProvider).placeGttOrderModel;
-    final wasSuccessful = placeResult?.stat == "OI created";
-
-    // Close the draggable dialog and show success message
-    // Only close if sticky order window is not enabled
-    if (wasSuccessful && mounted) {
-      ResponsiveSnackBar.showSuccess(context, "GTT Order Placed Successfully");
-      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
-      if (!stickyOrderWindow && closeNotifier != null) {
-        closeNotifier.onClose();
+      if (wasSuccessful && mounted) {
+        ResponsiveSnackBar.showSuccess(context, "GTT Order Placed Successfully");
+        bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
+        if (!stickyOrderWindow && closeNotifier != null) {
+          closeNotifier.onClose();
+        }
       }
+    } finally {
+      orderProv.setOrderloader(false);
     }
   }
 
@@ -8227,23 +8341,24 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             : "",
         alid: '');
 
-    // Get close callback before async call
     final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+    final orderProv = ref.read(orderProvider);
+    orderProv.setOrderloader(true);
+    try {
+      await orderProv.placeOCOOrder(input, context);
 
-    await ref.read(orderProvider).placeOCOOrder(input, context);
+      final placeResult = orderProv.placeGttOrderModel;
+      final wasSuccessful = placeResult?.stat == "OI created";
 
-    // Check if placement was successful
-    final placeResult = ref.read(orderProvider).placeGttOrderModel;
-    final wasSuccessful = placeResult?.stat == "OI created";
-
-    // Close the draggable dialog and show success message
-    // Only close if sticky order window is not enabled
-    if (wasSuccessful && mounted) {
-      ResponsiveSnackBar.showSuccess(context, "OCO Order Placed Successfully");
-      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
-      if (!stickyOrderWindow && closeNotifier != null) {
-        closeNotifier.onClose();
+      if (wasSuccessful && mounted) {
+        ResponsiveSnackBar.showSuccess(context, "OCO Order Placed Successfully");
+        bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
+        if (!stickyOrderWindow && closeNotifier != null) {
+          closeNotifier.onClose();
+        }
       }
+    } finally {
+      orderProv.setOrderloader(false);
     }
   }
 
@@ -8508,10 +8623,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   String convertQtyOrAmtValue(String value, bool isQtyToAmount) {
     if (value.trim().isEmpty) return "";
+    if (!isQtyToAmount) return value;
     double ltp = double.tryParse(widget.orderArg.ltp ?? "0.0") ?? 0.0;
-    return isQtyToAmount
-        ? ((double.tryParse(value) ?? 0.0) ~/ ltp).toString()
-        : value;
+    final wsD = ref.read(websocketProvider).socketDatas[widget.scripInfo.token];
+    if (wsD != null) {
+      final wl = SafeParse.toDouble(wsD['lp']);
+      if (wl > 0) ltp = wl;
+    }
+    return ((double.tryParse(value) ?? 0.0) ~/ ltp).toString();
   }
 
   String convertLotOrQtyValue(String value, bool isLotToQty) {
@@ -8535,10 +8654,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     }
   }
 
-  // Get the final quantity for GTT/OCO order placement
+  /// Returns the API-ready qty for the GTT/OCO submit.
+  ///
+  /// MCX: input is lot count, multiply by lot size.
+  /// NSE/BSE: input is qty or amount depending on [_isQtyToAmount].
+  /// NFO/BFO: input is qty or lot depending on [_isGTTLotToQty].
   String getGTTFinalQuantity(String value) {
     if (value.trim().isEmpty) return "0";
-    if (_isStock) return value; // stocks: no amount toggle for GTT
+    if (widget.scripInfo.exch == 'MCX') {
+      int lotCount = int.tryParse(value) ?? 0;
+      return (lotCount * lotSize).toString();
+    }
+    if (_isStock) return convertQtyOrAmtValue(value, _isQtyToAmount);
     int inputValue = int.tryParse(value) ?? 0;
     return _isGTTLotToQty ? value : (inputValue * lotSize).toString();
   }

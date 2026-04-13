@@ -1041,11 +1041,6 @@ class _ModifyPlaceOrderScreenState
                                                           ? 999999
                                                           : frezQtyOrderSliceMaxLimit *
                                                               frezQty)) {
-                                                    qtyCtrl.text =
-                                                        qtyCtrl.text;
-                                                    // .substring(
-                                                    //     0,
-                                                    //     10); // Restrict max value
                                                     ResponsiveSnackBar
                                                         .showWarning(context,
                                                             "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");

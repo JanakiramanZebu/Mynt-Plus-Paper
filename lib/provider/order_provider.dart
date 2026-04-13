@@ -2560,6 +2560,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   modifyGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
+    toggleLoadingOn(true);
     try {
       _modifyGttOrderModel = await api.modifyGTTOrderAPI(input);
 
@@ -2589,12 +2590,13 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      notifyListeners();
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Modify GTT Order ", "Error": "$e"});
+    } finally {
+      toggleLoadingOn(false);
       notifyListeners();
     }
   }
@@ -2692,6 +2694,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   modifyOCOOrder(PlaceOcoOrderInput input, BuildContext context) async {
+    toggleLoadingOn(true);
     try {
       _modifyGttOrderModel = await api.modifyOCOOrderAPI(input);
 
@@ -2721,12 +2724,13 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      notifyListeners();
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Modify OCO Order ", "Error": "$e"});
+    } finally {
+      toggleLoadingOn(false);
       notifyListeners();
     }
   }
