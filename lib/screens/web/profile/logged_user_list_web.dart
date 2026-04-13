@@ -672,9 +672,14 @@ class _LoggedUserListWebState extends ConsumerState<LoggedUserListWeb> {
                                   splashColor: Colors.white.withOpacity(0.2),
                                   highlightColor: Colors.white.withOpacity(0.1),
                                   onTap: () async {
+                                    // Capture provider ref before dialog
+                                    // dismissal to avoid using WidgetRef
+                                    // after the widget unmounts.
+                                    final authProviderRef =
+                                        ref.read(authProvider);
                                     Navigator.of(dialogContext).pop();
-                                    await ref
-                                        .read(authProvider)
+                                    if (!context.mounted) return;
+                                    await authProviderRef
                                         .fetchLogout(context);
                                   },
                                   child: Center(

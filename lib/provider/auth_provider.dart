@@ -1030,11 +1030,16 @@ class AuthProvider extends DefaultChangeNotifier {
 
         notifyListeners();
 
-        // Navigation handling
+        // Navigation handling — guard with context.mounted to avoid
+        // using BuildContext after the widget tree has disposed.
+        if (!context.mounted) return;
+
         try {
           Navigator.pop(context);
         } catch (e) {
         }
+
+        if (!context.mounted) return;
 
         if (currentRouteName != Routes.loginScreen) {
           // Use GoRouter for web, Navigator for mobile
@@ -1047,8 +1052,9 @@ class AuthProvider extends DefaultChangeNotifier {
         }
       }
     } catch (e) {
-      ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
-      notifyListeners();
+      try {
+        ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      } catch (_) {}
     }
   }
 
@@ -2319,11 +2325,16 @@ class AuthProvider extends DefaultChangeNotifier {
   ifSessionExpired(BuildContext context) {
     // Check if we're already in the process of showing the login screen
     // to prevent multiple calls to this method
-    if (ConstantName.isSessionExpiring) return;
+    print('🔴 [SESSION] ifSessionExpired called — isSessionExpiring: ${ConstantName.isSessionExpiring}');
+    if (ConstantName.isSessionExpiring) {
+      print('🔴 [SESSION] BLOCKED — isSessionExpiring is already true, returning early');
+      return;
+    }
     ConstantName.isSessionExpiring = true;
 
     // Prepare session cleanup operations asynchronously
     Future.microtask(() {
+      print('🔴 [SESSION] Microtask started — running cleanup');
       // Close all open order/modify/GTT dialogs immediately (web only)
       if (kIsWeb) {
         OverlayManager.closeAll();
@@ -2367,13 +2378,20 @@ class AuthProvider extends DefaultChangeNotifier {
 
       ConstantName.sessCheck = false;
 
+      print('[SESSION] Cleanup done — checking navigation');
+      print('[SESSION] currentRouteName: $currentRouteName');
+      print('[SESSION] Routes.loginScreen: ${Routes.loginScreen}');
+      print('[SESSION] context.mounted: ${context.mounted}');
+
       // Navigate to login screen immediately without waiting for other operations
       if (currentRouteName != Routes.loginScreen) {
         // A short delay ensures that any pending UI operations are completed
         Future.delayed(Duration.zero, () {
+          print('[SESSION] Future.delayed fired — context.mounted: ${context.mounted}');
           if (context.mounted) {
             // Use GoRouter for web, Navigator for mobile
             if (kIsWeb) {
+              print('[SESSION] ✅ Navigating to login via context.go()');
               context.go(WebRoutes.login);
               ResponsiveSnackBar.showWarning(
                   context, "Session Expired, Please log in again");
@@ -2382,12 +2400,16 @@ class AuthProvider extends DefaultChangeNotifier {
                   context, Routes.loginScreen, (route) => false);
               warningMessage(context, "Session Expired, Please log in again");
             }
+          } else {
+            print('[SESSION] ❌ context.mounted is FALSE — navigation SKIPPED!');
           }
 
           // Reset the flag after navigation is complete
           ConstantName.isSessionExpiring = false;
+          print('[SESSION] isSessionExpiring reset to false');
         });
       } else {
+        print('[SESSION] Already on login screen — skipping navigation');
         ConstantName.isSessionExpiring = false;
       }
     });

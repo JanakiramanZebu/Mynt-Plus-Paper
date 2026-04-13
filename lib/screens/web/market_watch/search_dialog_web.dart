@@ -69,8 +69,11 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   @override
   void initState() {
     super.initState();
-    // Clear previous search results when dialog opens
-    ref.read(marketWatchProvider).searchClear();
+    // Clear previous search results when dialog opens.
+    // Defer to avoid "Tried to modify a provider while the widget tree was building".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(marketWatchProvider).searchClear();
+    });
 
     // Disable chart iframe pointer events when dialog opens
     _disableAllChartIframes();

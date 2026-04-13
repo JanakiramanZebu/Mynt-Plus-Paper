@@ -249,6 +249,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  /// Hides inline chart without notifying listeners.
+  /// Use in dispose() to avoid modifying provider during widget tree finalization.
+  void hideInlineChartSilent() {
+    _showInlineChart = false;
+  }
+
   // Method to clear all user data when switching accounts
   void clearUserData() {
     _userDetailModel = null;
