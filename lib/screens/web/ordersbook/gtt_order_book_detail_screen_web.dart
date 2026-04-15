@@ -148,7 +148,6 @@ class _GttOrderBookDetailScreenWebState
         }
       });
     } catch (e) {
-      print("Error setting up socket subscription: $e");
     }
   }
 

@@ -1505,7 +1505,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       message: 'Exit',
       child: GestureDetector(
         onTap: () {
-          debugPrint('Exit button pressed');
           // Clear hover state before navigating to prevent stuck hover
           _hoveredRowIndex.value = null;
           _handleExitPosition(position);
@@ -1602,7 +1601,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   iconColor: iconColor,
                   textColor: textColor,
                   onPressed: (ctx) {
-                    debugPrint('Add pressed');
                     _closePopover();
                     _hoveredRowIndex.value = null;
                     _handleAddPosition(position);
@@ -1620,7 +1618,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   iconColor: iconColor,
                   textColor: textColor,
                   onPressed: (ctx) {
-                    debugPrint('Convert pressed');
                     _closePopover();
                     _hoveredRowIndex.value = null;
                     _handleConvertPosition(position);
@@ -1642,7 +1639,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 iconColor: iconColor,
                 textColor: textColor,
                 onPressed: (ctx) {
-                  debugPrint('Info pressed');
                   _closePopover();
                   _hoveredRowIndex.value = null;
                   _showPositionDetail(position);
@@ -1663,7 +1659,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 iconColor: iconColor,
                 textColor: textColor,
                 onPressed: (ctx) {
-                  debugPrint('Chart pressed');
                   _closePopover();
                   _hoveredRowIndex.value = null;
                   _handleChartTap(position);

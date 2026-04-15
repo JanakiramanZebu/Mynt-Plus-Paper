@@ -64,7 +64,6 @@ class VersionProvider extends DefaultChangeNotifier {
     int update = int.parse(updatedversion.replaceAll('.', ''));
     int current = int.parse(currentVersion.replaceAll('.', ''));
 
-    print('completed ${update > current}  $update $current');
     return update > current;
   }
 }

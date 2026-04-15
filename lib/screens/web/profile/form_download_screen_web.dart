@@ -76,7 +76,6 @@ class _FormDownloadScreenWebState extends ConsumerState<FormDownloadScreenWeb> {
         if (mounted) setState(() => _modificationForms = forms);
       }
     } catch (e) {
-      debugPrint('Error fetching modification forms: $e');
     }
   }
 
@@ -100,7 +99,6 @@ class _FormDownloadScreenWebState extends ConsumerState<FormDownloadScreenWeb> {
         }
       }
     } catch (e) {
-      debugPrint('Error fetching ekyc form: $e');
     }
   }
 
@@ -118,7 +116,6 @@ class _FormDownloadScreenWebState extends ConsumerState<FormDownloadScreenWeb> {
         _openLink('https://rekycbe.mynt.in${json['path']}');
       }
     } catch (e) {
-      debugPrint('Error downloading CMR: $e');
     } finally {
       if (mounted) setState(() => _cmrLoading = false);
     }

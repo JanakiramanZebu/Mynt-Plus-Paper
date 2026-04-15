@@ -122,7 +122,6 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Reset both call and put global max OI values
       if (kDebugMode) {
-        print("=== OPTION CHAIN INIT: Resetting Global Max OI ===");
       }
 
       Future.delayed(const Duration(milliseconds: 500), () {
@@ -161,7 +160,6 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
   void dispose() {
     // Timer removed - no longer needed
     if (kDebugMode) {
-      print("=== OPTION CHAIN DISPOSE ===");
     }
     super.dispose();
   }
@@ -1755,8 +1753,6 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
       await orderProv.chngBsktName(orderProv.selectedBsktName, context, true);
 
       if (kDebugMode) {
-        print(
-            "WebSocket subscription refreshed for basket: ${orderProv.selectedBsktName}");
       }
     }
   }

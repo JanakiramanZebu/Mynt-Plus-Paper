@@ -231,7 +231,6 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
         setState(() {});
       }
     } catch (e) {
-      debugPrint('Date picker error: $e');
     }
   }
 
@@ -280,7 +279,6 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
         setState(() {});
       }
     } catch (e) {
-      debugPrint('Date picker error: $e');
     }
   }
 

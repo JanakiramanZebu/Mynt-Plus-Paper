@@ -60,7 +60,6 @@ mixin StocksAPI on ApiCore {
         
      return PortfolioResponse.fromJson(json as Map<String, dynamic>);
       } catch (e) {
-        print("Portfolio Analysis Error: $e");
        rethrow;
     }
 
@@ -135,7 +134,6 @@ mixin StocksAPI on ApiCore {
         body: jsonEncode(request.toJson()),
       );
 
-      print("response Strategy :::::: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -166,11 +164,9 @@ mixin StocksAPI on ApiCore {
           
       final json = jsonDecode(response.body);
 
-      print("Strategy List: $json");
 
       return StrategyList.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("Strategy List Error: $e");
       rethrow;
     }
   }
@@ -186,11 +182,9 @@ mixin StocksAPI on ApiCore {
           
       final json = jsonDecode(response.body);
 
-      print("Strategy List: $json");
 
       return _deploymessage = "Strategy deployed successfully";
     } catch (e) {
-      print("Strategy List Error: $e");
       rethrow;
     }
   }
@@ -207,9 +201,7 @@ mixin StocksAPI on ApiCore {
 
       return json;
 
-      print("Strategy List: $json");
     } catch (e) {
-      print("Strategy List Error: $e");
       rethrow;
     }
     // return {
@@ -353,7 +345,6 @@ mixin StocksAPI on ApiCore {
 
      
     } catch (e) {
-      print("Search Scrip Error: $e");
       rethrow;
     }
   }
@@ -367,7 +358,6 @@ mixin StocksAPI on ApiCore {
         "pos": positions.map((e) => e.toJson()).toList(),
       };
 
-      print("SpanCalc payload: ${positions.map((e) => e.toJson()).toList()}");
 
       // final String jKey = (prefs.clientSession != null && prefs.clientSession!.isNotEmpty)
       //     ? '&jKey=${prefs.clientSession}'
@@ -379,10 +369,8 @@ mixin StocksAPI on ApiCore {
           body: body);
 
       final json = jsonDecode(res.body);
-      print("SpanCalc response: ${res.body}");
       return SpanCalcResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("SpanCalc Error: $e");
       rethrow;
     }
   }
@@ -396,10 +384,8 @@ mixin StocksAPI on ApiCore {
       };
       final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(payload));
       final json = jsonDecode(res.body);
-      print("fetchbasketlist response: ${res.body}");
       return SavedStrategyModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("fetchbasketlist Error: $e");
       rethrow;
     }
   }
@@ -426,19 +412,14 @@ mixin StocksAPI on ApiCore {
         "investment_details":invesmentdetail,
       };
       
-      print("=== CREATE STRATEGY ===");
-      print("Create payload: ${jsonEncode(payload)}");
       final res = await apiClient.post(
         uri,
         headers: defaultHeaders,
         body: jsonEncode(payload),
       );
       final json = jsonDecode(res.body);
-      print("Create response status: ${res.statusCode}");
-      print("Create response body: ${res.body}");
       return json;
     } catch (e) {
-      print("createbasketsStrategy Error: $e");
       rethrow;
     }
   }
@@ -474,11 +455,9 @@ mixin StocksAPI on ApiCore {
       );
       
       final json = jsonDecode(res.body);
-      print("updatebasketsStrategy response: ${res.body}");
       return json;
 
     } catch (e) {
-      print("updatebasketsStrategy Error: $e");
       rethrow;
     }
   }
@@ -489,7 +468,6 @@ mixin StocksAPI on ApiCore {
       final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId, "type_in": "remove", "id": uuid}));
       return res;
     } catch (e) {
-      print("deletebasketsStrategy Error: $e");
       rethrow;
     }
     }
@@ -521,8 +499,6 @@ mixin StocksAPI on ApiCore {
       body: jsonEncode(payload),
     );
 
-    print("Backtest API Response Status: ${response.statusCode}");
-    print("Backtest API Response Body: ${response.body}");
 
     if (response.statusCode == 200) {
       try {
@@ -532,11 +508,9 @@ mixin StocksAPI on ApiCore {
         return null;
       }
     } else {
-      print("Backtest API Error: ${response.statusCode} ${response.body}");
       return null;
     }
   } catch (e) {
-    print("performBacktest Exception: $e");
     rethrow;
   }
 }

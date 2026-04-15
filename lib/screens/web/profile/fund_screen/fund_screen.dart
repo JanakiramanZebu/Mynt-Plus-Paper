@@ -627,20 +627,17 @@ class _FundScreenState extends ConsumerState<FundScreen> {
         openRazorpayWeb(
           options: fund.razorpayOptions!,
           onSuccess: (paymentId, orderId, signature) {
-            print("Razorpay onSuccess Callback => paymentId: $paymentId, orderId: $orderId, signature: $signature");
             if (mounted && paymentId != null && paymentId.isNotEmpty) {
               _handleWebPaymentSuccess(paymentId);
             }
           },
           onError: (code, description, paymentId) {
-            print("Razorpay onError Callback => code: $code, description: $description, paymentId: $paymentId");
             if (mounted) {
               _handleWebPaymentError();
             }
           },
         );
       } catch (e) {
-        print("Razorpay open error: $e");
         if (mounted) {
           warningMessage(context, "Failed to open payment gateway");
         }

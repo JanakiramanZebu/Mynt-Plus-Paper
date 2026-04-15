@@ -143,7 +143,6 @@ class _OrderBookDetailScreenWebState
         }
       });
     } catch (e) {
-      print("Error setting up socket subscription: $e");
     }
   }
 
@@ -971,30 +970,11 @@ class _OrderBookDetailScreenWebState
         _isProcessingModify = true;
       });
 
-      print(
-          '🟢 [DETAILS SHEET MODIFY] Starting modify order from details sheet');
-      print('🟢 [DETAILS SHEET MODIFY] Order Data:');
-      print('  - token: ${_orderData.token}');
-      print('  - exch: ${_orderData.exch}');
-      print('  - tsym: ${_orderData.tsym}');
-      print('  - norenordno: ${_orderData.norenordno}');
-      print('  - qty: ${_orderData.qty}');
-      print('  - prc: ${_orderData.prc}');
-      print('  - trgprc: ${_orderData.trgprc}');
-      print('  - trantype: ${_orderData.trantype}');
-      print('  - prd: ${_orderData.prd}');
-      print('  - sPrdtAli: ${_orderData.sPrdtAli}');
-      print('  - status: ${_orderData.status}');
-      print(
-          '🟢 [DETAILS SHEET MODIFY] widget.parentContext: ${widget.parentContext}');
-      print('🟢 [DETAILS SHEET MODIFY] mounted: $mounted');
 
       // Use same pattern as repeat order - fallback to rootNavigatorKey if parentContext is null
       final targetContext =
           widget.parentContext ?? getNavigatorContext();
       if (targetContext == null || !targetContext.mounted) {
-        print(
-            '🟢 [DETAILS SHEET MODIFY] ERROR: targetContext is null or not mounted');
         if (mounted) {
           setState(() {
             _isProcessingModify = false;
@@ -1005,7 +985,6 @@ class _OrderBookDetailScreenWebState
         return;
       }
 
-      print('🟢 [DETAILS SHEET MODIFY] targetContext is valid and mounted');
 
       await ref.read(marketWatchProvider).fetchScripInfo(
             "${_orderData.token}",
@@ -1015,14 +994,11 @@ class _OrderBookDetailScreenWebState
           );
 
       if (!mounted) {
-        print(
-            '🟢 [DETAILS SHEET MODIFY] Widget not mounted after fetchScripInfo');
         return;
       }
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
-        print('🟢 [DETAILS SHEET MODIFY] ERROR: scripInfo is null');
         if (mounted) {
           setState(() {
             _isProcessingModify = false;
@@ -1033,26 +1009,15 @@ class _OrderBookDetailScreenWebState
         return;
       }
 
-      print('🟢 [DETAILS SHEET MODIFY] scripInfo fetched successfully');
 
       // Create orderArgs before closing sheet (while we still have valid context)
       final orderArgs = _createOrderArgs(_orderData);
-      print('🟢 [DETAILS SHEET MODIFY] OrderArgs created:');
-      print('  - exchange: ${orderArgs.exchange}');
-      print('  - tSym: ${orderArgs.tSym}');
-      print('  - token: ${orderArgs.token}');
-      print('  - ltp: ${orderArgs.ltp}');
-      print('  - prd: ${orderArgs.prd}');
-      print('  - lotSize: ${orderArgs.lotSize}');
-      print('  - transType: ${orderArgs.transType}');
 
       // Close the sheet first (like repeat order does)
       if (mounted) {
         try {
           shadcn.closeSheet(context);
-          print('🟢 [DETAILS SHEET MODIFY] Sheet closed');
         } catch (e) {
-          print('🟢 [DETAILS SHEET MODIFY] Error closing sheet: $e');
           // Ignore sheet close errors
         }
       }
@@ -1064,8 +1029,6 @@ class _OrderBookDetailScreenWebState
       // Use targetContext (parent context from table) - same as hover modify uses
       // The hover modify uses 'context' which is the table context, same as targetContext here
       if (!targetContext.mounted) {
-        print(
-            '🟢 [DETAILS SHEET MODIFY] ERROR: targetContext not mounted after sheet close');
         if (mounted) {
           setState(() {
             _isProcessingModify = false;
@@ -1074,8 +1037,6 @@ class _OrderBookDetailScreenWebState
         return;
       }
 
-      print(
-          '🟢 [DETAILS SHEET MODIFY] targetContext still mounted, calling showDraggable');
 
       // Use targetContext for overlay - same as hover modify button uses 'context'
       // This is the table context which has the overlay
@@ -1086,7 +1047,6 @@ class _OrderBookDetailScreenWebState
         scripInfo: scripInfo,
       );
 
-      print('🟢 [DETAILS SHEET MODIFY] showDraggable called successfully');
     } catch (e) {
       final rootCtx = getNavigatorContext();
       if (rootCtx != null && rootCtx.mounted) {

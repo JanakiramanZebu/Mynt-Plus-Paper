@@ -187,20 +187,6 @@ class OrderActionHandler {
         return;
       }
 
-      print('🔵 [HOVER MODIFY] Starting modify order from hover button');
-      print('🔵 [HOVER MODIFY] Order Data:');
-      print('  - token: ${orderData.token}');
-      print('  - exch: ${orderData.exch}');
-      print('  - tsym: ${orderData.tsym}');
-      print('  - norenordno: ${orderData.norenordno}');
-      print('  - qty: ${orderData.qty}');
-      print('  - prc: ${orderData.prc}');
-      print('  - trgprc: ${orderData.trgprc}');
-      print('  - trantype: ${orderData.trantype}');
-      print('  - prd: ${orderData.prd}');
-      print('  - sPrdtAli: ${orderData.sPrdtAli}');
-      print('  - status: ${orderData.status}');
-      print('🔵 [HOVER MODIFY] Context mounted: ${context.mounted}');
 
       await ref.read(marketWatchProvider).fetchScripInfo(
             "${orderData.token}",
@@ -210,31 +196,18 @@ class OrderActionHandler {
           );
 
       if (!context.mounted) {
-        print('🔵 [HOVER MODIFY] Context not mounted after fetchScripInfo');
         return;
       }
 
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
       if (scripInfo == null) {
-        print('🔵 [HOVER MODIFY] ERROR: scripInfo is null');
         ResponsiveSnackBar.showError(
             context, 'Unable to fetch scrip information');
         return;
       }
 
-      print('🔵 [HOVER MODIFY] scripInfo fetched successfully');
 
       final orderArgs = _createOrderArgs(orderData);
-      print('🔵 [HOVER MODIFY] OrderArgs created:');
-      print('  - exchange: ${orderArgs.exchange}');
-      print('  - tSym: ${orderArgs.tSym}');
-      print('  - token: ${orderArgs.token}');
-      print('  - ltp: ${orderArgs.ltp}');
-      print('  - prd: ${orderArgs.prd}');
-      print('  - lotSize: ${orderArgs.lotSize}');
-      print('  - transType: ${orderArgs.transType}');
-      print(
-          '🔵 [HOVER MODIFY] Calling showDraggable with initialPosition: $modifyDialogPosition');
 
       // Show draggable modify order dialog
       ModifyPlaceOrderScreenWeb.showDraggable(
@@ -245,7 +218,6 @@ class OrderActionHandler {
         initialPosition: modifyDialogPosition,
       );
 
-      print('🔵 [HOVER MODIFY] showDraggable called successfully');
 
       // NOTE: Order book refresh is handled by ModifyPlaceOrderScreenWeb after successful modification
       // Do not refresh here as user hasn't submitted the modify yet

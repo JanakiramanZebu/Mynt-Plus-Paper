@@ -197,7 +197,6 @@ class AppRoutes {
       }
     } catch (e) {
       // Silently handle analytics errors to prevent app navigation issues
-      print("Analytics logging error: $e");
     }
   }
 
@@ -292,7 +291,6 @@ class AppRoutes {
               strategyToEdit = args;
             } else if (args != null) {
               // If args is not null but not AlgoStrategyModel, try to extract it
-              print("Warning: Unexpected argument type: ${args.runtimeType}");
             }
             return CreateAlgoStrategyScreen(strategyToEdit: strategyToEdit);
           },

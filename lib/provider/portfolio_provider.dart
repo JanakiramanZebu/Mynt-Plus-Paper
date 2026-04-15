@@ -34,6 +34,7 @@ import 'index_list_provider.dart';
 
 import 'group_pnl_chart_provider.dart';
 import 'websocket_provider.dart';
+import 'package:mynt_plus/utils/pip_service.dart';
 
 final portfolioProvider =
     ChangeNotifierProvider((ref) => PortfolioProvider(ref));
@@ -265,7 +266,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   changeTabIndex(int index) {
     _selectedTab = index;
-    print("selectedTab: $index");
 
     // Animate the TabController to the new index
 
@@ -285,7 +285,6 @@ changeHoldingsTabIndex(int index) {
   try {
     holdingsTabController.animateTo(index);
   } catch (e) {
-    print("TabController animation error: $e");
   }
   
   notifyListeners();
@@ -329,7 +328,6 @@ changeHoldingsTabIndex(int index) {
       }
       notifyListeners();
     } catch (e) {
-      print('Error: $e');
     } finally {
       _tphloader = false;
     }
@@ -770,7 +768,6 @@ changeHoldingsTabIndex(int index) {
           .logError
           .add({"type": "API Holdings", "Error": "$e"});
       notifyListeners();
-      print(e);
     } finally {
       _holdloader = false;
       _isRefreshingHoldings = false;
@@ -803,6 +800,10 @@ changeHoldingsTabIndex(int index) {
         _totUnRealMtm = '0.00';
         _posSelection = "All position";
         _postionBookModel = _tpostionBookModel;
+        // Push zeroed P&L to PiP (no positions)
+        if (PipService.isOpen) {
+          PipService.updatePipValues(_totPnL, _totMtm);
+        }
       }
 
       pref.setPosScrip(true);
@@ -908,6 +909,13 @@ changeHoldingsTabIndex(int index) {
               _mfQuotes = await api.getMFQutoes("${element.exchTsym![0].exch}",
                   "${element.exchTsym![0].token}");
 
+              if (_mfQuotes!.emsg ==
+                      "Session Expired :  Invalid Session Key" &&
+                  _mfQuotes!.stat == "Not_Ok") {
+                ref.read(authProvider).ifSessionExpired(context);
+                return;
+              }
+
               element.exchTsym![0].nav =
                   double.parse("${_mfQuotes!.nav ?? 0.00}").toStringAsFixed(2);
             }
@@ -949,7 +957,6 @@ changeHoldingsTabIndex(int index) {
           .logError
           .add({"type": "API MF Holdings", "Error": "$e"});
       notifyListeners();
-      print(e);
     } finally {
       _mfhloader = false;
     }
@@ -996,7 +1003,6 @@ changeHoldingsTabIndex(int index) {
 
   void timerfunc() {
     if (!times) {
-      print("Timer called");
       _timer = Timer.periodic(const Duration(milliseconds: 500), (Timer t) {
         times = true;
         pnlHoldCal();
@@ -1188,6 +1194,14 @@ changeHoldingsTabIndex(int index) {
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = unRealMtm.toStringAsFixed(2);
     _totBookedPnL = bookPnl.toStringAsFixed(2);
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
     // Use post-frame callback to avoid mouse tracker assertion errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -1291,6 +1305,13 @@ changeHoldingsTabIndex(int index) {
                     : "${ref.read(authProvider).deviceInfo["model"]}");
             _placeOrderModel = await api.getPlaceOrder(
                 placeOrderInput, ref.read(orderProvider).ip);
+
+            if (_placeOrderModel!.emsg ==
+                    "Session Expired :  Invalid Session Key" &&
+                _placeOrderModel!.stat == "Not_Ok") {
+              ref.read(authProvider).ifSessionExpired(context);
+              return;
+            }
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
               break;
@@ -1644,6 +1665,13 @@ changeHoldingsTabIndex(int index) {
               _placeOrderModel = await api.getPlaceOrder(
                   placeOrderInput, ref.read(orderProvider).ip);
 
+              if (_placeOrderModel!.emsg ==
+                      "Session Expired :  Invalid Session Key" &&
+                  _placeOrderModel!.stat == "Not_Ok") {
+                ref.read(authProvider).ifSessionExpired(context);
+                return;
+              }
+
                   if (_placeOrderModel!.stat! == "Ok") {
                     successMessage(context, "Position exited successfully.");
                   }
@@ -1871,27 +1899,19 @@ changeHoldingsTabIndex(int index) {
 // Fetching data from the api and stored in a variable
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
-      debugPrint('>>> fetchGroupName START');
-      debugPrint('Group Name: $name');
-      debugPrint('isCreateGrp: $isCreateGrp');
 
       // _posloader = true;
       _groupName = await api.createGroupName(name);
 
-      debugPrint('API Response Status: ${_groupName!.status}');
 
       if (_groupName!.status == "Data inserted") {
-        debugPrint('>>> Group created, fetching position group symbol...');
         //  ref.read(indexListProvider).bottomMenu(1);
         await fetchPosGroupSymbol(name, isCreateGrp);
-        debugPrint('>>> fetchPosGroupSymbol completed');
         successMessage(c, "Group '$name' created successfully");
         // Navigator.pop is already called in create_group_web.dart before this method
-        debugPrint('>>> fetchGroupName SUCCESS');
       } else {
         // Handle error cases
         final status = _groupName!.status ?? "Unknown error";
-        debugPrint('>>> fetchGroupName FAILED: $status');
         if (status.toLowerCase().contains("already exists") ||
             status.toLowerCase().contains("duplicate")) {
           warningMessage(c, "Group name '$name' already exists");
@@ -1900,9 +1920,6 @@ changeHoldingsTabIndex(int index) {
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('>>> fetchGroupName EXCEPTION');
-      debugPrint('Error: $e');
-      debugPrint('Stack: $stackTrace');
     } finally {
       // _posloader = false;
     }
@@ -2338,7 +2355,14 @@ changeHoldingsTabIndex(int index) {
       _totUnRealMtm = unRealMtm.toStringAsFixed(2);
       _totBookedPnL = bookPnl.toStringAsFixed(2);
     }
-
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
     // Use post-frame callback to avoid mouse tracker assertion errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -2544,13 +2568,9 @@ changeHoldingsTabIndex(int index) {
             if (livePos != null) {
               // Replace with live position data (has current qty, netqty, P&L, etc.)
               final liveMap = jsonDecode(jsonEncode(livePos)) as Map<String, dynamic>;
-              debugPrint(
-                  "DEBUG GROUP ITEM (live) -> ${element.posname} tsym:${livePos.tsym} exch:${livePos.exch} qty:${livePos.qty} netqty:${livePos.netqty} exp:${livePos.expDate}");
               groupListData.add(liveMap);
             } else {
               // No matching live position found - use saved data as fallback
-              debugPrint(
-                  "DEBUG GROUP ITEM (saved) -> ${element.posname} tsym:${pos.tsym} exch:${pos.exch} qty:${pos.qty} netqty:${pos.netqty} exp:${pos.expDate}");
               groupListData.add(posMap);
             }
           }
@@ -2583,7 +2603,6 @@ changeHoldingsTabIndex(int index) {
         }
       }
     } catch (e) {
-      print(e);
     }
 
     notifyListeners();
@@ -2788,10 +2807,6 @@ changeHoldingsTabIndex(int index) {
   // Position conversion
   Future<void> fetchPositionConverstion(
       PositionConvertionInput input, BuildContext context) async {
-    debugPrint('=== PROVIDER: fetchPositionConverstion STARTED ===');
-    debugPrint('Input - exch: ${input.exch}, prd: ${input.prd}, prevprd: ${input.prevprd}');
-    debugPrint('Input - qty: ${input.qty}, trantype: ${input.trantype}, tsym: ${input.tsym}');
-    debugPrint('Context mounted: ${context.mounted}');
 
     // Get display names for toast message
     final fromProduct = _getProductDisplayName(input.prevprd);
@@ -2799,24 +2814,16 @@ changeHoldingsTabIndex(int index) {
 
     try {
       toggleLoadingOn(true);
-      debugPrint('Calling API getPositionConvertion...');
 
       _positionConvertionModel = await api.getPositionConvertion(input);
 
-      debugPrint('API Response received');
-      debugPrint('Response stat: ${_positionConvertionModel?.stat}');
-      debugPrint('Response emsg: ${_positionConvertionModel?.emsg}');
 
       if (_positionConvertionModel!.stat == "Ok") {
-        debugPrint('Conversion SUCCESS - refreshing position book...');
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
-        debugPrint('Position book refreshed, popping dialog...');
-        debugPrint('Context still mounted before pop: ${context.mounted}');
 
         if (context.mounted) {
         Navigator.pop(context);
-          debugPrint('Dialog popped successfully');
 
           // Show success message with from/to product details
           final successMsg = "Position converted from $fromProduct to $toProduct";
@@ -2825,12 +2832,15 @@ changeHoldingsTabIndex(int index) {
       } else {
             successMessage(context, successMsg);
           }
-        } else {
-          debugPrint('ERROR: Context not mounted, cannot pop dialog');
         }
       } else {
-        debugPrint('Conversion FAILED - stat not Ok');
-        debugPrint('Error message: ${_positionConvertionModel!.emsg}');
+
+        if (_positionConvertionModel!.emsg ==
+                "Session Expired :  Invalid Session Key" &&
+            _positionConvertionModel!.stat == "Not_Ok") {
+          ref.read(authProvider).ifSessionExpired(context);
+          return;
+        }
 
         if (context.mounted) {
         Navigator.pop(context);
@@ -2841,14 +2851,9 @@ changeHoldingsTabIndex(int index) {
           } else {
             warningMessage(context, errorMsg);
       }
-        } else {
-          debugPrint('ERROR: Context not mounted, cannot show warning');
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('=== PROVIDER: EXCEPTION in fetchPositionConverstion ===');
-      debugPrint('Error: $e');
-      debugPrint('Stack trace: $stackTrace');
 
       ref
           .read(indexListProvider)
@@ -2865,7 +2870,6 @@ changeHoldingsTabIndex(int index) {
       }
     } finally {
       toggleLoadingOn(false);
-      debugPrint('=== PROVIDER: fetchPositionConverstion FINISHED ===');
     }
   }
 
@@ -3085,6 +3089,14 @@ changeHoldingsTabIndex(int index) {
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = totalUnRealMtm.toStringAsFixed(2);
     _totBookedPnL = totalBookedPnL.toStringAsFixed(2);
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
 
     // debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
     notifyListeners();
@@ -3109,7 +3121,6 @@ changeHoldingsTabIndex(int index) {
       }
       notifyListeners();
     } catch (e) {
-      print("Error in cusGrpSelectPosition: $e");
     }
   }
 

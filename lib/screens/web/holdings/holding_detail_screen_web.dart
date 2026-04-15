@@ -168,7 +168,6 @@ class _HoldingDetailScreenWebState
         }
       });
     } catch (e) {
-      print("Error setting up socket subscription: $e");
     }
   }
 
@@ -642,7 +641,6 @@ class _HoldingDetailScreenWebState
   Future<void> _handleBuy() async {
     if (_isProcessingBuy) return;
 
-    print("=== _handleBuy started ===");
 
     try {
       setState(() {
@@ -652,7 +650,6 @@ class _HoldingDetailScreenWebState
       // Get root navigator context - this is crucial for overlay access
       final rootContext = getNavigatorContext();
       if (rootContext == null) {
-        print("ERROR: Root context is null");
         if (mounted) {
           setState(() {
             _isProcessingBuy = false;
@@ -663,8 +660,6 @@ class _HoldingDetailScreenWebState
         return;
       }
 
-      print(
-          "Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
       final scripData = ref.read(marketWatchProvider);
 
       // Add timeout to prevent hanging
@@ -678,20 +673,16 @@ class _HoldingDetailScreenWebState
           .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
-          print("ERROR: fetchScripInfo timed out after 10 seconds");
           throw Exception("Request timed out");
         },
       );
 
-      print("Scrip info fetched successfully");
 
       if (!mounted) {
-        print("Widget not mounted, returning");
         return;
       }
 
       if (scripData.scripInfoModel == null) {
-        print("ERROR: scripInfoModel is null");
         if (mounted) {
           setState(() {
             _isProcessingBuy = false;
@@ -703,7 +694,6 @@ class _HoldingDetailScreenWebState
       }
 
       final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
-      print("Lot size: $lotSize");
 
       final OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: _exchTsym.exch ?? "",
@@ -721,7 +711,6 @@ class _HoldingDetailScreenWebState
         raw: {},
       );
 
-      print("Opening place order screen...");
       // Use parent context (from hold_table) if available, otherwise use root context
       final targetContext = widget.parentContext ?? rootContext;
 
@@ -734,9 +723,7 @@ class _HoldingDetailScreenWebState
             "isBskt": "",
           },
         );
-        print("Place order screen opened successfully");
       } else {
-        print("ERROR: targetContext is not mounted");
         if (mounted) {
           setState(() {
             _isProcessingBuy = false;
@@ -745,13 +732,11 @@ class _HoldingDetailScreenWebState
         return;
       }
 
-      print("Closing sheet...");
       // Close the sheet AFTER opening the order screen
       if (mounted) {
         try {
           shadcn.closeSheet(context);
         } catch (e) {
-          print("Error closing sheet: $e");
           // Ignore sheet close errors
         }
       }
@@ -761,10 +746,7 @@ class _HoldingDetailScreenWebState
           _isProcessingBuy = false;
         });
       }
-      print("=== _handleBuy completed successfully ===");
     } catch (e, stackTrace) {
-      print("ERROR in _handleBuy: $e");
-      print("Stack trace: $stackTrace");
 
       // Try to close sheet on error
       if (mounted) {
@@ -787,7 +769,6 @@ class _HoldingDetailScreenWebState
             showResponsiveWarningMessage(
                 rootCtx, "Error adding holding: ${e.toString()}");
           } catch (displayError) {
-            print("Failed to show error message: $displayError");
           }
         }
       }
@@ -823,7 +804,6 @@ class _HoldingDetailScreenWebState
   Future<void> _handleSell() async {
     if (_isProcessingSell) return;
 
-    print("=== _handleSell started ===");
 
     try {
       setState(() {
@@ -833,7 +813,6 @@ class _HoldingDetailScreenWebState
       // Get root navigator context - this is crucial for overlay access
       final rootContext = getNavigatorContext();
       if (rootContext == null) {
-        print("ERROR: Root context is null");
         if (mounted) {
           setState(() {
             _isProcessingSell = false;
@@ -845,7 +824,6 @@ class _HoldingDetailScreenWebState
       }
 
       if (_holdingData.saleableQty == null || _holdingData.saleableQty == 0) {
-        print("ERROR: No saleable quantity");
         if (mounted) {
           setState(() {
             _isProcessingSell = false;
@@ -855,7 +833,6 @@ class _HoldingDetailScreenWebState
           try {
             shadcn.closeSheet(context);
           } catch (e) {
-            print("Error closing sheet: $e");
           }
 
           // Small delay to ensure sheet is closed before showing dialog
@@ -975,8 +952,6 @@ class _HoldingDetailScreenWebState
         return;
       }
 
-      print(
-          "Fetching scrip info for token: ${_exchTsym.token}, exch: ${_exchTsym.exch}");
       final scripData = ref.read(marketWatchProvider);
 
       // Add timeout to prevent hanging
@@ -990,20 +965,16 @@ class _HoldingDetailScreenWebState
           .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
-          print("ERROR: fetchScripInfo timed out after 10 seconds");
           throw Exception("Request timed out");
         },
       );
 
-      print("Scrip info fetched successfully");
 
       if (!mounted) {
-        print("Widget not mounted, returning");
         return;
       }
 
       if (scripData.scripInfoModel == null) {
-        print("ERROR: scripInfoModel is null");
         if (mounted) {
           setState(() {
             _isProcessingSell = false;
@@ -1015,7 +986,6 @@ class _HoldingDetailScreenWebState
       }
 
       final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
-      print("Lot size: $lotSize");
 
       final OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: _exchTsym.exch ?? "",
@@ -1033,7 +1003,6 @@ class _HoldingDetailScreenWebState
         raw: {},
       );
 
-      print("Opening place order screen...");
       // Use parent context (from hold_table) if available, otherwise use root context
       final targetContext = widget.parentContext ?? rootContext;
 
@@ -1046,9 +1015,7 @@ class _HoldingDetailScreenWebState
             "isBskt": "",
           },
         );
-        print("Place order screen opened successfully");
       } else {
-        print("ERROR: targetContext is not mounted");
         if (mounted) {
           setState(() {
             _isProcessingSell = false;
@@ -1057,13 +1024,11 @@ class _HoldingDetailScreenWebState
         return;
       }
 
-      print("Closing sheet...");
       // Close the sheet AFTER opening the order screen
       if (mounted) {
         try {
           shadcn.closeSheet(context);
         } catch (e) {
-          print("Error closing sheet: $e");
           // Ignore sheet close errors
         }
       }
@@ -1073,10 +1038,7 @@ class _HoldingDetailScreenWebState
           _isProcessingSell = false;
         });
       }
-      print("=== _handleSell completed successfully ===");
     } catch (e, stackTrace) {
-      print("ERROR in _handleSell: $e");
-      print("Stack trace: $stackTrace");
 
       // Try to close sheet on error
       if (mounted) {
@@ -1099,7 +1061,6 @@ class _HoldingDetailScreenWebState
             showResponsiveWarningMessage(
                 rootCtx, "Error exiting holding: ${e.toString()}");
           } catch (displayError) {
-            print("Failed to show error message: $displayError");
           }
         }
       }

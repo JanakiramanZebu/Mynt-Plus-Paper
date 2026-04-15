@@ -446,7 +446,6 @@ class StocksProvider extends DefaultChangeNotifier {
 
       return _newsModel;
     } catch (e) {
-      print(e);
       // Fluttertoast.showToast(
       //     msg: "$e",
       //     backgroundColor: Colors.red,
@@ -462,7 +461,6 @@ class StocksProvider extends DefaultChangeNotifier {
       _globalIndicesModel = await api.fetchGlobalIndices();
       return _globalIndicesModel;
     } catch (e) {
-      print(e);
       Fluttertoast.showToast(
           msg: "$e",
           backgroundColor: Colors.red,
@@ -491,7 +489,6 @@ class StocksProvider extends DefaultChangeNotifier {
     } catch (e) {
       _isTradeActionLoaded = true;
       notifyListeners();
-      print("$e");
     }
   }
 
@@ -753,7 +750,6 @@ class StocksProvider extends DefaultChangeNotifier {
 // }
 //  }
     } catch (e) {
-      print(e);
     }
   }
 
@@ -763,7 +759,6 @@ class StocksProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print("$e");
     }
   }
 
@@ -772,7 +767,6 @@ class StocksProvider extends DefaultChangeNotifier {
       _caeventsModel = await api.getCAeventsdata();
       notifyListeners();
     } catch (e) {
-      print("$e");
     }
   }
 
@@ -787,7 +781,6 @@ class StocksProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      print("$e");
     }
   }
 
@@ -992,7 +985,6 @@ class StocksProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print("$e");
     }
   }
 
@@ -1007,7 +999,6 @@ class StocksProvider extends DefaultChangeNotifier {
       if (_topStockData.isNotEmpty) {
         input =
             _topStockData.map((e) => "${e.exch}|${e.token}").toSet().join("#");
-        print("input $input");
       }
 
       if (input.isNotEmpty) {
@@ -1037,7 +1028,6 @@ class StocksProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
     }
   }
 
@@ -1442,7 +1432,6 @@ Future<SpanCalcResponse?> calculateSpanForSelection({
         broker: 'ZEBU',
         datetime: DateTime.now().toIso8601String(),
       );
-print("request Strategy :::::: ${request.toJson()}");
       final response = await api.createStrategy(request);
 
       
@@ -1473,7 +1462,6 @@ print("request Strategy :::::: ${request.toJson()}");
       _getStrategyList = response;
       notifyListeners();
     } catch (e) {
-      print("Error: $e");
     }
 
     // return ;
@@ -1493,7 +1481,6 @@ print("request Strategy :::::: ${request.toJson()}");
       }
       notifyListeners();
     } catch (e) {
-      print("Error: $e");
     }
   }
 

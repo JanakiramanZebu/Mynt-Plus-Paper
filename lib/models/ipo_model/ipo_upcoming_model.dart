@@ -24,7 +24,6 @@ class Upcoming_ipo {
             }
           }
         } catch (e) {
-          print("Error parsing upcoming string: $e");
         }
       }
     }

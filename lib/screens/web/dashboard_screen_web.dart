@@ -876,65 +876,424 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           ],
         ),
         const SizedBox(height: 10),
-        // Index cards - responsive layout
-        if (hasIndices)
-          LayoutBuilder(
+        // Index cards + Algo Trading card in a row
+        SizedBox(
+          height: 130,
+          child: LayoutBuilder(
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
+              const algoCardWidth = 280.0;
               const cardSpacing = 12.0;
+              // Reserve space for the algo card on the right
+              final indicesAvailableWidth =
+                  availableWidth - algoCardWidth - cardSpacing;
+
               const minCardWidth = 140.0;
               final totalCards = indexValues.length;
               final totalSpacing = cardSpacing * (totalCards - 1);
-              final totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
+              final totalMinWidth =
+                  (minCardWidth * totalCards) + totalSpacing;
 
-              // Calculate card width
               double cardWidth;
               bool needsScrolling = false;
 
-              if (availableWidth >= totalMinWidth) {
-                // All cards fit, distribute evenly
-                cardWidth = (availableWidth - totalSpacing) / totalCards;
+              if (indicesAvailableWidth >= totalMinWidth) {
+                cardWidth =
+                    (indicesAvailableWidth - totalSpacing) / totalCards;
               } else {
-                // Need scrolling, use min width
                 cardWidth = minCardWidth;
                 needsScrolling = true;
               }
 
-              return SizedBox(
-                height: 100,
-                child: SingleChildScrollView(
-                  controller: _indexScrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: needsScrolling
-                      ? const ClampingScrollPhysics()
-                      : const NeverScrollableScrollPhysics(),
-                  child: Row(
-                    children: indexValues.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final item = entry.value;
-                      return Container(
-                        width: cardWidth,
-                        margin: EdgeInsets.only(
-                          right: index < indexValues.length - 1 ? cardSpacing : 0,
-                        ),
-                        child: _DashboardIndexCard(
-                          indexItem: item,
-                        ),
-                      );
-                    }).toList(),
+              return Row(
+                children: [
+                  // Left scroll button (outside scroll area)
+                  if (needsScrolling)
+                    _buildIndexScrollButton(
+                      context,
+                      icon: Icons.arrow_back_ios,
+                      onTap: () {
+                        if (_indexScrollController.hasClients) {
+                          final scrollAmount = cardWidth + cardSpacing;
+                          final newOffset =
+                              (_indexScrollController.offset - scrollAmount)
+                                  .clamp(
+                            0.0,
+                            _indexScrollController.position.maxScrollExtent,
+                          );
+                          _indexScrollController.animateTo(
+                            newOffset,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                      },
+                    ),
+                  if (needsScrolling) const SizedBox(width: 8),
+                  // Scrollable indices section
+                  Expanded(
+                    child: hasIndices
+                        ? SingleChildScrollView(
+                            controller: _indexScrollController,
+                            scrollDirection: Axis.horizontal,
+                            physics: needsScrolling
+                                ? const ClampingScrollPhysics()
+                                : const NeverScrollableScrollPhysics(),
+                            child: Row(
+                              children: indexValues
+                                  .asMap()
+                                  .entries
+                                  .map((entry) {
+                                final index = entry.key;
+                                final item = entry.value;
+                                return Container(
+                                  width: cardWidth,
+                                  margin: EdgeInsets.only(
+                                    right: index < indexValues.length - 1
+                                        ? cardSpacing
+                                        : 0,
+                                  ),
+                                  child: _DashboardIndexCard(
+                                    indexItem: item,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          )
+                        : Center(
+                            child:
+                                MyntLoader.simple(size: MyntLoaderSize.small),
+                          ),
                   ),
-                ),
+                  // Right scroll button (outside scroll area)
+                  if (needsScrolling) const SizedBox(width: 8),
+                  if (needsScrolling)
+                    _buildIndexScrollButton(
+                      context,
+                      icon: Icons.arrow_forward_ios,
+                      onTap: () {
+                        if (_indexScrollController.hasClients) {
+                          final scrollAmount = cardWidth + cardSpacing;
+                          final newOffset =
+                              (_indexScrollController.offset + scrollAmount)
+                                  .clamp(
+                            0.0,
+                            _indexScrollController.position.maxScrollExtent,
+                          );
+                          _indexScrollController.animateTo(
+                            newOffset,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                      },
+                    ),
+                  const SizedBox(width: cardSpacing),
+                  // Algo Trading card next to indices
+                  _buildAlgoTradingBannerCard(),
+                ],
               );
             },
-          )
-        else
-          SizedBox(
-            height: 100,
-            child: Center(
-              child: MyntLoader.simple(size: MyntLoaderSize.small),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAlgoTradingBannerCard() {
+    const Color accent = Color(0xFF4A1F8E);
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () async {
+          final Uri algoUri = Uri.parse('https://algo.zebuetrade.com/');
+          if (await canLaunchUrl(algoUri)) {
+            await launchUrl(
+              algoUri,
+              mode: LaunchMode.externalApplication,
+            );
+          }
+        },
+        child: Container(
+          width: 280,
+          height: 130,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: [0.0, 0.55, 1.0],
+              colors: [
+                Color(0xFF170B26),
+                Color(0xFF4A1F8E),
+                Color(0xFF7B3FB5),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.10),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withValues(alpha: 0.28),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Bottom-right glow (same as Tools card)
+              Positioned(
+                right: -70,
+                bottom: -70,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 240,
+                    height: 240,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFFB685FF).withValues(alpha: 0.65),
+                          const Color(0xFFB685FF).withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Top-left glow (same as Tools card)
+              Positioned(
+                left: -50,
+                top: -50,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0.06),
+                          Colors.white.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Stacked rotated icon (same as Tools card)
+                        SizedBox(
+                          width: 48,
+                          height: 42,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: 0,
+                                top: 8,
+                                child: Transform.rotate(
+                                  angle: -0.18,
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.22),
+                                      borderRadius:
+                                          BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                left: 6,
+                                top: 4,
+                                child: Transform.rotate(
+                                  angle: -0.09,
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.45),
+                                      borderRadius:
+                                          BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                left: 12,
+                                top: 0,
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius:
+                                        BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: accent.withValues(
+                                            alpha: 0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: SvgPicture.asset(
+                                      assets.boltIcon,
+                                      width: 18,
+                                      height: 18,
+                                      colorFilter: const ColorFilter.mode(
+                                        accent,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      'Algo Trading',
+                                      style: MyntWebTextStyles.body(
+                                        context,
+                                        color: Colors.white,
+                                        fontWeight: MyntFonts.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius:
+                                          BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      'NEW',
+                                      style: MyntWebTextStyles.caption(
+                                        context,
+                                        color: const Color(0xFF170B26),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Automated • Rule-based',
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: Colors.white
+                                      .withValues(alpha: 0.85),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Divider(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.18),
+                    ),
+                    const SizedBox(height: 6),
+                    Expanded(
+                      child: Text(
+                        'Create & deploy automated trading strategies with Zebu Algo.',
+                        style: MyntWebTextStyles.para(
+                          context,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIndexScrollButton(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Center(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: shadcn.Theme.of(context).colorScheme.card,
+                border: Border.all(
+                  color: shadcn.Theme.of(context).colorScheme.border,
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Icon(
+                  icon,
+                  size: 12,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                ),
+              ),
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 
@@ -962,11 +1321,32 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final bool darkMode = isDarkMode(context);
 
     final List<Map<String, dynamic>> tools = [
+      // Algo Trading card is now shown next to Indices section
+      // {
+      //   'title': 'Algo Trading',
+      //   'subtitle': 'Automated • Rule-based',
+      //   'description':
+      //       'Create, backtest & deploy automated trading strategies with Zebu Algo.',
+      //   'accentColor': const Color(0xFF4A1F8E),
+      //   'badge': 'NEW',
+      //   'filled': true,
+      //   'isIcon': true,
+      //   'icon': Icons.bolt_rounded,
+      //   'onTap': () async {
+      //     final Uri algoUri = Uri.parse('https://algo.zebuetrade.com/');
+      //     if (await canLaunchUrl(algoUri)) {
+      //       await launchUrl(
+      //         algoUri,
+      //         mode: LaunchMode.externalApplication,
+      //       );
+      //     }
+      //   },
+      // },
       {
         'title': 'MF Stratergy',
       'subtitle': 'Mutual Funds • Smart Investing',
     'description': 'Create and invest in curated mutual fund baskets with a single tap. Diversify your portfolio and manage multiple funds effortlessly.',
-        'badge': 'NEW',
+        'badge': null,
         'isIcon' :false,
         'accentColor': const Color(0xFF16C4C5),
         'svgAsset': assets.mfIcon,
@@ -982,7 +1362,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'description':
             'Automate trades via TradingView webhook alerts with real-time order execution.',
         'accentColor': const Color(0xFFEC4899),
-        'badge': 'NEW',
+        'badge': null,
         'icon': Icons.webhook,
         'isIcon' :true,
         'onTap': () {
@@ -997,7 +1377,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'description':
             'Create and manage SIP baskets to automate your equity investments with ease.',
         'accentColor': const Color(0xFF0EA5E9),
-        'badge': 'NEW',
+        'badge': null,
         'icon': Icons.auto_graph_rounded,
         'isIcon' :true,
         'onTap': () {
@@ -1014,7 +1394,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'description':
             'Ultra-fast one-tap order execution built for high-speed intraday & index traders.',
         'accentColor': const Color(0xFF3B82F6),
-        'badge': 'NEW',
+        'badge': null,
         'icon': Icons.rocket_launch_rounded,
         'isIcon' :true,
         'onTap': () {
@@ -1029,7 +1409,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'description':
             'Design, analyze & visualize complex option strategies with real-time payoff charts.',
         'accentColor': const Color(0xFF8B5CF6),
-        'badge': 'NEW',
+        'badge': null,
         'icon': Icons.show_chart,
         'isIcon' :true,
         'onTap': () {
@@ -1123,6 +1503,314 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         final tool = entry.value;
                         final Color accent = tool['accentColor'] as Color;
                         final String? badge = tool['badge'] as String?;
+                        final bool filled = tool['filled'] == true;
+
+                        if (filled) {
+                          return MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                (tool['onTap'] as Function).call();
+                              },
+                              child: Container(
+                                width: cardWidth,
+                                margin: EdgeInsets.only(
+                                    right: index < tools.length - 1
+                                        ? cardSpacing
+                                        : 0),
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    stops: [0.0, 0.55, 1.0],
+                                    colors: [
+                                      Color(0xFF170B26),
+                                      Color(0xFF4A1F8E),
+                                      Color(0xFF7B3FB5),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.10),
+                                    width: 1,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF4A1F8E)
+                                          .withValues(alpha: 0.28),
+                                      blurRadius: 18,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Positioned(
+                                      right: -70,
+                                      bottom: -70,
+                                      child: IgnorePointer(
+                                        child: Container(
+                                          width: 240,
+                                          height: 240,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: RadialGradient(
+                                              colors: [
+                                                const Color(0xFFB685FF)
+                                                    .withValues(alpha: 0.65),
+                                                const Color(0xFFB685FF)
+                                                    .withValues(alpha: 0.0),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: -50,
+                                      top: -50,
+                                      child: IgnorePointer(
+                                        child: Container(
+                                          width: 160,
+                                          height: 160,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: RadialGradient(
+                                              colors: [
+                                                Colors.white
+                                                    .withValues(alpha: 0.06),
+                                                Colors.white
+                                                    .withValues(alpha: 0.0),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: 64,
+                                                height: 56,
+                                                child: Stack(
+                                                  children: [
+                                                    Positioned(
+                                                      left: 0,
+                                                      top: 10,
+                                                      child: Transform.rotate(
+                                                        angle: -0.18,
+                                                        child: Container(
+                                                          width: 44,
+                                                          height: 44,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white
+                                                                .withValues(
+                                                                    alpha:
+                                                                        0.22),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        11),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      left: 8,
+                                                      top: 5,
+                                                      child: Transform.rotate(
+                                                        angle: -0.09,
+                                                        child: Container(
+                                                          width: 44,
+                                                          height: 44,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white
+                                                                .withValues(
+                                                                    alpha:
+                                                                        0.45),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        11),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      left: 16,
+                                                      top: 0,
+                                                      child: Container(
+                                                        width: 44,
+                                                        height: 44,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(11),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: accent
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.4),
+                                                              blurRadius: 8,
+                                                              offset:
+                                                                  const Offset(
+                                                                      0, 3),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: Center(
+                                                          child: tool['isIcon'] ==
+                                                                  true
+                                                              ? Icon(
+                                                                  tool['icon']
+                                                                      as IconData,
+                                                                  size: 24,
+                                                                  color: const Color(
+                                                                      0xFF4A1F8E),
+                                                                )
+                                                              : SvgPicture.asset(
+                                                                  tool['svgAsset']
+                                                                      as String,
+                                                                  width: 24,
+                                                                  height: 24,
+                                                                  colorFilter:
+                                                                      const ColorFilter
+                                                                          .mode(
+                                                                    Color(
+                                                                        0xFF4A1F8E),
+                                                                    BlendMode
+                                                                        .srcIn,
+                                                                  ),
+                                                                ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Flexible(
+                                                          child: Text(
+                                                            tool['title']
+                                                                as String,
+                                                            style: MyntWebTextStyles
+                                                                .body(
+                                                              context,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  MyntFonts
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (badge != null) ...[
+                                                          const SizedBox(
+                                                              width: 6),
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color:
+                                                                  Colors.white,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5),
+                                                            ),
+                                                            child: Text(
+                                                              'NEW',
+                                                              style: MyntWebTextStyles
+                                                                  .caption(
+                                                                context,
+                                                                color: const Color(
+                                                                    0xFF170B26),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 3),
+                                                    Text(
+                                                      tool['subtitle']
+                                                          as String,
+                                                      style: MyntWebTextStyles
+                                                          .para(
+                                                        context,
+                                                        color: Colors.white
+                                                            .withValues(
+                                                                alpha: 0.85),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow
+                                                          .ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Divider(
+                                            height: 1,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.18),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Expanded(
+                                            child: Text(
+                                              tool['description'] as String,
+                                              style: MyntWebTextStyles.para(
+                                                context,
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.85),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }
 
                         return MouseRegion(
                           cursor: SystemMouseCursors.click,
@@ -1790,26 +2478,17 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
                     onTap: () {
-                      debugPrint(
-                          "See all clicked, route: ${Routes.tradeActionScreen}, tabIndex: $tabIndex");
-                      debugPrint(
-                          "WebNavigationHelper.isAvailable: ${WebNavigationHelper.isAvailable}");
 
                       if (WebNavigationHelper.isAvailable) {
                         try {
                           WebNavigationHelper.navigateTo(
                               Routes.tradeActionScreen,
                               arguments: tabIndex);
-                          debugPrint(
-                              "Navigation called via WebNavigationHelper with tabIndex: $tabIndex");
                         } catch (e) {
-                          debugPrint("WebNavigationHelper error: $e");
                           // Fallback to direct navigation
                           _navigateToTradeAction(context, tabIndex);
                         }
                       } else {
-                        debugPrint(
-                            "WebNavigationHelper not available, using direct navigation");
                         _navigateToTradeAction(context, tabIndex);
                       }
                     },
@@ -1899,9 +2578,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         Routes.tradeActionScreen,
         arguments: tabIndex,
       );
-      debugPrint("Direct navigation attempted with tabIndex: $tabIndex");
     } catch (e) {
-      debugPrint("Direct navigation error: $e");
       // Last resort: try MaterialPageRoute
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -1950,12 +2627,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
-              debugPrint('Portfolio Analysis card tapped');
               if (WebNavigationHelper.isAvailable) {
-                debugPrint('Navigating to portfolio analysis');
                 WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
-              } else {
-                debugPrint('WebNavigationHelper not available');
               }
             },
             child: Container(
@@ -2075,7 +2748,6 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       final marketWatch = ref.read(marketWatchProvider);
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
-      debugPrint("Error showing all indices bottom sheet: $e");
     }
   }
 }
@@ -2238,7 +2910,6 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
               await marketWatch.calldepthApis(context, depthArgs, "");
             }
           } catch (e) {
-            debugPrint("Error tapping index: $e");
           }
         },
         child: LayoutBuilder(
@@ -2475,7 +3146,6 @@ class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
               await marketWatch.calldepthApis(context, depthArgs, "");
             }
           } catch (e) {
-            debugPrint("Error tapping stock: $e");
           }
         },
         child: Container(
@@ -2733,7 +3403,6 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                   await marketWatch.calldepthApis(context, depthArgs, "");
                 }
               } catch (e) {
-                debugPrint("Error tapping stock: $e");
               }
             },
             child: Container(

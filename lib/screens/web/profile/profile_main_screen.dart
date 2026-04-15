@@ -1005,7 +1005,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                               );
 
                               // After successful password change, logout on web
-                              if (changePassword.changepasswordmodel?.stat == "Ok" && mounted) {
+                              if (changePassword.changepasswordmodel?.stat == "Ok" && mounted && context.mounted) {
                                 ref.read(authProvider).fetchLogout(context);
                               }
                             },

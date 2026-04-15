@@ -224,7 +224,6 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
         });
       }
     } catch (e) {
-      debugPrint('Date picker error: $e');
     }
   }
 

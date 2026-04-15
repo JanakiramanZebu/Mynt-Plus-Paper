@@ -36,7 +36,6 @@ class _MfCommonSearchWebState extends ConsumerState<MfCommonSearchWeb> {
 
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
-        print("TextFormField is focused");
       }
     });
 

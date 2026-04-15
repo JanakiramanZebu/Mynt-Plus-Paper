@@ -1,16 +1,18 @@
 class LinkedScrips {
   String? requestTime;
   String? stat;
+  String? emsg;
   List<Equls>? equls;
   List<Futures>? fut;
   List<OptionExp>? optExp;
 
   LinkedScrips(
-      {this.requestTime, this.stat, this.equls, this.fut, this.optExp});
+      {this.requestTime, this.stat, this.emsg, this.equls, this.fut, this.optExp});
 
   LinkedScrips.fromJson(Map<String, dynamic> json) {
     requestTime = json['request_time'];
     stat = json['stat'];
+    emsg = json['emsg'];
     if (json['equls'] != null) {
       equls = <Equls>[];
       json['equls'].forEach((v) {
@@ -35,6 +37,7 @@ class LinkedScrips {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['request_time'] = requestTime;
     data['stat'] = stat;
+    data['emsg'] = emsg;
     if (equls != null) {
       data['equls'] = equls!.map((v) => v.toJson()).toList();
     }

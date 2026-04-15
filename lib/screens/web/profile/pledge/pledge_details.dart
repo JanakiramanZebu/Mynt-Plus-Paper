@@ -65,8 +65,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       // final myController = TextEditingController(text: ledgerdata.selectnetpledge.text);
       // String selectedValue = ledgerdata.segmentvalue;
       String? selectedValue;
-      print(
-          "$selectedValue selectedValueselectedValueselectedValueselectedValue");
       //     if (ledgerdata.pledgeandunpledge!.data!.isNotEmpty) {
       //       for (var i = 0; i < ledgerdata.pledgeandunpledge!.data!.length; i++) {
       //         final val = ledgerdata.pledgeandunpledge!.data![i];
@@ -108,7 +106,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: false,
                   ),
                 );
-                print("Added: $segment");
               } else {
                 dropdownItems.add(
                   DropdownItem(
@@ -117,7 +114,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: false,
                   ),
                 );
-                print("No matching company code for $segment");
               }
               dropdownItems.add(
                 DropdownItem(
@@ -135,7 +131,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("Added: $segment");
               } else {
                 dropdownItems.add(
                   DropdownItem(
@@ -144,7 +139,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("No matching company code for $segment");
               }
               dropdownItems.add(
                 DropdownItem(
@@ -162,7 +156,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("Added: $segment");
               } else {
                 dropdownItems.add(
                   DropdownItem(
@@ -171,7 +164,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("No matching company code for $segment");
               }
               dropdownItems.add(
                 DropdownItem(
@@ -190,7 +182,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                   isEnabled: true,
                 ),
               );
-              print("Added: $segment");
             } else {
               dropdownItems.add(
                 DropdownItem(
@@ -199,7 +190,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                   isEnabled: false,
                 ),
               );
-              print("No matching company code for $segment");
             }
             dropdownItems.add(
               DropdownItem(
@@ -209,8 +199,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
               ),
             );
           }
-        } else {
-          print("Segment $segment is not in segmentMap");
         }
       }
 
@@ -219,7 +207,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       dropdownItems =
           dropdownItems.where((item) => seen.add(item.value)).toList();
 
-      print("${dropdownItems} printprintprintpritn");
 
       return WillPopScope(
         onWillPop: () async {
@@ -227,8 +214,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
             ledgerdata.changesegvaldummy('');
           }
           Navigator.pop(context);
-          print(
-              "objectobjectobjectobjectobjectobjectobjectobject ${screenheight * 0.00038}");
           return true;
         },
         child: Stack(

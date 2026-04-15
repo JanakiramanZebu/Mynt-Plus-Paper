@@ -146,7 +146,6 @@ class NetworkStateProvider extends ChangeNotifier {
           .logError
           .add({"type": "Internet connection", "Error": "$e"});
       notifyListeners();
-      print('Couldn\'t check connectivity status   $e');
       return;
     }
 
@@ -168,7 +167,6 @@ class NetworkStateProvider extends ChangeNotifier {
     _isNetworkTypeChange = _detectNetworkTypeChange(_previousConnectionStatus, result);
     if (_isNetworkTypeChange) {
       _lastNetworkChange = DateTime.now();
-      print('NetworkStateProvider: Network type changed from $_previousConnectionStatus to $result');
     }
 
     if (_connectionStatus == ConnectivityResult.none) {
@@ -180,7 +178,6 @@ class NetworkStateProvider extends ChangeNotifier {
       ref.read(websocketProvider).closeSocket(true);
       ref.read(websocketProvider).websockConn(false);
       
-      print('NetworkStateProvider: Connection lost. Consecutive failures: $_consecutiveFailures');
     } else {
       // Connection available
       final wasDisconnected = _previousConnectionStatus == ConnectivityResult.none;
@@ -252,7 +249,6 @@ class NetworkStateProvider extends ChangeNotifier {
     } catch (e) {
       _connectionStatusMessage = "Retry failed. Please check your connection.";
       _consecutiveFailures++;
-      print('NetworkStateProvider: Manual retry failed: $e');
     } finally {
       _isManualRetry = false;
       notifyListeners();
@@ -280,7 +276,6 @@ class NetworkStateProvider extends ChangeNotifier {
       
       // Force websocket reconnection on network type changes
       if (_isNetworkTypeChange) {
-        print('NetworkStateProvider: Forcing websocket reconnection due to network type change');
         wsProvider.closeSocket(true);
         
         // Small delay to ensure clean disconnection
@@ -291,16 +286,12 @@ class NetworkStateProvider extends ChangeNotifier {
       final subscriptionManager = ref.read(subscriptionManagerProvider);
       
       if (!subscriptionManager.hasActiveSubscriptions) {
-        print('🌐 NetworkStateProvider: No active subscriptions to restore');
         subscriptionManager.printCurrentState();
       } else {
-        print('🌐 NetworkStateProvider: Found ${subscriptionManager.subscriptionCount} active subscriptions');
-        print('🌐 NetworkStateProvider: Calling SubscriptionManager.forceReconnection()...');
         
         // Use SubscriptionManager's efficient batch reconnection
         await subscriptionManager.forceReconnection();
         
-        print('🌐 NetworkStateProvider: SubscriptionManager restoration call completed');
       }
       
       // Restore legacy subscriptions for compatibility (existing code)
@@ -310,7 +301,6 @@ class NetworkStateProvider extends ChangeNotifier {
       await _restoreTabBasedSubscriptions();
       
     } catch (e) {
-      print('NetworkStateProvider: Error during subscription restoration: $e');
       _connectionStatusMessage = "Failed to restore some data";
       _consecutiveFailures++;
     } finally {
@@ -371,24 +361,10 @@ class NetworkStateProvider extends ChangeNotifier {
   void _printRestorationDebugInfo() {
     final subscriptionManager = ref.read(subscriptionManagerProvider);
     
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('🔄 NETWORK RESTORATION DEBUG INFO');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('🌐 Network Change Type: ${_isNetworkTypeChange ? "Network Switch" : "Reconnection"}');
-    print('📶 Previous Connection: $_previousConnectionStatus');
-    print('📶 Current Connection: $_connectionStatus');
-    print('📊 Quality Score: $_connectionQualityScore');
-    print('🔢 Active Subscriptions: ${subscriptionManager.subscriptionCount}');
     
     if (subscriptionManager.hasActiveSubscriptions) {
       final debugInfo = subscriptionManager.getDebugInfo();
-      print('📋 Subscription Details:');
-      print('   - Total Active: ${debugInfo['activeSubscriptions']}');
-      print('   - App State: ${debugInfo['currentState']}');
-      print('   - Network Status: ${debugInfo['lastNetworkStatus']}');
     }
     
-    print('⏰ Restoration Start Time: ${DateTime.now().toIso8601String()}');
-    print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
   }
 }

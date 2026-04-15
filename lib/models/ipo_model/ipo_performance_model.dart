@@ -25,7 +25,6 @@ class IpoPerformanceModel {
             }
           }
         } catch (e) {
-          print("Error parsing data string: $e");
         }
       }
     }

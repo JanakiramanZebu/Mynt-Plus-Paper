@@ -219,7 +219,6 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
         await marketWatch.calldepthApis(context, depthArgs, "");
       }
     } catch (e) {
-      debugPrint("Error in index tap: $e");
     }
   }
 }
@@ -342,7 +341,6 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
         await marketWatch.calldepthApis(context, depthArgs, "");
       }
     } catch (e) {
-      debugPrint("Error in index tap: $e");
     }
   }
 
@@ -379,7 +377,6 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
       }
     } catch (e) {
       // Log or handle the error
-      debugPrint("Error in index onLongPress: $e");
     }
   }
 }

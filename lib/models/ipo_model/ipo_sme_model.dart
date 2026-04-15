@@ -25,7 +25,6 @@ class SmeIpoModel {
             }
           }
         } catch (e) {
-          print("Error parsing SMEIPO string: $e");
         }
       }
     }
@@ -159,7 +158,6 @@ class SMEIPO {
             }
           }
         } catch (e) {
-          print("Error parsing categoryDetails string: $e");
         }
       }
     }
@@ -207,7 +205,6 @@ class SMEIPO {
             }
           }
         } catch (e) {
-          print("Error parsing subCategorySettings string: $e");
         }
       }
     }

@@ -254,7 +254,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           .join("#");
 
       if (tokens.isNotEmpty) {
-        print("Subscribing to alert tokens: $tokens");
         ref.read(websocketProvider).establishConnection(
               channelInput: tokens,
               task: "d", // Subscribe with depth for web
@@ -262,7 +261,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             );
       }
     } catch (e) {
-      print("Error subscribing to alert tokens: $e");
     }
   }
 

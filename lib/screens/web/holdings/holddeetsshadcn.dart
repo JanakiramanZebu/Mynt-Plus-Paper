@@ -75,7 +75,6 @@ class DropdownMenuExample1 extends StatelessWidget {
         ).future.then((_) {
           // Called when the dropdown is closed.
           if (kDebugMode) {
-            print('Closed');
           }
         });
       },

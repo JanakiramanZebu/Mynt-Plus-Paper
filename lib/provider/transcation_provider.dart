@@ -421,8 +421,6 @@ class TranctionProvider extends DefaultChangeNotifier {
     String orderNo,
     String upiTranID,
   ) async {
-    print(
-        "fetchUpiPaymentstatus called with orderNo: $orderNo, upiTranID: $upiTranID");
     //final localstorage = await SharedPreferences.getInstance();
     try {
       if (!context.mounted) {
@@ -430,7 +428,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
       togglefundLoading(true);
       _hdfcUPIStatus = await api.getHdfcUPIStatus(orderNo, upiTranID);
-      print("UPI Apps Payment Status Response");
       if (!context.mounted) {
         return false;
       }
@@ -586,7 +583,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _bankdetails = await api.getbankDetails();
     } catch (e) {
-      print("Failed to fetch client bank details: $e");
       ref
           .read(indexListProvider)
           .logError
@@ -626,8 +622,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       BuildContext context, String upiId, String clientId, String accno) async {
     try {
       togglefundLoading(true);
-      print(
-          "UPI ID Payment Initiation: upiId=$upiId, clientId=$clientId, accno=$accno, bankname=$_bankname, segment=$_textValue");
       _hdfcpaymentdata =
           await api.getUPIIDPayment(upiId, clientId, accno, _bankname);
 
@@ -639,7 +633,6 @@ class TranctionProvider extends DefaultChangeNotifier {
 
         return; // Stop the flow if UPI ID is invalid
       }
-      print("HDFC BANK $hdfcpaymentdata");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
       ref
@@ -683,8 +676,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       String clientid, String name) async {
     try {
       togglefundLoading(true);
-      print(
-          "UPI Apps Payment Initiation: amt=$amt, bankaccno=$bankaccno, clientid=$clientid, name=$name, segment=$_textValue");
       _hdfcdirectpayment =
           await api.getUPIAppsPayment(amt, _allacc, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -1037,7 +1028,6 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
     _allacc =
         "$accno${items.isNotEmpty ? '!' : ''}${getFormattedAccountNumbers(items)}";
-    print("_allacc $_allacc");
   }
 
   String setAccountis(AccountItem item) {
@@ -1118,7 +1108,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
       togglefundLoading(true);
       _hdfcpaymentstatus = await api.getHdfcPaymentstatus(ordno, upiTransid);
-      print("UPI ID Payment Status Response  [32m");
       if (!context.mounted) {
         return false;
       }
@@ -1181,10 +1170,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       togglefundLoading(true);
       _razorpayOptions = null;
-      print(
-          "Net Banking Payment Initiation: amt=$amt, accno=$accno, name=$name, ifsc=$ifsc, segment=$_textValue");
       _razorpay = await api.getrazorpay(amt, accno, name, ifsc);
-      print("Razorpay Order Full Response => ${_razorpay?.toJson()}");
       if (_razorpay?.status == "created") {
         _razorpayOptions = {
           'key': 'rzp_live_M3tazzVCcFf8Iq',
@@ -1219,14 +1205,11 @@ class TranctionProvider extends DefaultChangeNotifier {
             'max_count': 0,
           },
         };
-        print("Razorpay Options => $_razorpayOptions");
         notifyListeners();
       } else {
         notifyListeners();
       }
     } catch (e, stackTrace) {
-      print("Razorpay Order Error => $e");
-      print("Razorpay Order StackTrace => $stackTrace");
       ref
           .read(indexListProvider)
           .logError
@@ -1242,10 +1225,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       togglefundLoading(true);
       _razorpayTranstationRes = await api.getrazorpayStatus(paymentid);
-      print("Razorpay Payment Status Full Response => ${_razorpayTranstationRes?.toJson()}");
     } catch (e, stackTrace) {
-      print("Razorpay Status Error => $e");
-      print("Razorpay Status StackTrace => $stackTrace");
       ref
           .read(indexListProvider)
           .logError
@@ -1290,12 +1270,10 @@ class TranctionProvider extends DefaultChangeNotifier {
         withdrawamount.clear();
         fetchPaymentWithDrawStatus(context);
       } else {
-        print("Withdrawal failed with message: ${_paymentWithdraw!.msg}");
         warningMessage(
             context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
       }
     } catch (e) {
-      print("Withdrawal error: ${e.toString()}");
       ref
           .read(indexListProvider)
           .logError

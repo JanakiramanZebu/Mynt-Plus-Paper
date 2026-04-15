@@ -143,7 +143,6 @@ mixin IPOApi on ApiCore {
 
       return MainStreamIpoModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      print("object IPO::::::: $e");
       rethrow;
     }
   }

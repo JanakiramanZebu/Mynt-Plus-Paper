@@ -213,7 +213,6 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     marketWatch.scripdepthsize(false);
                     await marketWatch.calldepthApis(context, depthArgs, "");
                   } catch (e) {
-                    debugPrint('Error opening chart: $e');
                   } finally {
                     if (mounted) {
                       Future.delayed(const Duration(milliseconds: 500), () {
@@ -516,7 +515,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                             await _placeOrderInput(
                                                 context, depthData, true);
                                           } catch (e) {
-                                            print('Buy button error: $e');
                                           }
                                         },
                                       ),
@@ -538,7 +536,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                             await _placeOrderInput(
                                                 context, depthData, false);
                                           } catch (e) {
-                                            print('Sell button error: $e');
                                           }
                                         },
                                       ),
@@ -608,7 +605,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                                 tsym: depthArgs.tsym,
                                               );
                                         } catch (e) {
-                                          debugPrint('Error opening chart: $e');
                                         } finally {
                                           if (mounted) {
                                             Future.delayed(
@@ -1950,7 +1946,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
         }
       }
     } catch (e) {
-      debugPrint('Menu action error: $e');
     } finally {
       if (mounted) {
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -2054,11 +2049,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
       final currentExch = widget.watchListData['exch']?.toString() ?? "";
       final currentTsym = widget.watchListData['tsym']?.toString() ?? "";
 
-      print('==================== WATCHLIST ORDER DEBUG ====================');
-      print(
-          'Symbol: $currentTsym | Token: $currentToken | Exchange: $currentExch');
-      print('Transaction Type: ${transType ? "BUY" : "SELL"}');
-      print('Watchlist: ${ref.read(marketWatchProvider).wlName}');
 
       // Update chart/depth view to show this stock before opening order screen
       final subscriptionManager = ref.read(webSubscriptionManagerProvider);
@@ -2101,14 +2091,10 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
 
       // Get fresh quote data after fetchScripQuote
       final freshQuoteData = ref.read(marketWatchProvider).getQuotes;
-      print(
-          'Fresh Quote Data: lp=${freshQuoteData?.lp ?? "NULL"}, c=${freshQuoteData?.c ?? "NULL"}, pc=${freshQuoteData?.pc ?? "NULL"}');
 
       // Also check websocket data for the current token as it has the most up-to-date LTP
       final wsProvider = ref.read(websocketProvider);
       final socketData = wsProvider.socketDatas[currentToken];
-      print(
-          'Websocket Data: ${socketData != null ? "lp=${socketData['lp']}, pc=${socketData['pc']}" : "NO WEBSOCKET DATA"}');
 
       // Priority: Websocket data > Fresh quote data > Watchlist data > Stale depthData
       String? ltp;
@@ -2133,12 +2119,7 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
         if (isValidPrice(wsLtp)) {
           ltp = wsLtp;
           perChange = wsPc;
-          print('✓ Using WEBSOCKET data: ltp=$ltp');
-        } else {
-          print('✗ Websocket data invalid: ltp=$wsLtp');
         }
-      } else {
-        print('✗ No websocket data available');
       }
 
       // Fallback to fresh quote data
@@ -2147,9 +2128,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
         if (isValidPrice(quoteLtp)) {
           ltp = quoteLtp;
           perChange = freshQuoteData.pc;
-          print('✓ Using QUOTE data: ltp=$ltp');
-        } else {
-          print('✗ Quote data invalid: ltp=$quoteLtp');
         }
       }
 
@@ -2159,9 +2137,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
         if (isValidPrice(wlLtp)) {
           ltp = wlLtp;
           perChange = widget.watchListData['perChange']?.toString();
-          print('✓ Using WATCHLIST data: ltp=$ltp');
-        } else {
-          print('✗ Watchlist data invalid: ltp=$wlLtp');
         }
       }
 
@@ -2171,14 +2146,9 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
         if (isValidPrice(depthLtp)) {
           ltp = depthLtp;
           perChange = depthData.pc;
-          print('✓ Using DEPTH data: ltp=$ltp');
-        } else {
-          print('✗ Depth data invalid: ltp=$depthLtp');
         }
       }
 
-      print('Watchlist Data Raw: ${widget.watchListData['ltp']}');
-      print('Depth Data Raw: lp=${depthData.lp}, c=${depthData.c}');
 
       // Use exact lot size logic from reference implementation
       final isBasketMode = widget.watchListData['isBasket']?.toString() ?? "";
@@ -2192,12 +2162,9 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
       final safeLtp = _safeParseNumeric(ltp, "0.00");
       final safePerChange = _safeParseNumeric(perChange, "0.00");
 
-      print('Final Values: safeLtp=$safeLtp, safePerChange=$safePerChange');
-      print('===============================================================');
 
       // If we still don't have valid LTP data after all fallbacks, show error
       if (safeLtp == "0.00" || safeLtp.isEmpty) {
-        print('⚠️ ERROR: No valid price data - blocking order screen');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -2211,7 +2178,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
         return;
       }
 
-      print('✓ Opening order screen with LTP: $safeLtp');
 
       OrderScreenArgs orderArgs = OrderScreenArgs(
           exchange: widget.watchListData['exch']?.toString() ?? "",
@@ -2241,9 +2207,6 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
       // This updates the exchange list after order screen is already open
       ref.read(marketWatchProvider).fetchLinkeScrip(currentToken, currentExch, context);
     } catch (e) {
-      print('Place order error: $e');
-      print('Watch list data: ${widget.watchListData}');
-      print('Depth data: ${depthData.toJson()}');
       // Show error to user
       if (mounted) {
         ResponsiveSnackBar.showError(

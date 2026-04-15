@@ -94,13 +94,11 @@ class ScalperChartManager {
       if (!_libraryLoaded) {
         await _loadScript('$_baseUrl/tv/charting_library/charting_library.js');
         _libraryLoaded = true;
-        debugPrint('ScalperChartManager: TradingView library loaded');
       }
 
       if (!_bridgeLoaded) {
         await _loadScript('$_baseUrl/tv/chart_init.js');
         _bridgeLoaded = true;
-        debugPrint('ScalperChartManager: Chart bridge loaded');
       }
 
       _loadingCompleter!.complete();
@@ -108,7 +106,6 @@ class ScalperChartManager {
       // Create any charts that were requested before the library loaded
       _createPendingCharts();
     } catch (e) {
-      debugPrint('ScalperChartManager: Failed to load library: $e');
       _loadingCompleter!.completeError(e);
       _loadingCompleter = null;
       rethrow;
@@ -144,7 +141,6 @@ class ScalperChartManager {
 
     script.onLoad.listen((_) => completer.complete());
     script.onError.listen((_) {
-      debugPrint('ScalperChartManager: Script load failed: $src');
       completer.completeError('Failed to load: $src');
     });
 
@@ -176,7 +172,6 @@ class ScalperChartManager {
             ..style.overflow = 'hidden';
 
           _containerIds[chartId] = containerId;
-          debugPrint('ScalperChartManager: Div created: $containerId');
 
           // After Flutter adds the div to the DOM, recreate charts.
           // This handles two cases:
@@ -195,7 +190,6 @@ class ScalperChartManager {
                 // Remount case: symbol is still set from before, recreate chart
                 final existingSymbol = _getCurrentSymbol(chartId);
                 if (existingSymbol != null) {
-                  debugPrint('ScalperChartManager: Recreating $chartId on new container $containerId');
                   createChart(
                     chartId: chartId,
                     symbol: existingSymbol,
@@ -210,9 +204,7 @@ class ScalperChartManager {
         },
       );
       _registeredViewTypes.add(viewTypeName);
-      debugPrint('ScalperChartManager: $chartId factory registered');
     } catch (e) {
-      debugPrint('ScalperChartManager: $chartId registration error: $e');
     }
   }
 
@@ -226,12 +218,10 @@ class ScalperChartManager {
   }) {
     final containerId = _containerIds[chartId];
     if (containerId == null) {
-      debugPrint('ScalperChartManager: No container for $chartId yet');
       return;
     }
 
     if (!_bridgeLoaded) {
-      debugPrint('ScalperChartManager: Bridge not loaded, deferring createChart');
       return;
     }
 
@@ -240,7 +230,6 @@ class ScalperChartManager {
     try {
       final bridge = _scalperChartsBridge;
       if (bridge == null) {
-        debugPrint('ScalperChartManager: ScalperCharts bridge not available');
         return;
       }
 
@@ -258,10 +247,7 @@ class ScalperChartManager {
 
       _setCurrentSymbol(chartId, symbol);
       _chartThemes[chartId] = isDarkMode; // Store the theme state
-      debugPrint(
-          'ScalperChartManager: Creating $chartId chart with $symbol (dark: $isDarkMode)');
     } catch (e) {
-      debugPrint('ScalperChartManager: Error creating $chartId chart: $e');
     }
   }
 
@@ -293,13 +279,11 @@ class ScalperChartManager {
         createChart(chartId: chartId, symbol: symbol, isDarkMode: isDarkMode);
       } else if (themeChanged) {
         // Theme changed - recreate chart with new theme
-        debugPrint('ScalperChartManager: Theme changed for $chartId ($currentTheme -> $isDarkMode), recreating chart');
         bridge.removeChart(containerId);
         createChart(chartId: chartId, symbol: symbol, isDarkMode: isDarkMode);
       } else if (symbol != currentSymbol) {
         // Only symbol changed - just update symbol
         bridge.changeSymbol(containerId, symbol);
-        debugPrint('ScalperChartManager: Changed $chartId to $symbol');
       } else {
         // No changes needed
         return;
@@ -307,7 +291,6 @@ class ScalperChartManager {
 
       _setCurrentSymbol(chartId, symbol);
     } catch (e) {
-      debugPrint('ScalperChartManager: Error changing $chartId: $e');
     }
   }
 
@@ -346,7 +329,6 @@ class ScalperChartManager {
 
       bridge.resetData(containerId);
     } catch (e) {
-      debugPrint('ScalperChartManager: Error resetting $chartId: $e');
     }
   }
 
@@ -428,7 +410,6 @@ class ScalperChartManager {
     _indexSymbol = null;
     _callSymbol = null;
     _putSymbol = null;
-    debugPrint('ScalperChartManager: State reset');
   }
 }
 

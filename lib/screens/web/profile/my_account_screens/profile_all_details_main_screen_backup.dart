@@ -156,7 +156,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                       eachSection.value;
                                 });
 
-                                print("Called");
                               },
                             ),
                           );
@@ -1084,10 +1083,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                         String fileName = picked
                                                             .files.first.name;
 
-                                                        print(
-                                                            "Selected File: $fileName");
-                                                        print(
-                                                            "File Path: $filePath");
 
                                                         // Store file path in provider
                                                         // context
@@ -2258,8 +2253,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               //             .notifier)
                                                               //     .selectIncome(
                                                               //         newValue);
-                                                              print(
-                                                                  'Selected income: ${incomeLabels[newValue]} at index $newValue');
                                                             }
                                                           },
                                                           activeColor:
@@ -2290,10 +2283,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               picked.files.first
                                                                   .name;
 
-                                                          print(
-                                                              "Selected File: $fileName");
-                                                          print(
-                                                              "File Path: $filePath");
 
                                                           // Store file path in provider
                                                           // context
@@ -3078,10 +3067,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                                               picked.files.first
                                                                   .name;
 
-                                                          print(
-                                                              "Selected File: $fileName");
-                                                          print(
-                                                              "File Path: $filePath");
 
                                                           // Store file path in provider
                                                           // context
@@ -3594,7 +3579,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
 
                 validator: (input) {
-                  print("INPUT :: $input");
                   return RegExp(
                               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                           .hasMatch(input ?? "")
@@ -4120,8 +4104,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                   String filePath = picked.files.first.path!;
                   String fileName = picked.files.first.name;
 
-                  print("Selected File: $fileName");
-                  print("File Path: $filePath");
 
                   // Store file path in provider
                   // context

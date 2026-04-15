@@ -55,8 +55,6 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
         orderProv.bsktScripList.isNotEmpty) {
       await orderProv.chngBsktName(orderProv.selectedBsktName, context, true);
       if (kDebugMode) {
-        print(
-            "WebSocket subscription refreshed for basket: ${orderProv.selectedBsktName}");
       }
     }
   }

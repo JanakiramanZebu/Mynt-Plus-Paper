@@ -54,7 +54,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
           await controller.clearFocus();
           await controller.stopLoading();
         } catch (e) {
-          print('Error cleaning popup controller: $e');
         }
       }
       _popupControllers.clear();
@@ -67,7 +66,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
         // The individual cleanup above should be sufficient
       }
     } catch (e) {
-      print('Error during WebView cleanup: $e');
     }
   }
 
@@ -78,7 +76,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
       await controller.stopLoading();
       _popupControllers.remove(controller);
     } catch (e) {
-      print('Error cleaning popup controller: $e');
     }
   }
 
@@ -132,9 +129,7 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
           })();
         """);
         
-        print('Fallback camera handler injected successfully');
       } catch (e) {
-        print('Error injecting fallback camera handler: $e');
       }
     }
   }
@@ -289,16 +284,13 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
           })();
         """);
         
-        print('Camera handler JavaScript injected successfully');
       } catch (e) {
-        print('Error injecting camera handler: $e');
       }
     }
   }
 
   Future<void> _handleCameraRequest(Map<String, dynamic> data) async {
     try {
-      print('Camera request received: $data');
       
       // Use image_picker to launch camera
       final ImagePicker picker = ImagePicker();
@@ -310,7 +302,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
       );
       
       if (image != null) {
-        print('Camera image captured: ${image.path}');
         
         // Convert image to base64
         final bytes = await image.readAsBytes();
@@ -331,11 +322,8 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
             }
           })();
         """);
-      } else {
-        print('No image captured from camera');
       }
     } catch (e) {
-      print('Error handling camera request: $e');
     }
   }
 
@@ -426,25 +414,20 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                    controller.addJavaScriptHandler(
                      handlerName: 'closeWebView',
                      callback: (args) {
-                       print('JavaScript closeWebView called');
                        Navigator.of(context).pop();
                      },
                    );
                    controller.addJavaScriptHandler(
                      handlerName: 'openCamera',
                      callback: (args) {
-                       print('JavaScript openCamera called with args: $args');
                        if (args.isNotEmpty && args[0] is Map<String, dynamic>) {
                          _handleCameraRequest(args[0] as Map<String, dynamic>);
-                       } else {
-                         print('Invalid arguments received for openCamera handler');
                        }
                      },
                    );
                    controller.addJavaScriptHandler(
                      handlerName: 'testCamera',
                      callback: (args) {
-                       print('JavaScript testCamera called');
                        _handleCameraRequest({
                          'accept': 'image/*',
                          'capture': 'camera',
@@ -464,7 +447,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                 },
                 onLoadStart: (controller, url) {
                   final urlString = url?.toString() ?? '';
-                  print('Loading started: $urlString');
                   
                   if (!urlString.contains('about:blank#blocked')) {
                     setState(() {
@@ -475,10 +457,8 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                 },
                                  onLoadStop: (controller, url) async {
                    final currentUrl = url?.toString() ?? '';
-                   print('Loading completed: $currentUrl');
                    
                    if (currentUrl.contains('about:blank#blocked')) {
-                     print('Blocked URL detected, ignoring...');
                      return;
                    }
                    
@@ -487,7 +467,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                    });
                    canGoBack = await controller.canGoBack();
            
-                   print('Current URL: $currentUrl');
                    
                    // Inject camera handler JavaScript after page loads
                    await _injectCameraHandler();
@@ -496,7 +475,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                    await _injectFallbackCameraHandler();
                  },
                 onReceivedError: (controller, request, errorResponse) {
-                  print('WebView error: ${errorResponse.description}');
                   final url = request.url.toString();
                   
                   if (!url.contains('about:blank#blocked')) {
@@ -605,7 +583,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                                         popupController.addJavaScriptHandler(
                                           handlerName: 'closePopup',
                                           callback: (args) {
-                                            print("Popup close requested via JS");
                                             _cleanupPopupController(popupController);
                                             Navigator.of(context, rootNavigator: true).pop();
                                             return;
@@ -657,7 +634,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                   return true;
                 },
                                  onPermissionRequest: (controller, request) async {
-                   print('Permission requested: ${request.resources}');
                    return PermissionResponse(
                      resources: request.resources,
                      action: PermissionResponseAction.GRANT,
@@ -666,10 +642,8 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
 
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
                   final url = navigationAction.request.url?.toString() ?? '';
-                  print('Navigation to: $url');
           
                   if (url.contains('about:blank#blocked')) {
-                    print('Blocking navigation to: $url');
                     return NavigationActionPolicy.CANCEL;
                   }
           
@@ -683,7 +657,6 @@ class _InAppWebViewScreenState extends ConsumerState<InAppWebViewScreen> {
                 },
                 onConsoleMessage: (controller, consoleMessage) {
                   if (!consoleMessage.message.contains('[Vue warn]')) {
-                    print('Console: ${consoleMessage.message}');
                   }
                 },
               ),

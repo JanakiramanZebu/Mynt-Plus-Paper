@@ -152,16 +152,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     final lowerCaseName = trimmedName.toLowerCase();
 
-    print(
-        "VALIDATION: Checking '$lowerCaseName' against restricted names: $_restrictedWatchlistNames");
 
     // Check against restricted names (predefined display names)
     if (_restrictedWatchlistNames.contains(lowerCaseName)) {
-      print("VALIDATION: '$lowerCaseName' is RESTRICTED");
       return "This watchlist name is reserved";
     }
 
-    print("VALIDATION: '$lowerCaseName' passed restricted check");
 
     // Check against existing user watchlists (case-insensitive)
     if (_marketWatchlist != null && _marketWatchlist!.values != null) {
@@ -451,7 +447,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Method to update current watchlist page index
   void setCurrentWatchlistPageIndex(int index) {
     _currentWatchlistPageIndex = index;
-    print("index change to $index");
     // Store in SharedPreferences for persistence
     _saveCurrentPageIndex();
   }
@@ -462,7 +457,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _wlName = "";  // Reset watchlist name to force selection of first watchlist
     _saveCurrentPageIndex();
     notifyListeners();
-    print("Watchlist page index and name reset to 0");
   }
 
   // Save current page index to SharedPreferences
@@ -472,7 +466,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       await prefs.setInt(
           "currentWatchlistPageIndex", _currentWatchlistPageIndex);
     } catch (e) {
-      print("Error saving watchlist page index: $e");
     }
   }
 
@@ -501,10 +494,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           prefs.getStringList('pending_watchlists');
       if (savedPending != null) {
         _pendingWatchlists.addAll(savedPending);
-        print("Loaded pending watchlists: $savedPending");
       }
     } catch (e) {
-      print("Error loading pending watchlists: $e");
     }
   }
 
@@ -513,9 +504,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList('pending_watchlists', _pendingWatchlists.toList());
-      print("Saved pending watchlists: ${_pendingWatchlists.toList()}");
     } catch (e) {
-      print("Error saving pending watchlists: $e");
     }
   }
 
@@ -526,9 +515,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _pendingWatchlists.clear();
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('pending_watchlists');
-      print("Cleared pending watchlists");
     } catch (e) {
-      print("Error clearing pending watchlists: $e");
     }
   }
 
@@ -549,16 +536,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                   Map<String, dynamic>.from(data);
               updateSocketData(typedData);
             } catch (e) {
-              print("Error processing socket data update: $e");
             }
           }
         },
         onError: (error) {
-          print("Error in socket data stream: $error");
         },
       );
     } catch (e) {
-      print("Error setting up WebSocket listener: $e");
     }
   }
 
@@ -570,7 +554,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _socketDataSubscription?.cancel();
         _socketDataSubscription = null;
       } catch (e) {
-        print("Error canceling socket subscription: $e");
       }
     }
 
@@ -586,7 +569,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           prefs.getInt("currentWatchlistPageIndex") ?? 0;
       notifyListeners();
     } catch (e) {
-      print("Error loading watchlist page index: $e");
     }
   }
 
@@ -597,7 +579,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _sortByWL = prefs.getString("sortByWL") ?? "";
       notifyListeners();
     } catch (e) {
-      print("Error loading sort preference: $e");
     }
   }
 
@@ -608,9 +589,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.remove("sortByWL");
       notifyListeners();
-      print("Sort preference reset on app start");
     } catch (e) {
-      print("Error resetting sort preference: $e");
     }
   }
 
@@ -675,10 +654,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
 
       if (dataUpdated) {
-        print("Socket data synced to model for ${_scrips.length} scrips");
       }
     } catch (e) {
-      print("Error syncing socket data: $e");
     }
   }
 
@@ -749,9 +726,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // Update the list with the sorted data
       _scrips = tempScrips;
 
-      print("Applied sorting: $_sortByWL");
     } catch (e) {
-      print("Error applying sorting: $e");
     }
   }
 
@@ -886,19 +861,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       // Unsubscribe from old depth socket if different scrip
       if (_currentDepthSymbol != null && _currentDepthSymbol != depthSymbol) {
-        print('\n📊 [DEPTH] Unsubscribing from old depth: $_currentDepthSymbol');
         await unsubscribeFromDepthData(context: context);
       }
 
       // Skip if already subscribed to this symbol
       if (_currentDepthSymbol == depthSymbol && _depthDataLoaded) {
-        print('📊 [DEPTH] Already subscribed to: $depthSymbol');
         return;
       }
 
-      print('\n📊 [DEPTH] Subscribing to depth data for: $depthSymbol');
-      print('   Scrip: $tsym');
-      print('   Reason: User opened depth panel');
 
       await ref.read(websocketProvider).establishConnection(
             channelInput: depthSymbol,
@@ -908,9 +878,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       _currentDepthSymbol = depthSymbol;
       _depthDataLoaded = true;
-      print('✅ [DEPTH] Depth subscription complete');
     } catch (e) {
-      print('❌ [DEPTH] Error subscribing to depth: $e');
       _depthDataLoaded = false;
       _currentDepthSymbol = null;
     }
@@ -935,17 +903,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 task: "ud", // Unsubscribe depth task
                 context: context,
               );
-          print('✅ [DEPTH] Depth unsubscription complete: $depthSymbol');
         } catch (e) {
           // If unsubscribe fails, it's okay - we've already cleared tracking
-          print('⚠️ [DEPTH] Error sending unsubscribe (tracking cleared): $e');
         }
       } else {
         // Context not available, but we've cleared tracking
-        print('✅ [DEPTH] Depth tracking cleared (no context for unsubscribe): $depthSymbol');
       }
     } catch (e) {
-      print('❌ [DEPTH] Error unsubscribing from depth: $e');
       // Ensure tracking is cleared even on error
       _currentDepthSymbol = null;
       _depthDataLoaded = false;
@@ -970,7 +934,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       for (final key in keysToRemove) {
         storeQuotes.remove(key);
       }
-      print('🗑️  [CACHE] Cleared ${keysToRemove.length} old cache entries. Current size: ${storeQuotes.length}');
     }
   }
 
@@ -1150,7 +1113,6 @@ getOptionawait(String exch, String token) {
 
   scripdepthsize(value) {
     _scripsize = value;
-    print("scripsize: $_scripsize");
     notifyListeners();
   }
 
@@ -1168,7 +1130,6 @@ getOptionawait(String exch, String token) {
 
   setETF(bool value) {
     _isETF = value;
-    print("isETF: $_isETF");
     notifyListeners();
   }
 
@@ -1561,8 +1522,6 @@ getOptionawait(String exch, String token) {
 
   Future<void> setOptionScript(
       BuildContext context, String exch, String token, String tsym) async {
-    print('🎯 [setOptionScript] CALLED: exch=$exch, token=$token, tsym=$tsym');
-    print('   _optionChainModel is ${_optionChainModel == null ? "NULL" : "NOT NULL (${_optionChainModel!.optValue?.length ?? 0} options)"}');
 
     try {
       toggleLoad(true);
@@ -1572,10 +1531,7 @@ getOptionawait(String exch, String token) {
       // STEP 0: Unsubscribe from old option chain BEFORE clearing the model
       // This must happen first because clearOptionChainData() sets _optionChainModel = null
       if (_optionChainModel != null) {
-        print('🔄 [setOptionScript] Unsubscribing old option chain tokens before symbol switch');
         await requestWSOptChain(context: context, isSubscribe: false);
-      } else {
-        print('⚠️ [setOptionScript] No existing option chain to unsubscribe');
       }
 
       // STEP 1: Clear any previous option chain data immediately
@@ -1633,7 +1589,6 @@ getOptionawait(String exch, String token) {
       selectChartTab(token.toString(), true);
       scrollToSelectedTab(true);
     } catch (e) {
-      debugPrint("Error in setOptionScript: $e");
       setOptionChainError("Failed to initialize option script: $e");
       rethrow; // Re-throw to let caller handle the error
     } finally {
@@ -1831,12 +1786,10 @@ getOptionawait(String exch, String token) {
         if (_wlName.isNotEmpty && updatedValues.contains(_wlName)) {
           final newIndex = updatedValues.indexOf(_wlName);
           _currentWatchlistPageIndex = newIndex;
-          print("Updated page index after sort: $newIndex for watchlist: $_wlName");
         } else {
           // If current watchlist doesn't exist, default to first watchlist
           _wlName = updatedValues.first;
           _currentWatchlistPageIndex = 0;
-          print("Reset to first watchlist: $_wlName at index 0");
         }
 
         // Create a new MarketWatchlist object to trigger proper change detection
@@ -1873,7 +1826,6 @@ getOptionawait(String exch, String token) {
       notifyListeners();
       return _marketWatchlist;
     } catch (e) {
-      print("Failed $e");
       ref
           .read(indexListProvider)
           .logError
@@ -1962,7 +1914,6 @@ getOptionawait(String exch, String token) {
           .logError
           .add({"type": "API Market Watch Scrip", "Error": "$e"});
       notifyListeners();
-      print(e);
     } finally {
       toggleLoadingOn(false);
     }
@@ -1972,7 +1923,6 @@ getOptionawait(String exch, String token) {
   Future fetchPreDefMWScrip(BuildContext context) async {
     // Prevent concurrent calls - if already fetching, skip
     if (_isFetchingPreDefMW) {
-      print("fetchPreDefMWScrip: Already fetching, skipping duplicate call");
       return;
     }
 
@@ -2101,7 +2051,6 @@ getOptionawait(String exch, String token) {
           if (_wlName == "Nifty50" ||
               _wlName == "Niftybank" ||
               _wlName == "Sensex") {
-            print("Current watchlist is $_wlName, updating scrips list");
             if (_wlName == "Nifty50") {
               _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTY50NSE!));
             } else if (_wlName == "Niftybank") {
@@ -2134,7 +2083,6 @@ getOptionawait(String exch, String token) {
           .logError
           .add({"type": "API Market Watch Scrip", "Error": "$e"});
       notifyListeners();
-      print(e);
     } finally {
       _isFetchingPreDefMW = false;
       toggleLoadingOn(false);
@@ -2150,7 +2098,6 @@ getOptionawait(String exch, String token) {
           storeQuotes[token]?['s'] != null) {
         _scripInfoModel = storeQuotes[token]?['s'];
         ConstantName.sessCheck = true;
-        print('qqq if si');
       } else {
         // print('qqq else');
         _scripInfoModel = await api.getScripInfo(token, exch);
@@ -2189,7 +2136,6 @@ getOptionawait(String exch, String token) {
       notifyListeners();
       return _scripInfoModel;
     } catch (e) {
-      print(e);
       ref
           .read(indexListProvider)
           .logError
@@ -2522,7 +2468,6 @@ getOptionawait(String exch, String token) {
             //   }
             // }
           }
-          print("_allSearchScrip ${_allSearchScrip?.length}");
 
           _searchErrorText = "";
           notifyListeners();
@@ -2568,7 +2513,6 @@ getOptionawait(String exch, String token) {
       //   }
       // ];
       if (storeQuotes.containsKey(token) && storeQuotes[token]?['l'] != null) {
-        print('[fetchLinkeScrip] storeQuotes has script ');
         ConstantName.sessCheck = true;
         _linkedScrips = storeQuotes[token]?['l']['all'];
         _equls = storeQuotes[token]?['l']['eq'];
@@ -2586,8 +2530,13 @@ getOptionawait(String exch, String token) {
           __futExch = "${_fut![0].exch}";
         }
       } else {
-        print('[fetchLinkeScrip] on storeQuotes script not found');
         _linkedScrips = await api.getLinkedScrip(token, exch);
+        if (_linkedScrips != null &&
+            _linkedScrips!.emsg == "Session Expired :  Invalid Session Key" &&
+            _linkedScrips!.stat == "Not_Ok") {
+          ref.read(authProvider).ifSessionExpired(context);
+          return _linkedScrips;
+        }
         if (_linkedScrips!.stat == "Ok") {
           ConstantName.sessCheck = true;
           _equls = _linkedScrips!.equls;
@@ -2729,17 +2678,12 @@ getOptionawait(String exch, String token) {
       _optionChainModel = null;
       notifyListeners(); // Update UI immediately with cleared data
 
-      print(
-          "op Strike Price $strPrc ------ $tradeSym ------ $exchange ------ $numofStrike");
 
       // Debug: Print current socket data state
       final socketDatas = ref.read(websocketProvider).socketDatas;
-      print("=== SOCKET DATA DEBUG ===");
-      print("Total socket entries: ${socketDatas.length}");
 
       // Print relevant socket data for current option chain context
       if (socketDatas.isNotEmpty) {
-        print("Socket data keys: ${socketDatas.keys.take(10).toList()}...");
 
         // Try to find data for the underlying instrument
         socketDatas.forEach((token, data) {
@@ -2747,17 +2691,9 @@ getOptionawait(String exch, String token) {
               (data['tsym'].toString().contains('NIFTY') ||
                   data['tsym'].toString().contains('BANKNIFTY') ||
                   data['tsym'].toString().contains('SENSEX'))) {
-            print("Underlying Token: $token");
-            print("  TSYM: ${data['tsym']}");
-            print("  LTP: ${data['lp']}");
-            print("  Change: ${data['chng']}");
-            print("  PerChange: ${data['pc']}");
           }
         });
-      } else {
-        print("No socket data available");
       }
-      print("========================");
 
       // STEP 4: Fetch new option chain data
       _optionChainModel = await api.getOptionChain(
@@ -2797,7 +2733,6 @@ getOptionawait(String exch, String token) {
           .logError
           .add({"type": "API Option Chain", "Error": "$e"});
       notifyListeners();
-      debugPrint("Option Chain Error: ${e.toString()}");
       rethrow; // Re-throw to let caller handle the error
     } finally {
       toggleLoad(false);
@@ -2813,11 +2748,9 @@ getOptionawait(String exch, String token) {
     try {
       String? token = _getQuotes.token;
       if (storeQuotes.containsKey(token) && storeQuotes[token]?['t'] != null) {
-        print('qqq td if ');
         ConstantName.sessCheck = true;
         _techData = storeQuotes[token]?['t'];
       } else {
-        print('qqq td else');
         _techData = await api.getTechData(exch, tradeSym);
         _returnsGridview = [];
         if (_techData!.stat == "OK") {
@@ -2842,7 +2775,6 @@ getOptionawait(String exch, String token) {
           .logError
           .add({"type": "API Tech Data", "Error": "$e"});
       notifyListeners();
-      debugPrint(e.toString());
     } finally {
       toggleLoad(false);
     }
@@ -3003,7 +2935,6 @@ getOptionawait(String exch, String token) {
           .logError
           .add({"type": "API Fundamental ", "Error": "$e"});
       notifyListeners();
-      debugPrint(" FUNDAMENTAL ERROR ::: ${e.toString()}");
     } finally {}
   }
 
@@ -3020,6 +2951,12 @@ getOptionawait(String exch, String token) {
     notifyListeners();
   }
 
+  /// Clears fundamental data without notifying listeners.
+  /// Use in didUpdateWidget to avoid modifying provider during build.
+  void clearFundamentalDataSilent() {
+    _fundamentalData = null;
+  }
+
   // Method to clear cache for a specific token
   void clearCacheForToken(String token) {
     if (storeQuotes.containsKey(token)) {
@@ -3029,7 +2966,7 @@ getOptionawait(String exch, String token) {
   }
 
   Future<void> fetchEODChartData(String tsym, String exch,
-      {String timeframe = "1Y"}) async {
+      {String timeframe = "1Y", BuildContext? context}) async {
     try {
       // Clear old data and set loading state
       _eodChartData = [];
@@ -3037,14 +2974,20 @@ getOptionawait(String exch, String token) {
       notifyListeners();
 
       _eodChartData = await api.getEODChartData(tsym, exch, timeframe: timeframe);
-      print("EOD Chart Data fetched successfully for $timeframe = ${_eodChartData.length} items");
 
       _chartDataLoading = false;
       notifyListeners();
     } catch (e) {
       _chartDataLoading = false;
-      print("PROVIDER: EOD CHART DATA ERROR ::: ${e.toString()}");
-      print("PROVIDER: Error Type: ${e.runtimeType}");
+   
+      // The api method throws this exact message when the vendor returns the
+      // session-expired response. EodChartData has no stat/emsg fields, so
+      // detecting it here via the exception message is the only signal we get.
+      if (context != null &&
+          context.mounted &&
+          e.toString().contains("Session Expired :  Invalid Session Key")) {
+        ref.read(authProvider).ifSessionExpired(context);
+      }
       notifyListeners();
       rethrow;
     }
@@ -3185,29 +3128,18 @@ getOptionawait(String exch, String token) {
 
     // Debug: Print socket data after option chain processing
     final socketDatas = ref.read(websocketProvider).socketDatas;
-    print("=== POST-OPTION CHAIN SOCKET DEBUG ===");
-    print(
-        "Option chain processed with ${_optChainCall.length} calls and ${_optChainPut.length} puts");
-    print("Total socket entries: ${socketDatas.length}");
 
     // Print sample option chain tokens and their socket data
     if (_optionChainModel?.optValue != null &&
         _optionChainModel!.optValue!.isNotEmpty) {
-      print("Sample option tokens:");
       for (int i = 0; i < min(5, _optionChainModel!.optValue!.length); i++) {
         final option = _optionChainModel!.optValue![i];
         final token = option.token;
-        print("  Option $i: ${option.tsym} (Token: $token)");
         if (socketDatas.containsKey(token)) {
           final data = socketDatas[token];
-          print(
-              "    Socket Data - LTP: ${data?['lp']}, Change: ${data?['chng']}");
-        } else {
-          print("    No socket data for this token");
         }
       }
     }
-    print("=====================================");
 
     notifyListeners();
     await requestWSOptChain(context: context, isSubscribe: true);
@@ -3229,10 +3161,8 @@ getOptionawait(String exch, String token) {
       }
     }
 
-    print('📊 [requestWSOptChain] isSubscribe: $isSubscribe, tokens: ${optionTokens.length}');
 
     if (optionTokens.isEmpty) {
-      print('⚠️ [requestWSOptChain] No tokens to ${isSubscribe ? "subscribe" : "unsubscribe"}');
       return;
     }
 
@@ -3240,7 +3170,6 @@ getOptionawait(String exch, String token) {
       if (!isSubscribe) {
         // On web, use WebSubscriptionManager to smart-unsubscribe
         // This protects symbols used by watchlist, depth, futures, etc.
-        print('🗑️ [requestWSOptChain] Unsubscribing ${optionTokens.length} option chain tokens');
         await ref.read(webSubscriptionManagerProvider).unsubscribeTokens(
           tokensToCheck: optionTokens,
           context: context,
@@ -3249,13 +3178,10 @@ getOptionawait(String exch, String token) {
       } else {
         // Subscribe using depth task for web
         final input = optionTokens.join('#');
-        print('✅ [requestWSOptChain] Subscribing ${optionTokens.length} option chain tokens');
-        print('   First 5 tokens: ${optionTokens.take(5).join(", ")}');
         await ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: "d",
             context: context);
-        print('✅ [requestWSOptChain] Subscribe call completed');
       }
     } else {
       // Mobile: use original logic
@@ -3330,14 +3256,12 @@ getOptionawait(String exch, String token) {
 
   changeWLScrip(String wName, BuildContext context) async {
     try {
-      print("Changing watchlist to: $wName");
 
       // Clear current scrips first to ensure clean state
       _scrips.clear();
 
       // Check if this is a pending watchlist (not yet synced to API)
       if (_pendingWatchlists.contains(wName)) {
-        print("Watchlist $wName is pending (not synced), showing empty list");
         // Don't subscribe to WebSocket for pending watchlists
         await requestMWScrip(context: context, isSubscribe: false);
         notifyListeners();
@@ -3353,7 +3277,6 @@ getOptionawait(String exch, String token) {
 
       if (isPredefined) {
         if (wlis) {
-          print("Using cached data for predefined watchlist: $wName");
           _scrips = jsonDecode(_marketWatchScripData[wName]) ?? [];
 
           // If the data is empty for some reason, use preDefinedMWlist if available
@@ -3369,7 +3292,6 @@ getOptionawait(String exch, String token) {
             }
 
             if (needsFetch) {
-              print("Cached data for $wName is empty and no preDefinedMWlist data, fetching...");
               await fetchPreDefMWScrip(context);
             }
 
@@ -3396,7 +3318,6 @@ getOptionawait(String exch, String token) {
           }
 
           if (needsFetch) {
-            print("No cached data for $wName and no preDefinedMWlist data, fetching...");
             await fetchPreDefMWScrip(context);
           }
 
@@ -3423,7 +3344,6 @@ getOptionawait(String exch, String token) {
       }
 
       // Log the number of symbols for debugging
-      print("Watchlist change: $wName with ${_scrips.length} symbols");
 
       // Apply sorting if there's a saved sort preference and if there are scrips to sort
       // if (_scrips.isNotEmpty && _sortByWL.isNotEmpty) {
@@ -3450,11 +3370,9 @@ getOptionawait(String exch, String token) {
         } else {
           // If no symbols in watchlist, still ensure we're unsubscribed from previous
           await requestMWScrip(context: context, isSubscribe: false);
-          print("No symbols in watchlist: $wName");
         }
       }
     } catch (e) {
-      print("Watchlist change error: $e");
     }
 
     notifyListeners();
@@ -3570,7 +3488,11 @@ getOptionawait(String exch, String token) {
         }
         // Update UI to reflect changes
         notifyListeners();
-      }else{
+      } else if (_addDeleteScripModel!.emsg ==
+              "Session Expired :  Invalid Session Key" &&
+          _addDeleteScripModel!.stat == "Not_Ok") {
+        ref.read(authProvider).ifSessionExpired(context);
+      } else {
         if (kIsWeb) {
           ResponsiveSnackBar.showError(context, "Failed to delete watchlist");
         } else {
@@ -3578,7 +3500,6 @@ getOptionawait(String exch, String token) {
         }
       }
     } catch (e) {
-      print("Error in deleteWatchList: $e");
     } finally {
       toggleLoadingOn(false);
       notifyListeners();
@@ -3679,7 +3600,6 @@ getOptionawait(String exch, String token) {
         wasPending = true;
         // This is the first scrip being added to a pending watchlist
         // Create the watchlist via API with this scrip
-        print("Creating pending watchlist '$wlName' with first scrip");
         _addDeleteScripModel = await api.getAddDeleteSciptoMW(
             isAdd: true, scripToken: scripTok, wlname: wlName);
 
@@ -3736,9 +3656,6 @@ getOptionawait(String exch, String token) {
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
-              print("Widget was disposed when showing SnackBar: $e");
-            } else {
-              print("Error showing SnackBar: $e");
             }
           }
         }
@@ -3762,9 +3679,6 @@ getOptionawait(String exch, String token) {
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
-              print("Widget was disposed when showing SnackBar: $e");
-            } else {
-              print("Error showing SnackBar: $e");
             }
           }
         }
@@ -3777,7 +3691,6 @@ getOptionawait(String exch, String token) {
                 textColor: colors.colorWhite,
                 fontSize: 14.0);
           } catch (e) {
-            print("Error showing toast: $e");
           }
         }
         return true;
@@ -3786,7 +3699,6 @@ getOptionawait(String exch, String token) {
         try {
           ref.read(authProvider).ifSessionExpired(context);
         } catch (e) {
-          print("Error handling session expiration: $e");
         }
       } else if (_addDeleteScripModel!.emsg ==
           "Invalid Input : At least one stock must remain in the Market Watch.") {
@@ -3799,7 +3711,6 @@ getOptionawait(String exch, String token) {
       }
       return false;
     } catch (e) {
-      print("Error in addDelMarketScrip: $e");
       return false;
     }
   }
@@ -3823,7 +3734,6 @@ getOptionawait(String exch, String token) {
             _previousWatchlistSymbols.add('$exch|$token');
           }
         }
-        print('WebSocket: [Web] Saved ${_previousWatchlistSymbols.length} old watchlist symbols for unsubscription');
         return;
       }
 
@@ -3855,7 +3765,6 @@ getOptionawait(String exch, String token) {
           newSymbols.addAll(tokens);
         }
 
-        print('WebSocket: [Web] Watchlist change - old: ${_previousWatchlistSymbols.length}, new: ${newSymbols.length}');
 
         // Use WebSubscriptionManager to properly handle the subscription change
         await ref.read(webSubscriptionManagerProvider).updateWatchlistSubscriptions(
@@ -3868,7 +3777,6 @@ getOptionawait(String exch, String token) {
         _previousWatchlistSymbols.clear();
         return;
       } catch (e) {
-        print('WebSocket: [Web] Error in watchlist subscription update: $e');
         // Fall through to legacy behavior if something fails
       }
     }
@@ -3893,8 +3801,6 @@ getOptionawait(String exch, String token) {
 
       // Save the current scrips count before processing
       final int initialScripsCount = _scrips.length;
-      print(
-          "WebSocket: Initial scrips count before subscription: $initialScripsCount");
 
       // Special handling for predefined watchlists
       bool isPredefined =
@@ -3906,17 +3812,11 @@ getOptionawait(String exch, String token) {
           element['isSelected'] = false;
           input += "${element['exch']}|${element['token']}#";
         }
-        print(
-            "WebSocket: Added ${_scrips.length} symbols from current watchlist to subscription");
       } else if (isPredefined && isSubscribe) {
         // If predefined watchlist has no data but we're subscribing, try to use cached data
-        print(
-            "WebSocket: Predefined watchlist $_wlName has no data, checking cache...");
         if (_marketWatchScripData.containsKey(_wlName)) {
           List cachedData = jsonDecode(_marketWatchScripData[_wlName]) ?? [];
           if (cachedData.isNotEmpty) {
-            print(
-                "WebSocket: Using ${cachedData.length} symbols from cached data for $_wlName");
             _scrips = cachedData;
             for (var element in _scrips) {
               element['isSelected'] = false;
@@ -3939,26 +3839,18 @@ getOptionawait(String exch, String token) {
 
           // Only fetch if we don't have data for this watchlist
           if (!hasDataForWatchlist) {
-            print(
-                "WebSocket: No cached data available, forcing refresh of predefined watchlists");
             await fetchPreDefMWScrip(context);
           }
 
           // Now try to use the loaded data
           if (_wlName == "Nifty50" && _preDefinedMWlist?.nIFTY50NSE != null) {
             _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTY50NSE!));
-            print(
-                "WebSocket: Loaded ${_scrips.length} Nifty50 symbols from data");
           } else if (_wlName == "Niftybank" &&
               _preDefinedMWlist?.nIFTYBANKNSE != null) {
             _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTYBANKNSE!));
-            print(
-                "WebSocket: Loaded ${_scrips.length} Niftybank symbols from data");
           } else if (_wlName == "Sensex" &&
               _preDefinedMWlist?.sENSEXBSE != null) {
             _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.sENSEXBSE!));
-            print(
-                "WebSocket: Loaded ${_scrips.length} Sensex symbols from data");
           }
 
           // Add the newly loaded symbols to the subscription
@@ -3973,8 +3865,6 @@ getOptionawait(String exch, String token) {
 
       // Only attempt subscription if we have valid tokens
       if (input.isNotEmpty) {
-        print(
-            "WebSocket: ${isSubscribe ? "Subscribing to" : "Unsubscribing from"} ${input.split('#').length} symbols");
         await ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
@@ -3985,21 +3875,14 @@ getOptionawait(String exch, String token) {
             isSubscribe &&
             initialScripsCount > 0 &&
             _scrips.isEmpty) {
-          print(
-              "WebSocket: Data was lost for predefined watchlist. Restoring data...");
 
           // Restore data from cache
           if (_marketWatchScripData.containsKey(_wlName)) {
             _scrips = jsonDecode(_marketWatchScripData[_wlName]) ?? [];
-            print(
-                "WebSocket: Restored ${_scrips.length} items from cache for $_wlName");
           }
         }
-      } else {
-        print("WebSocket: No symbols to subscribe");
       }
     } catch (e) {
-      print("WebSocket subscription error: $e");
     } finally {
       toggleLoadingOn(false);
     }
@@ -4012,7 +3895,6 @@ getOptionawait(String exch, String token) {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString("sortByWL", val);
     } catch (e) {
-      print("Error saving sort preference: $e");
     }
     notifyListeners();
   }
@@ -4064,11 +3946,9 @@ getOptionawait(String exch, String token) {
       {required String sorting,
       required String wlName,
       required BuildContext context}) {
-    print("Starting filterMWScrip with sorting: $sorting");
 
     // If no scrips to sort, exit early
     if (_scrips.isEmpty) {
-      print("No scrips to sort in watchlist $wlName");
       return;
     }
 
@@ -4079,13 +3959,10 @@ getOptionawait(String exch, String token) {
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString("sortByWL", sorting);
     }).catchError((e) {
-      print("Error saving sort preference: $e");
     });
 
     // Log sample data before sorting
     if (_scrips.isNotEmpty) {
-      print(
-          "Before sorting - Sample scrip: ${_scrips[0]['tsym']} LTP: ${_scrips[0]['ltp']} PerChange: ${_scrips[0]['perChange']}");
     }
 
     // Make sure we have fresh data before sorting
@@ -4183,8 +4060,6 @@ getOptionawait(String exch, String token) {
 
     // Log sample data after sorting
     if (tempScrips.isNotEmpty) {
-      print(
-          "After sorting - Sample scrip: ${tempScrips[0]['tsym']} LTP: ${tempScrips[0]['ltp']} PerChange: ${tempScrips[0]['perChange']}");
     }
 
     // Update the list with the sorted data
@@ -4223,7 +4098,6 @@ getOptionawait(String exch, String token) {
     try {
       return double.parse(strValue);
     } catch (e) {
-      print("Error parsing numeric value '$value': $e");
       return 0.0;
     }
   }
@@ -4253,11 +4127,9 @@ getOptionawait(String exch, String token) {
               wlName, "$scripTokens#", context, true, true, true, false,
               showSnackBar: false);
 
-          print("Backend watchlist order updated successfully");
         }
       } catch (e) {
         // Silently handle errors in the background operation
-        print("Error updating backend sort order: $e");
       }
     });
   }
@@ -4428,7 +4300,6 @@ getOptionawait(String exch, String token) {
       return double.parse(cleanValue);
     } catch (e) {
       // For invalid values in trading context, return 0
-      print("Error parsing value '$value': $e");
       return 0.0;
     }
   }
@@ -4589,7 +4460,6 @@ getOptionawait(String exch, String token) {
         // Update the list with the sorted data
         _scrips = tempScrips;
       } catch (e) {
-        print("Error applying sort during socket update: $e");
       }
     }
 
@@ -4629,7 +4499,6 @@ getOptionawait(String exch, String token) {
       _scrips[index]['isSelected'] = true;
       _delScripQty = _delScripQty + 1;
     }
-    print("delScripQty: $_delScripQty");
     notifyListeners();
   }
 
@@ -4735,8 +4604,9 @@ getOptionawait(String exch, String token) {
           ref.read(orderProvider).changeTabIndex(5, context);
         });
       } else if (_setAlertModel!.stat! == "Not_Ok" &&
-          _setAlertModel!.stat == "Session Expired :  Invalid Session Key") {
+          _setAlertModel!.emsg == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
+        return _setAlertModel;
       }
 
       if (_setAlertModel!.stat! != "OI created") {
@@ -4750,7 +4620,6 @@ getOptionawait(String exch, String token) {
       notifyListeners();
       return _setAlertModel;
     } catch (e) {
-      debugPrint(e.toString());
     } finally {
       toggleLoadingOn(false);
     }
@@ -4803,8 +4672,9 @@ getOptionawait(String exch, String token) {
           }
         });
       } else if (_setAlertModel!.stat! == "Not_Ok" &&
-          _setAlertModel!.stat == "Session Expired :  Invalid Session Key") {
+          _setAlertModel!.emsg == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
+        return _setAlertModel;
       } else if (_setAlertModel!.stat! != "OI created") {
         if (kIsWeb) {
           ResponsiveSnackBar.showWarning(context, "Alert not created");
@@ -4816,7 +4686,6 @@ getOptionawait(String exch, String token) {
       notifyListeners();
       return _setAlertModel;
     } catch (e) {
-      debugPrint(e.toString());
     } finally {
       toggleLoadingOn(false);
     }
@@ -4835,6 +4704,10 @@ getOptionawait(String exch, String token) {
           // Apply default sorting (Scrip Name ascending) when alerts are initially loaded
           filterPendingAlert("ASC");
         } else {
+          if (_alertPendingModel![0].emsg ==
+              "Session Expired :  Invalid Session Key") {
+            ref.read(authProvider).ifSessionExpired(context);
+          }
           _alertPendingModel = [];
           ConstantName.sessCheck = false;
         }
@@ -4847,7 +4720,6 @@ getOptionawait(String exch, String token) {
 
       return _alertPendingModel;
     } catch (e) {
-      debugPrint(e.toString());
     }
   }
 
@@ -4886,7 +4758,6 @@ getOptionawait(String exch, String token) {
       notifyListeners();
       return false;
     } catch (e) {
-      print("Error canceling alert: $e");
       return false;
     }
   }
@@ -4917,7 +4788,6 @@ getOptionawait(String exch, String token) {
       notifyListeners();
       return _modifyalertmodel;
     } catch (e) {
-      debugPrint(e.toString());
     }
   }
 
@@ -5040,7 +4910,6 @@ getOptionawait(String exch, String token) {
         ref.read(authProvider).ifSessionExpired(context);
       }
     } catch (e) {
-      print(e);
     } finally {
       toggleLoadingOn(false);
     }
@@ -5073,8 +4942,6 @@ getOptionawait(String exch, String token) {
         // Method 1: Check WebSubscriptionManager's active subscriptions
         final webSubManager = ref.read(webSubscriptionManagerProvider);
         final activeSubscriptions = webSubManager.activeSubscriptions;
-        print("DEBUG: activeSubscriptions count: ${activeSubscriptions.length}");
-        print("DEBUG: activeSubscriptions sample: ${activeSubscriptions.take(10).join(', ')}");
 
         for (var symbol in activeSubscriptions) {
           // Extract token from "NFO|58652" format
@@ -5086,7 +4953,6 @@ getOptionawait(String exch, String token) {
         // Method 2: Also check _sentSubscriptions in websocket provider
         // This catches tokens that are still subscribed but might not be in master list
         final sentSubs = wsProvider.sentSubscriptions;
-        print("DEBUG: _sentSubscriptions count: ${sentSubs.length}");
         for (var entry in sentSubs) {
           // Format is "d:NFO|58652" - extract just the token
           if (entry.contains('|')) {
@@ -5097,10 +4963,7 @@ getOptionawait(String exch, String token) {
           }
         }
 
-        print("DEBUG: Total protected tokens: ${protectedTokens.length}");
-        print("DEBUG: Protected tokens sample: ${protectedTokens.take(20).join(', ')}");
       } catch (e) {
-        print("Warning: Could not get protected tokens: $e");
       }
 
       // Get all current option chain tokens that should be cleared
@@ -5123,18 +4986,14 @@ getOptionawait(String exch, String token) {
       // Remove old option chain tokens from socket data (except protected ones)
       for (String token in tokensToRemove) {
         socketDatas.remove(token);
-        print("Cleared stale socket data for token: $token");
       }
 
       // Force update the socket data stream to notify UI components
       if (tokensToRemove.isNotEmpty || tokensProtected.isNotEmpty) {
-        print("Cleared ${tokensToRemove.length} stale option tokens from socket data");
         if (tokensProtected.isNotEmpty) {
-          print("Preserved ${tokensProtected.length} protected tokens: ${tokensProtected.join(', ')}");
         }
       }
     } catch (e) {
-      print("Error clearing old option socket data: $e");
     }
   }
 
@@ -5143,7 +5002,6 @@ getOptionawait(String exch, String token) {
     // Clear data and set error state
     clearOptionChainData();
     // Could add error state management here if needed
-    debugPrint("Option Chain Error: $error");
     notifyListeners();
   }
 
@@ -5198,7 +5056,6 @@ getOptionawait(String exch, String token) {
   /// Each key contains the matching event object or null if not found
   Map<String, dynamic> filterStockEventsByToken(String stockToken) {
     final stockEvents = ref.read(stocksProvide).caeventsModel;
-    print("stockEvents $stockToken");
     Map<String, dynamic> filteredEvents = {
       'dividend': null,
       'bonus': null,

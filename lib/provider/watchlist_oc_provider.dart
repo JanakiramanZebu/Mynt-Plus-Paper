@@ -204,7 +204,6 @@ class WatchlistOCProvider extends ChangeNotifier {
           _currentIndexLTP = double.tryParse(quote.lp!) ?? 0.0;
         }
       } catch (e) {
-        debugPrint('WatchlistOC: Error fetching quote: $e');
       }
 
       if (_loadGeneration != gen) return;
@@ -229,7 +228,6 @@ class WatchlistOCProvider extends ChangeNotifier {
         _selectedExpiry = sorted.first;
       }
     } catch (e) {
-      debugPrint('WatchlistOC: Error loading symbol data: $e');
     } finally {
       _isLoadingExpiries = false;
       if (_loadGeneration == gen) notifyListeners();
@@ -280,7 +278,6 @@ class WatchlistOCProvider extends ChangeNotifier {
         subscribeToWebSocket(context);
       }
     } catch (e) {
-      debugPrint('WatchlistOC: Error loading option chain: $e');
     } finally {
       _isLoadingOptionChain = false;
       if (_loadGeneration == gen) notifyListeners();
@@ -352,7 +349,6 @@ class WatchlistOCProvider extends ChangeNotifier {
         _availableSymbols = result.values!;
       }
     } catch (e) {
-      debugPrint('WatchlistOC: Error fetching symbols: $e');
     } finally {
       _isLoadingSymbols = false;
       notifyListeners();

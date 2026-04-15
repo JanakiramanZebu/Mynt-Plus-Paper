@@ -825,7 +825,6 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
 
                 validator: (input) {
-                  print("INPUT :: $input");
                   return RegExp(
                               r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                           .hasMatch(input ?? "")
@@ -1351,8 +1350,6 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                   String filePath = picked.files.first.path!;
                   String fileName = picked.files.first.name;
 
-                  print("Selected File: $fileName");
-                  print("File Path: $filePath");
 
                   // Store file path in provider
                   // context

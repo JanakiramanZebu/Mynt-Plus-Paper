@@ -53,7 +53,6 @@ class WebNavigationHelper {
     _cancelPopStateListener?.call();
 
     _cancelPopStateListener = url_strategy.onPopState((String path) {
-      debugPrint('WebNavigationHelper: Browser navigation to $path');
       _handleBrowserNavigation(path);
     });
   }
@@ -63,7 +62,6 @@ class WebNavigationHelper {
     // Set flag to prevent URL updates during browser navigation
     // This preserves forward history when pressing back button
     _isHandlingBrowserNavigation = true;
-    debugPrint('WebNavigationHelper: Browser navigation started to $urlPath');
 
     try {
       // Notify external listener if registered
@@ -77,7 +75,6 @@ class WebNavigationHelper {
       if (routeName != null && _replaceScreen != null) {
         // Use replaceScreen to avoid adding another history entry
         _replaceScreen!(routeName);
-        debugPrint('WebNavigationHelper: Navigated to $routeName from browser back/forward');
       }
     } finally {
       // Reset flag after a longer delay to allow all navigation callbacks
@@ -85,7 +82,6 @@ class WebNavigationHelper {
       // Using 500ms to ensure all async frame callbacks have executed
       Future.delayed(const Duration(milliseconds: 500), () {
         _isHandlingBrowserNavigation = false;
-        debugPrint('WebNavigationHelper: Browser navigation handling complete');
       });
     }
   }
@@ -216,15 +212,12 @@ class WebNavigationHelper {
     // Skip URL update if we're handling browser back/forward navigation
     // This prevents clearing forward history when pressing back button
     if (_isHandlingBrowserNavigation) {
-      debugPrint('WebNavigationHelper: Skipping URL update (handling browser navigation)');
       return;
     }
 
     try {
       url_strategy.updateBrowserUrl(urlPath);
-      debugPrint('WebNavigationHelper: Updated URL to $urlPath');
     } catch (e) {
-      debugPrint('WebNavigationHelper: Failed to update URL: $e');
     }
   }
 
@@ -233,9 +226,7 @@ class WebNavigationHelper {
     if (!kIsWeb) return;
     try {
       url_strategy.replaceBrowserUrl(urlPath);
-      debugPrint('WebNavigationHelper: Replaced URL to $urlPath');
     } catch (e) {
-      debugPrint('WebNavigationHelper: Failed to replace URL: $e');
     }
   }
 
