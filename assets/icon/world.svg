@@ -1,0 +1,17 @@
+<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="world 1" clip-path="url(#clip0_1261_31008)">
+<g id="Group">
+<g id="Group_2">
+<path id="Vector" d="M4.45976 2.96875L5.5977 4.29643L6.53734 5.47161L6.44273 7.08616L4.56294 7.43393L3.23828 9.00017L3.85582 10.2821L4.45222 11.3505L5.85841 12.4391L4.93739 13.8368L3.70181 14.3768" stroke="#777777" stroke-width="1.2" stroke-miterlimit="10"/>
+<path id="Vector_2" d="M15.0706 4.50965L13.9518 5.22029L12.52 5.2057L11.4308 5.63953L10.467 4.97469L10.1424 3.7527L9.24505 2.80954L8.30138 2.13714L8.28125 1.48438" stroke="#777777" stroke-width="1.2" stroke-miterlimit="10"/>
+<path id="Vector_3" d="M13.8752 9.61923L13.7206 10.9776L12.7594 11.956L11.9073 12.9193L10.8912 13.6858L9.567 13.9616L8.85938 12.5116L9.51164 11.0511L9.09642 9.60363L9.69282 8.03639L11.4116 7.7168L12.8646 8.33182L13.8752 9.61923Z" stroke="#777777" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="square"/>
+<path id="Vector_4" d="M9.00051 16.5494C13.1699 16.5494 16.5499 13.1694 16.5499 9.00003C16.5499 4.83064 13.1699 1.45068 9.00051 1.45068C4.83113 1.45068 1.45117 4.83064 1.45117 9.00003C1.45117 13.1694 4.83113 16.5494 9.00051 16.5494Z" stroke="#777777" stroke-width="1.2" stroke-miterlimit="10" stroke-linecap="square"/>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_1261_31008">
+<rect width="18" height="18" fill="white"/>
+</clipPath>
+</defs>
+</svg>

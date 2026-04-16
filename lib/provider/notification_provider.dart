@@ -1,0 +1,242 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import '../api/core/api_export.dart';
+import '../locator/constant.dart';
+import '../locator/locator.dart';
+import '../locator/preference.dart';
+import '../models/notification_model/broker_message_model.dart';
+import '../models/notification_model/exchange_message_model.dart';
+import '../models/notification_model/exchange_status_model.dart';
+import '../models/notification_model/information_message_model.dart';
+import 'auth_provider.dart';
+import 'core/default_change_notifier.dart';
+import 'index_list_provider.dart';
+
+final notificationprovider =
+    ChangeNotifierProvider((ref) => NotificationProvider(ref));
+
+class NotificationProvider extends DefaultChangeNotifier {
+  final Preferences pref = locator<Preferences>();
+  final api = locator<ApiExporter>();
+  final Ref ref;
+  NotificationProvider(this.ref);
+
+  List<ExchangeMessageModel>? _exchangemessage;
+  List<ExchangeMessageModel>? get exchangemessage => _exchangemessage;
+
+  List<ExchangeStatusModel>? _exchangestatus;
+  List<ExchangeStatusModel>? get exchangestatus => _exchangestatus;
+
+  List<BrokerMessage>? _brokermsg;
+  List<BrokerMessage>? get brokermsg => _brokermsg;
+
+  List<InformationMessageModel>? _informationMessages;
+  List<InformationMessageModel>? get informationMessages => _informationMessages;
+
+  /////TAB CONTROLLER
+  late TabController notifytab;
+  List<Tab> _notifyTabName = [
+    const Tab(text: "Message"),
+    const Tab(
+      child: Text(
+        "Exchange Message",
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      ),
+    ),
+    const Tab(text: "Information"),
+  ];
+  List<Tab> get notifyTabName => _notifyTabName;
+
+  int _selectedTab = 0;
+  int get selectedTab => _selectedTab;
+  changeTabIndex(int index) {
+    _selectedTab = index;
+  }
+
+  // ========== PUSH NOTIFICATION HANDLING ==========
+  // Stores the unique message ID that should be highlighted in the notification list
+  // Used when user taps on a push notification to show which message triggered it
+  String? _highlightedMessageId;
+  String? get highlightedMessageId => _highlightedMessageId;
+
+  /// Sets which message should be highlighted in the notification list
+  /// The highlighted message will have visual feedback (background color, border, etc.)
+  void setHighlightedMessage(String? messageId) {
+    _highlightedMessageId = messageId;
+    notifyListeners();
+
+    // Auto-clear highlight after 5 seconds for better UX
+    if (messageId != null) {
+      Future.delayed(const Duration(seconds: 5), () {
+        if (_highlightedMessageId == messageId) {
+          _highlightedMessageId = null;
+          notifyListeners();
+        }
+      });
+    }
+  }
+
+  /// Clears highlighted message immediately
+  void clearHighlightedMessage() {
+    _highlightedMessageId = null;
+    notifyListeners();
+  }
+  // ========== END PUSH NOTIFICATION HANDLING ==========
+
+// Assigning Tab for Notification screen
+  tabSize() {
+    _notifyTabName = [
+      const Tab(
+        child: Text(
+            "Message"),
+            // (${_brokermsg![0].stat == "Not_Ok" ? "0" : _brokermsg!.length})"
+      ),
+      const Tab(
+        child: Text(
+          "Exchange Message",
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        // (${_exchangemessage![0].stat == "Not_Ok" ? "0" : _exchangemessage!.length})")
+      ),
+      const Tab(
+        child: Text("Information"),
+      ),
+
+
+
+
+    ];
+
+    notifyListeners();
+  }
+
+  List<BrokerMessage>? _triggeredAlertSearch = [];
+  List<BrokerMessage>? get triggeredAlertSearch => _triggeredAlertSearch;
+
+  void clearTriggeredAlertSearch() {
+    _triggeredAlertSearch = [];
+    notifyListeners();
+  }
+
+  void setTriggeredAlertSearch(List<BrokerMessage>? searchResult) {
+    _triggeredAlertSearch = searchResult;
+    notifyListeners();
+  }
+
+// Fetching data from the api and stored in a variable
+  Future fetchexchagemsg(BuildContext context) async {
+    try {
+      _exchangemessage = await api.getexchmsg();
+      if (_exchangemessage![0].emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      } else {
+        ConstantName.sessCheck = true;
+      }
+      notifyListeners();
+      return _exchangemessage;
+    } catch (e) {
+      ref.read(indexListProvider).logError.add({"type": "Exch msg", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
+
+  // Future fetchexchagestatus(BuildContext context) async {
+  //   final localstorage = await SharedPreferences.getInstance();
+  //   try {
+  //     _exchangestatus = await api.getexchstatus();
+  //     // print("------------------------------------> ${_exchangestatus!.length}");
+  //     // print(
+  //     //     "------------------------------------> ${_exchangestatus![0].description}");
+  //     if (_exchangestatus![0].emsg ==
+  //         "Session Expired :  Invalid Session Key") {
+  //       ref.read(authProvider).loginMethCtrl.text =
+  //           localstorage.getString("userId") ?? "";
+  //       Navigator.pushNamedAndRemoveUntil(
+  //           context,
+  //           Routes.loginScreen,
+  //           arguments: "deviceLogin",
+  //           (route) => false);
+  //     }
+  //     tabSize();
+  //     notifyListeners();
+  //     return _exchangestatus;
+  //   } catch (e) {
+  //     ref.read(indexListProvider)
+  //         .logError
+  //         .add({"type": "Exchange status", "Error": "$e"});
+  //     notifyListeners();
+  //   } finally {}
+  // }
+
+  // Fetching exchange status/alerts from API
+  Future fetchexchstatus(BuildContext context) async {
+    try {
+      _exchangestatus = await api.getexchstatus();
+      if (_exchangestatus != null &&
+          _exchangestatus!.isNotEmpty &&
+          _exchangestatus![0].emsg == "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      } else {
+        ConstantName.sessCheck = true;
+      }
+      notifyListeners();
+      return _exchangestatus;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "Exchange status", "Error": "$e"});
+      notifyListeners();
+    }
+  }
+// Fetching data from the api and stored in a variable
+  Future fetchbrokermsg(BuildContext context) async {
+    try {
+      _brokermsg = await api.getbrokermsg();
+      // print("------------------------------------> ${_brokermsg!.length}");
+      // print("------------------------------------> ${_brokermsg![0].emsg}");
+      if (_brokermsg![0].emsg == "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      } else {
+        ConstantName.sessCheck = true;
+      }
+      tabSize();
+      notifyListeners();
+      return _brokermsg;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "Broker msg", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
+
+// Fetching information messages from nlog API
+  Future fetchInformationMessages(BuildContext context) async {
+    try {
+      _informationMessages = await api.getInformationMessages();
+      notifyListeners();
+      return _informationMessages;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "Information msg", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
+
+  /// Clears all notification data on logout to prevent data leaking between users
+  void clearData() {
+    _exchangemessage = null;
+    _exchangestatus = null;
+    _brokermsg = null;
+    _informationMessages = null;
+    _triggeredAlertSearch = [];
+    _highlightedMessageId = null;
+    _selectedTab = 0;
+    notifyListeners();
+  }
+}

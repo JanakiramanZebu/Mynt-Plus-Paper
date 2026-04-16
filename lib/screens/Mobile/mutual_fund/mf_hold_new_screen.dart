@@ -1,0 +1,1024 @@
+import 'dart:async';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
+import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import '../../../provider/fund_provider.dart';
+import '../../../provider/mf_provider.dart';
+import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
+import '../../../res/res.dart';
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
+import '../../../sharedWidget/list_divider.dart';
+import '../portfolio_screens/holdings/filter_scrip_bottom_sheet.dart';
+import 'mf_filter_bottom_sheet.dart';
+import 'mf_hold_singlepage.dart';
+
+class MfHoldNewScreen extends ConsumerStatefulWidget {
+  const MfHoldNewScreen({super.key});
+
+  @override
+  ConsumerState<MfHoldNewScreen> createState() => _MfHoldNewScreenState();
+}
+
+class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrollingUp = false;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize scroll controller
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Initialize fade animation
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  // Scroll listener to detect scroll direction and animate
+  void _onScroll() {
+    final currentOffset = _scrollController.offset;
+    // Keep Returns card visible when scrolled past initial position, never hide when scrolling down
+    bool shouldShowReturnsCard = false;
+    
+    if (currentOffset > 10) {
+      // Once scrolled past initial position, always show Returns card
+      // It stays visible whether scrolling up or down
+      shouldShowReturnsCard = true;
+    } else {
+      // At top (offset <= 10), show normal stats (hide Returns card)
+      shouldShowReturnsCard = false;
+    }
+    
+    if (shouldShowReturnsCard != _isScrollingUp) {
+      _isScrollingUp = shouldShowReturnsCard;
+      if (_isScrollingUp) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+      // Trigger rebuild to show/hide Returns card and summary section
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider);
+    final showSearch = mfData.showMfHoldingSearch;
+    final searchText = mfData.mfHoldingSearchController.text;
+    final showAllMf = mfData.showAllMfHoldings;
+
+    // Get the appropriate list based on search state and toggle
+    final items = showSearch && searchText.isNotEmpty
+        ? (mfData.mfHoldingSearchItems ?? [])
+        : showAllMf
+            ? (mfData.allMfHoldings?.data ?? [])
+            : (mfData.mfholdingnew?.data ?? []);
+
+    // Get summary data based on toggle
+    final summaryData = showAllMf
+        ? mfData.allMfHoldings?.summary
+        : mfData.mfholdingnew?.summary;
+
+    // Check if user has any holdings data at all
+    // If loading "All MF" for the first time, don't show "No data" yet - wait for fetch to complete
+    final isLoadingAllMf = showAllMf && (mfData.holdstatload ?? false) && mfData.allMfHoldings == null;
+    final hasHoldingsData = showAllMf
+        ? (mfData.allMfHoldings?.data != null && mfData.allMfHoldings!.data!.isNotEmpty)
+        : (mfData.mfholdingnew?.data != null && mfData.mfholdingnew!.data!.isNotEmpty);
+
+    // Don't show "No data" if we're currently loading All MF data for the first time
+    if(!hasHoldingsData && !isLoadingAllMf) {
+      return Center(
+        child: NoDataFound(
+          title: "No MF Holdings Found",
+          subtitle: "There's nothing here yet. Buy some MF to see them here.",
+          onSecondary: () {
+              ref.read(indexListProvider).setDashboardTab(1);
+            ref.read(indexListProvider).bottomMenu(0, context);
+          },
+          secondaryEnabled: ref.read(indexListProvider).selectedBtmIndx != 0 ? true : false,
+          secondaryLabel: "Buy MF",
+        ),
+      );
+    }
+    
+    return TransparentLoaderScreen(
+      isLoading: mfData.holdstatload ?? false,
+      child:  RefreshIndicator(
+                  onRefresh: () async {
+                    // Refresh logic here if needed
+                  },
+                  child: Stack(
+                    children: [
+                      // Scrollable content
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            controller: _scrollController,
+                            physics: const ClampingScrollPhysics(),
+                            child: GestureDetector(
+                              onTap: () => FocusScope.of(context).unfocus(),
+                              behavior: HitTestBehavior.opaque,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight > 0 
+                                      ? constraints.maxHeight + 1 
+                                      : double.infinity,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    
+                                    // Summary container - hide when scrolling up
+                                    if (!_isScrollingUp)
+                                      Container(
+                            padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Invested amount column
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Invested",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        TextWidget.subText(
+                                          text: _getSummaryValue(summaryData, 'invested'),
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    ),
+                
+                                    // Returns column
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Returns",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            TextWidget.subText(
+                                                text: _getSummaryValue(summaryData, 'absReturnValue'),
+                                                color: _getColorBasedOnValue(
+                                                  _getSummaryValue(summaryData, 'absReturnValue'),
+                                                  theme,
+                                                ),
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Current Value",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        TextWidget.subText(
+                                          text: _getSummaryValue(summaryData, 'currentValue'),
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Percentage",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        TextWidget.subText(
+                                          text: "${_getSummaryValue(summaryData, 'absReturnPercent')}%",
+                                          color: _getColorBasedOnValue(
+                                            _getSummaryValue(summaryData, 'absReturnPercent'),
+                                                theme,
+                                          ),
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                
+                          // Search and sort container (hidden when search is active)
+                          if (!showSearch)
+                            Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16, right: 16, top: 5, bottom: 8),
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      height: 40,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                                        decoration: BoxDecoration(
+                                         color: theme.isDarkMode
+                        ? colors.searchBgDark
+                        : colors.searchBg,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 10),
+                                              child: Row(
+                                                children: [
+                                                  // Search icon that shows search container when clicked
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    clipBehavior: Clip.hardEdge,
+                                                    child: InkWell(
+                                                      customBorder: const CircleBorder(),
+                                                      splashColor: theme.isDarkMode
+                                                          ? colors.splashColorDark
+                                                          : colors.splashColorLight,
+                                                      highlightColor: theme.isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors.highlightLight,
+                                                      onTap: () {
+                                                        Future.delayed(
+                                                            const Duration(milliseconds: 150),
+                                                            () async {
+                                                          mfData.setMfHoldingSearch(true);
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: SvgPicture.asset(
+                                                          assets.searchIcon,
+                                                         color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                                          width: 20,
+                                                          fit: BoxFit.scaleDown,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    clipBehavior: Clip.hardEdge,
+                                                    child: InkWell(
+                                                      customBorder: const CircleBorder(),
+                                                      splashColor: theme.isDarkMode
+                                                          ? colors.splashColorDark
+                                                          : colors.splashColorLight,
+                                                      highlightColor: theme.isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors.highlightLight,
+                                                      onTap: () async {
+                                                        Future.delayed(
+                                                            const Duration(milliseconds: 150),
+                                                            () async {
+                                                          await showModalBottomSheet(
+                                                            useSafeArea: true,
+                                                            isScrollControlled: true,
+                                                            shape: const RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.vertical(
+                                                                      top: Radius.circular(16)),
+                                                            ),
+                                                            context: context,
+                                                            builder: (context) =>
+                                                                const MFFilterBottomSheet(),
+                                                          );
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: SvgPicture.asset(
+                                                          assets.filterLinesDark,
+                                                          width: 18,
+                                                      color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                                          fit: BoxFit.scaleDown,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            // mfData.allMfHoldings != null && mfData.allMfHoldings!.data!.isNotEmpty ?
+                                            // Row(
+                                            //   children: [
+                                            //     Material(
+                                            //       color: Colors.transparent,
+                                            //       shape: const RoundedRectangleBorder(),
+                                            //       clipBehavior: Clip.hardEdge,
+                                            //       child: InkWell(
+                                            //         customBorder: const RoundedRectangleBorder(),
+                                            //         splashColor: theme.isDarkMode
+                                            //             ? colors.splashColorDark
+                                            //             : colors.splashColorLight,
+                                            //         highlightColor: theme.isDarkMode
+                                            //             ? colors.highlightDark
+                                            //             : colors.highlightLight,
+                                            //         onTap: () {
+                                            //           Future.delayed(
+                                            //               const Duration(milliseconds: 150),
+                                            //               () {
+                                                        // mfData.toggleMfHoldingsView();
+                                            //           });
+                                            //         },
+                                            //         child: Padding(
+                                            //           padding: const EdgeInsets.symmetric(
+                                            //               horizontal: 10, vertical: 5),
+                                            //           child: TextWidget.subText(
+                                            //             text: showAllMf ? "My MF" : "All MF",
+                                            //             theme: false,
+                                            //             color: theme.isDarkMode
+                                            //                 ? colors.secondaryDark
+                                            //                 : colors.secondaryLight,
+                                            //             fw: 2,
+                                            //           ),
+                                            //         ),
+                                            //       ),
+                                            //     ),
+                                            //   ],
+                                            // )
+                                            // : SizedBox(),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )),
+                
+                          // Search container (shown conditionally when search icon is clicked)
+                          if (showSearch && !_isScrollingUp)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                              child: SizedBox(
+                                height: 40,
+                                child: TextFormField(
+                                  autofocus: true,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
+                                  controller: mfData.mfHoldingSearchController,
+                                 style: TextWidget.textStyle(
+                                          fontSize: 16,
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                  keyboardType: TextInputType.text,
+                                  decoration: InputDecoration(
+                                    hintText: "Search",
+                                   hintStyle: TextWidget.textStyle(
+                                            fontSize: 14,
+                                            theme: theme.isDarkMode,
+                                           color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                          fw: 0,
+                                          ),
+                                    fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+                                    filled: true,
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SvgPicture.asset(
+                                        assets.searchIcon,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                        width: 20,
+                                        fit: BoxFit.scaleDown,
+                                      ),
+                                    ),
+                                    suffixIcon: Material(
+                                      color: Colors.transparent,
+                                      shape: const CircleBorder(),
+                                      clipBehavior: Clip.hardEdge,
+                                      child: InkWell(
+                                        customBorder: const CircleBorder(),
+                                        splashColor: theme.isDarkMode
+                                            ? colors.splashColorDark
+                                            : colors.splashColorLight,
+                                        highlightColor: theme.isDarkMode
+                                            ? colors.highlightDark
+                                            : colors.highlightLight,
+                                        onTap: () {
+                                          mfData.clearMfHoldingSearch();
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SvgPicture.asset(
+                                            assets.removeIcon,
+                                            fit: BoxFit.scaleDown,
+                                            color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                            width: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    disabledBorder: InputBorder.none,
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    // Keep search active even when text is empty
+                                    // Only perform search when there's text
+                                    if (value.isNotEmpty) {
+                                      mfData.mfHoldingSearch(value, context);
+                                    } else {
+                                      // Clear search results but keep search container open
+                                      mfData.mfHoldingSearch("", context);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                
+                                    // Show appropriate UI based on data state
+                                    _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme, showAllMf),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      // Fixed Returns card overlaying the content
+                      if (_isScrollingUp && hasHoldingsData)
+                        Positioned(
+                          top: -1,
+                          left: 0,
+                          right: 0,
+                          child: _buildReturnsCard(theme, mfData, summaryData),
+                        ),
+                    ],
+                  ),
+                ),
+      // ),
+    );
+  }
+
+  // Returns card - fixed at the top with glassy UI
+  Widget _buildReturnsCard(ThemesProvider theme, MFProvider mfData, dynamic summaryData) {
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            // Translucent background to give glassy feel (same as watchlist)
+            color: theme.isDarkMode
+                ? colors.colorBlack
+                : colors.colorWhite,
+            // Subtle gradient to enhance the frosted look (same as watchlist)
+            // gradient: LinearGradient(
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            //   colors: [
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.02)
+            //         : Colors.white.withOpacity(0.06),
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.01)
+            //         : Colors.white.withOpacity(0.03),
+            //   ],
+            // ),
+            // Keep the bottom border as before (same as watchlist)
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Returns label on the left
+              TextWidget.subText(
+                text: "Returns",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
+              ),
+              // Returns value on the right with animation
+              Opacity(
+                opacity: 1.0 - _fadeAnimation.value * 0.3,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextWidget.subText(
+                      text: "${_getSummaryValue(summaryData, 'absReturnPercent')}%",
+                      theme: false,
+                      color: _getColorBasedOnValue(
+                        _getSummaryValue(summaryData, 'absReturnPercent'),
+                        theme,
+                      ),
+                      fw: 0,
+                    ),
+                    const SizedBox(width: 4),
+                    TextWidget.headText(
+                      text: _getSummaryValue(summaryData, 'absReturnValue'),
+                      theme: false,
+                      color: _getColorBasedOnValue(
+                        _getSummaryValue(summaryData, 'absReturnValue'),
+                        theme,
+                      ),
+                      fw: 0,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildListContent(BuildContext context, bool isDarkMode, MFProvider mfData, bool showSearch, String searchText, List items, ThemesProvider theme, bool showAllMf) {
+    // Show "No Data Found" when search is active with text and no results
+    if (showSearch && searchText.isNotEmpty && items.isEmpty) {
+      return const SizedBox(
+        height: 400,
+        child: Center(child: NoDataFound(
+          title: "No Results Found",
+          subtitle: "Try searching with different keywords",
+          primaryEnabled: false,
+          secondaryEnabled: false,
+        )),
+      );
+    }
+
+    // If items is empty but we're here, it means we have holdings data but search/filter resulted in empty
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemBuilder: (BuildContext context, int idx) {
+        final index = idx ~/ 2;
+
+        // Return divider for odd indices
+        if (idx.isOdd) {
+          return const ListDivider();
+        }
+
+        final item = items[index];
+        if (item == null) return const SizedBox();
+
+        return InkWell(
+          onTap: () {
+            if (item.iSIN != null) {
+              // Fetch data first - pass showAllMf flag to search in correct data source
+              mfData.fetchmfholdsingpage("${item.iSIN}", isAllMf: showAllMf);
+
+              // Show modal with data
+              showModalBottomSheet(
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                isDismissible: true,
+                enableDrag: false,
+                useSafeArea: true,
+                context: context,
+                builder: (context) => Container(
+                    padding: EdgeInsets.only(
+                      bottom:
+                          MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: mfholdsinlepage(isAllMf: showAllMf)),
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name + NAV
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.6,
+                      child: TextWidget.subText(
+                        // align: TextAlign.start,
+                        text: _getItemValue(item, 'name', isAllMf: showAllMf),
+                        color: isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        theme: isDarkMode,
+                        fw: 0,
+                      ),
+                    ),
+
+                    Row(
+                      children: [
+                        TextWidget.titleText(
+                            align: TextAlign.start,
+                            text: _getItemValue(item, 'profitLoss', isAllMf: showAllMf),
+                            color: _getColorBasedOnValue(
+                                _getItemValue(item, 'profitLoss', isAllMf: showAllMf), theme),
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: isDarkMode,
+                            fw: 0),
+                      ],
+                    )
+
+                    // NAVV
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Exchange badge
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     TextWidget.paraText(
+                //         align: TextAlign.start,
+                //         text: "NSE",
+                //         color: theme.isDarkMode
+                //             ? colors.textSecondaryDark
+                //             : colors.textSecondaryLight,
+                //         textOverflow: TextOverflow.ellipsis,
+                //         theme: theme.isDarkMode,
+                //         fw: 3),
+                //   ],
+                // ),
+
+                // const SizedBox(height: 4),
+
+                // Divider(
+                //   height: 12,
+                //   thickness: 0.4,
+                //   color: theme.isDarkMode
+                //       ? colors.darkColorDivider
+                //       : colors.colorDivider,
+                // ),
+
+                // const SizedBox(height: 4),
+
+                // Units + Gain/Loss
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        TextWidget.paraText(
+                            align: TextAlign.start,
+                            text: "UNITS ",
+                            color: isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: isDarkMode,
+                            fw: 0),
+                        TextWidget.paraText(
+                            align: TextAlign.start,
+                            text:
+                                "${_getItemValue(item, 'avgQty', isAllMf: showAllMf)} @ ${_getItemValue(item, 'avgNav', isAllMf: showAllMf)}",
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextWidget.paraText(
+                            align: TextAlign.start,
+                            text:
+                                "(${_getItemValue(item, 'changeprofitLoss', isAllMf: showAllMf)}%)",
+                            color: _getColorBasedOnValue(
+                                _getItemValue(item, 'changeprofitLoss', isAllMf: showAllMf), theme),
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                // Invested + Current
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: "INV ",
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: _getItemValue(item, 'investedValue', isAllMf: showAllMf),
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: " NAV ",
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: _getItemValue(item, 'curNav', isAllMf: showAllMf),
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
+                    ),
+                    // Row(
+                    //   children: [
+                    //     TextWidget.paraText(
+                    //         // align: TextAlign.start,
+                    //         text:  "Cur: ",
+                    //         color: theme.isDarkMode
+                    //             ? colors.textSecondaryDark
+                    //             : colors.textSecondaryLight,
+                    //         textOverflow: TextOverflow.ellipsis,
+                    //         theme: theme.isDarkMode,
+                    //         fw: 3),
+                    //     TextWidget.paraText(
+                    //         // align: TextAlign.start,
+                    //         text:
+                    //              "₹${item.currentValue ?? "0.00"}",
+                    //         color: theme.isDarkMode
+                    //             ? colors.textSecondaryDark
+                    //             : colors.textSecondaryLight,
+                    //         textOverflow: TextOverflow.ellipsis,
+                    //         theme: theme.isDarkMode,
+                    //         fw: 3),
+
+                    //   ],
+                    // ),
+                  ],
+                ),
+
+                // const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+      itemCount: items.length * 2 - 1,
+    );
+  }
+
+  // Helper method to check if data is empty or has an error
+  // bool _isEmptyOrErrorState(MFProvider mfData) {
+  //   return mfData.mfholdingnew?.stat == "Not Ok" ||
+  //       mfData.mfholdingnew?.msg == "No Data Found";
+  // }
+
+  // Helper method to safely format values
+  String _formatValue(String? value) {
+    return (value == null || value.isEmpty) ? "0.00" : value;
+  }
+
+  // Helper method to get summary values from either summary type
+  String _getSummaryValue(dynamic summary, String field) {
+    if (summary == null) return "0.00";
+
+    try {
+      switch (field) {
+        case 'invested':
+          return summary.invested?.toString() ?? "0.00";
+        case 'currentValue':
+          return summary.currentValue?.toString() ?? "0.00";
+        case 'absReturnValue':
+          return summary.absReturnValue?.toString() ?? "0.00";
+        case 'absReturnPercent':
+          return summary.absReturnPercent?.toString() ?? "0.00";
+        default:
+          return "0.00";
+      }
+    } catch (e) {
+      return "0.00";
+    }
+  }
+
+  // Helper method to get item values from different data types
+  String _getItemValue(dynamic item, String field, {bool isAllMf = false}) {
+    if (item == null) return field == 'name' ? "Unknown Fund" : "0.00";
+
+    try {
+      switch (field) {
+        case 'name':
+          // AllMfModel uses sCRIPNAME, regular uses name
+          // Backend will send properly formatted names, so return as is
+          if (isAllMf) {
+            // For AllMfModel, check sCRIPNAME first
+            if (item.sCRIPNAME != null && item.sCRIPNAME.toString().trim().isNotEmpty) {
+              return item.sCRIPNAME.toString().trim();
+            }
+            // Fallback to name if sCRIPNAME is not available
+            if (item.name != null && item.name.toString().trim().isNotEmpty) {
+              return item.name.toString().trim();
+            }
+          } else {
+            // For regular model, check name first (My MF)
+            if (item.name != null && item.name.toString().trim().isNotEmpty) {
+              return item.name.toString().trim();
+            }
+            // Fallback to sCRIPNAME if name is not available
+            try {
+              if (item.sCRIPNAME != null && item.sCRIPNAME.toString().trim().isNotEmpty) {
+                return item.sCRIPNAME.toString().trim();
+              }
+            } catch (e) {
+              // sCRIPNAME doesn't exist on regular model, ignore
+            }
+          }
+          return "Unknown Fund";
+        case 'profitLoss':
+          return item.profitLoss?.toString() ?? "0.00";
+        case 'avgQty':
+          // AllMfModel uses totalUnits (double) or nSOHQTY (String), regular uses avgQty (String)
+          if (isAllMf) {
+            // For AllMfModel, check totalUnits first, then nSOHQTY
+            if (item.totalUnits != null) {
+              return item.totalUnits.toString();
+            }
+            if (item.nSOHQTY != null && item.nSOHQTY.toString().trim().isNotEmpty) {
+              return item.nSOHQTY.toString().trim();
+            }
+            // Fallback to avgQty if available
+            if (item.avgQty != null && item.avgQty.toString().trim().isNotEmpty) {
+              return item.avgQty.toString().trim();
+            }
+          } else {
+            // For regular model, check avgQty first
+            if (item.avgQty != null && item.avgQty.toString().trim().isNotEmpty) {
+              return item.avgQty.toString().trim();
+            }
+            // Fallback to totalUnits or nSOHQTY if available
+            try {
+              if (item.totalUnits != null) {
+                return item.totalUnits.toString();
+              }
+              if (item.nSOHQTY != null && item.nSOHQTY.toString().trim().isNotEmpty) {
+                return item.nSOHQTY.toString().trim();
+              }
+            } catch (e) {
+              // These properties don't exist on regular model, ignore
+            }
+          }
+          return "0";
+        case 'avgNav':
+          return item.avgNav?.toString() ?? "0.00";
+        case 'changeprofitLoss':
+          final value = item.changeprofitLoss;
+          if (value == null) return "0.00";
+          if (value is double) return value.toStringAsFixed(2);
+          return value.toString();
+        case 'investedValue':
+          return item.investedValue?.toString() ?? "0.00";
+        case 'curNav':
+          return item.curNav?.toString() ?? "0.00";
+        default:
+          return "0.00";
+      }
+    } catch (e) {
+      return field == 'name' ? "Unknown Fund" : "0.00";
+    }
+  }
+
+  // Helper method to determine color based on value
+  Color _getColorBasedOnValue(String? valueStr, ThemesProvider theme) {
+    final value = double.tryParse(valueStr ?? "0") ?? 0;
+    return value >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight;
+  }
+}

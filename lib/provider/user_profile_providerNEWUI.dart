@@ -1,0 +1,423 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import '../api/core/api_export.dart';
+import '../locator/constant.dart';
+import '../locator/locator.dart';
+import '../locator/preference.dart';
+import '../models/profile_model/client_detail_model.dart';
+import '../models/profile_model/user_detail_model.dart';
+import '../res/res.dart';
+import '../routes/route_names.dart';
+import '../sharedWidget/snack_bar.dart';
+import 'auth_provider.dart';
+import 'core/default_change_notifier.dart';
+import 'index_list_provider.dart';
+import 'shocase_provider.dart';
+import '../models/profile_model/qr_login_res.dart';
+
+final userProfileProvider =
+    ChangeNotifierProvider((ref) => UserProfileProvider(ref));
+
+class UserProfileProvider extends DefaultChangeNotifier {
+  final api = locator<ApiExporter>();
+  final Preferences pref = locator<Preferences>();
+  final Ref ref;
+
+  UserDetailModel? _userDetailModel;
+  UserDetailModel? get userDetailModel => _userDetailModel;
+
+  QrLoginResponces? _qrLoginesponces;
+  QrLoginResponces? get qrloginres => _qrLoginesponces;
+
+  final FToast _fToast = FToast();
+  FToast get fToast => _fToast;
+
+  List _settingMenu = [];
+  List get settingmenu => _settingMenu;
+
+  final List _socialMedaiIcons = [
+    {"icon": assets.facebook, "link": "https://www.facebook.com/zebuetrade/"},
+    {"icon": assets.twitterX, "link": "https://twitter.com/zebuetrade?lang=en"},
+    {
+      "icon": assets.youtube,
+      "link": "https://www.youtube.com/channel/UCKbEVG1fH1TwkNDe6OM-zxg"
+    },
+    {"icon": assets.insta, "link": "https://www.instagram.com/zebu_official/"},
+    {"icon": assets.pintrest, "link": "https://in.pinterest.com/ZebuMarketing/"}
+  ];
+  List get socialMedaiIcons => _socialMedaiIcons;
+
+  List _profileMenu = [];
+
+  final List _accountMenu = [
+    {"title": "Personal Info", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Bank", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Demat", "trailing": "assets/profile/ex-link.svg"},
+    {
+      "title": "Trading Preference",
+      "trailing": "assets/profile/ex-link.svg"
+    },
+    {
+      "title": "Margin Trading Facility (MTF)",
+      "trailing": "assets/profile/ex-link.svg"
+    },
+    {"title": "Annual Income", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Nominee", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Family Account", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Closure", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Form Download", "trailing": "assets/profile/ex-link.svg"},
+  ];
+
+  final List _reporttMenu = [
+    {"title": "Ledger", "trailing": "assets/profile/ex-link.svg"},
+    {"title": "Holdings", "trailing": "assets/profile/ex-link.svg"},
+    {
+      "title": "Positions - (Beta)",
+      "trailing": "assets/profile/ex-link.svg"
+    },
+    {"title": "Profit & Loss", "trailing": "assets/profile/ex-link.svg"},
+    {
+      "title": "P&L Summary (Beta)",
+      "trailing": "assets/profile/ex-link.svg"
+    },
+    {"title": "Tax P&L", "trailing": "assets/profile/ex-link.svg"},
+    {
+      "title": "TradeBook/Contract",
+      "trailing": "assets/profile/ex-link.svg"
+    },
+    {"title": "PDF Download", "trailing": "assets/profile/ex-link.svg"}
+  ];
+
+  List get profileMenu => _profileMenu;
+  List get accountMenu => _accountMenu;
+  List get reporttMenu => _reporttMenu;
+
+  ClientDetailModel? _clientDetailModel;
+  ClientDetailModel? get clientDetailModel => _clientDetailModel;
+  UserProfileProvider(this.ref);
+
+  bool _userloader = false;
+  bool get userloader => _userloader;
+
+  bool _showchartof = false;
+  bool get showchartof => _showchartof;
+  
+  setChartdialog(bool value) {
+    _showchartof = value;
+    notifyListeners();
+  }
+
+  profilePageloader(bool value) {
+    _userloader = value;
+    notifyListeners();
+  }
+// Fetching data from the api and stored in a variable
+
+  Future fetchUserDetail(BuildContext context) async {
+    try {
+      toggleLoadingOn(true);
+      _userDetailModel = await api.getUserDetail();
+
+      if (_userDetailModel!.emsg == "Session Expired :  Invalid Session Key" &&
+          _userDetailModel!.stat == "Not_Ok") {
+        ref.read(authProvider).ifSessionExpired(context);
+      }
+
+      notifyListeners();
+      return _userDetailModel;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "API User Detail", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+// Fetching data from the api and stored in a variable
+
+  Future fetchClientDetail(BuildContext context) async {
+    try {
+      _clientDetailModel = await api.getClientDetail();
+
+      if (_clientDetailModel!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      } else {
+        ConstantName.sessCheck = true;
+      }
+      notifyListeners();
+      return _clientDetailModel;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "API Client Detail", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
+
+// Assinging value
+
+  fetchsetting() {
+    _settingMenu = [
+      {
+        "title": "API Key",
+        "subTitle": "API Key",
+        "leading": "assets/icon/key-01.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      {
+        "title": "Change Password",
+        "subTitle": "Change Password",
+        "leading": "assets/icon/key-01.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      {
+        "title": "Theme",
+        "subTitle": ref.read(themeProvider).deviceTheme,
+        "leading": "assets/icon/theme_icon.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      // {
+      //   "title": "TOTP",
+      //   "subTitle": "TOTP",
+      //   "leading": "assets/icon/key-01.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg"
+      // },
+      {
+        "title": "Log",
+        "subTitle": "Log message",
+        "leading": "assets/profile/privacy_settings.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      {
+        "title": "Order Preference",
+        "subTitle": "Trading Order Preferences & Exchange Settings",
+        "leading": "assets/profile/privacy_settings.svg",
+        "trailing": "assets/profile/greater_arrow.svg"
+      },
+      
+    ];
+    notifyListeners();
+    return settingmenu;
+  }
+
+// Assigning value
+
+  fetchprofilemenu() {
+    _profileMenu = [
+      // {
+      //   "title": "Fund",
+      //   "subTitle": "Add Fund, Withdraw",
+      //   "leading": "assets/profileimage/wallet.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref.read(showcaseProvide).fundcase,
+      //   "case": "Click here to view the fund information page."
+      // },
+      {
+        "title": "My Account",
+        "subTitle": "Profile Details, Bank Accounts",
+        "leading": "assets/profileimage/user_logo.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": ref.read(showcaseProvide).accountcase,
+        "case": "Click here to view the account page."
+      },
+      {
+        "title": "Reports",
+        "subTitle": "Ledger, Holdings, Profit&Loss",
+        "leading": "assets/profileimage/reports.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": ref.read(showcaseProvide).reportcase,
+        "case": "Click here to view the report page."
+      },
+      {
+        "title": "Verified P&L",
+        "subTitle": "Verified P&L",
+        "leading": "assets/profileimage/verifiedpl.svg",
+        "trailing": "assets/profile/ex-link.svg",
+        "key": "",
+        "case": "Click here to view the Verified P&L page."
+      },
+      {
+        "title": "Corporate Action",
+        "subTitle": "Corporate Action",
+        "leading": "assets/profileimage/coa_edited.svg",
+        "trailing": "assets/profile/ex-link.svg",
+        "key": ref.read(showcaseProvide).corporateactioncase,
+        "case": "Click here to view the Corporate Action page."
+      },
+      {
+        "title": "CA Events",
+        "subTitle": "CA Event",
+        "leading": "assets/profileimage/caevent.svg",
+        "trailing": "assets/profile/ex-link.svg",
+        "key": "",
+        "case": "Click here to view the Corporate Action page."
+      },
+      {
+        "title": "Pledge & Unpledge",
+        "subTitle": "Pledge & Unpledge",
+        "leading": "assets/profileimage/pledge.svg",
+        "trailing": "assets/profile/ex-link.svg",
+        "key": ref.read(showcaseProvide).pledgeunpcase,
+        "case": "Click here to view the Pledge & Unpledge page."
+      },
+      // {
+      //   "title": "IPO",
+      //   "subTitle": "A company's first public stock offering",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the IPO."
+      // },
+      // {
+      //   "title": "Mutual Fund",
+      //   "subTitle": "Invest in diversified assets managed by professionals",
+      //   "leading": "assets/icon/mf_icon.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view theMutual Fund."
+      // },
+      // {
+      //   "title": "OptionZ",
+      //   "subTitle": "OptionZ",
+      //   "leading": "assets/profileimage/pledge.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref.read(showcaseProvide).pledgeunpcase,
+      //   "case": "Click here to view the OptionZ."
+      // },
+      //  {
+      //   "title": "KRA",
+      //   "subTitle": "KRA",
+      //   "leading": "assets/profileimage/pledge.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref.read(showcaseProvide).pledgeunpcase,
+      //   "case": "Click here to view the Pledge & Unpledge page."
+      // },
+      // {
+      //   "title": "Refer",
+      //   "subTitle": "Refer your family and friends",
+      //   "leading": "assets/profileimage/Referal_Incentive.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref.read(showcaseProvide).apikeycase,
+      //   "case": "Click here to Refer your family and friends."
+      // },
+       {
+        "title": "Notification",
+        "subTitle": "Message, Exchange Status",
+        "leading": "assets/icon/appbarIcon/bell.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": ref.read(showcaseProvide).notificationcase,
+        "case": "Click here to view the notification."
+      },
+      {
+        "title": "Settings",
+        "subTitle": "Change Password, API key, Theme",
+        "leading": "assets/profileimage/privacy_settings.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": ref.read(showcaseProvide).logcase,
+        "case": "Click here to view Settings."
+      },
+      // {
+      //   "title": "Rate Us",
+      //   "subTitle":
+      //       "Share your experience! Rate us to help others discover our great service.",
+      //   "leading": "assets/icon/appbarIcon/star.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref.read(showcaseProvide).notificationcase,
+      //   "case": "Click here to Share your experience!."
+      // },
+     
+      {
+        "title": "Need Help?",
+        "subTitle": "Contact us, Follow us",
+        "leading": "assets/profile/headphones.svg",
+        "trailing": "assets/profile/greater_arrow.svg",
+        "key": "",
+        "case": "Click here to Contact us, Follow us."
+      },
+      /////
+      // {
+      //   "title": "Bonds",
+      //   "subTitle": "Bonds",
+      //   "leading": "assets/profileimage/reports.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Log message."
+      // },
+    ];
+    return profileMenu;
+  }
+
+// Fetching data from the api and stored in a variable
+
+  Future fetchQR(BuildContext context, String unquiid, String loginfsrc,
+      MobileScannerController camera) async {
+    try {
+      _qrLoginesponces = await api.getqr(unquiid, loginfsrc);
+      if (_qrLoginesponces!.msg == "logged in") {
+        successMessage(context, "${_qrLoginesponces!.msg}");
+        Navigator.pop(context);
+        Navigator.pop(context);
+        camera.stop();
+      } else {
+        warningMessage(context, "${_qrLoginesponces!.emsg}");
+        Navigator.pop(context);
+        camera.start();
+      }
+    } catch (e) {
+      notifyListeners();
+    } finally {}
+  }
+
+// Fetching data from the api and stored in a variable
+
+  Future fetchFreezeAc(BuildContext context) async {
+    try {
+      final res = await api.getaFreezeAc();
+      Map data = jsonDecode(res.body);
+
+      if (data["stat"] == "Ok") {
+        await fetchBlockAc(context);
+      } else {
+        warningMessage(context, data["emsg"].toString());
+      }
+    } catch (e) {
+      notifyListeners();
+    } finally {}
+  }
+
+// Fetching data from the api and stored in a variable
+
+  Future fetchBlockAc(BuildContext context) async {
+    try {
+      final res = await api.getaBlockAc();
+      Map data = jsonDecode(res.body);
+
+      if (data["stat"] == "Ok") {
+        ConstantName.timer!.cancel();
+
+        pref.clearClientSession();
+        pref.setLogout(true);
+        ref.read(indexListProvider).bottomMenu(1, context);
+        ref.read(authProvider).loginMethCtrl.text =
+            pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
+        notifyListeners();
+            successMessage(context, 'The Account has been deactivated');
+
+        Navigator.of(context).pop();
+        // ref.read(websocketProvider).closeSocket();
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.loginScreen, (route) => false);
+      } else {warningMessage(context, data["emsg"].toString());
+      }
+    } catch (e) {
+      notifyListeners();
+    } finally {}
+  }
+}

@@ -1,0 +1,9 @@
+:root:not(.theme-dark) {
+    --tv-color-platform-background: #ffffff;
+    --tv-color-pane-background: #ffffff;
+}
+
+.theme-dark:root {
+    --tv-color-platform-background: #000000;
+    --tv-color-pane-background: #121212;
+}

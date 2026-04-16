@@ -1,0 +1,398 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/ledger_provider.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+
+import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
+import 'bottom_sheets/ledger_filter.dart';
+
+class PdfDownload extends StatelessWidget {
+  final String ddd;
+  const PdfDownload({super.key, required this.ddd});
+
+  @override
+  Widget build(BuildContext context) {
+    final List<String> staticColumn = [
+      'Row 1',
+      'Row 2',
+      'Row 3',
+      'Row 4',
+      'Row 4'
+    ];
+    final List<String> Header = [
+      'Date',
+      "Debit",
+      "Credit",
+      "Net Amount",
+      "Details"
+    ];
+    final List<List<String>> scrollableContent = [
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+      ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
+    ];
+
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+
+      final ledgerprovider = ref.watch(ledgerProvider);
+      Future<void> refresh() async {
+        await Future.delayed(const Duration(seconds: 0)); // simulate refresh delay
+        print("refresh ");
+        await ledgerprovider.getCurrentDate('else');
+        ledgerprovider.fetchpdfdownload(
+            context, ledgerprovider.startDate, ledgerprovider.today);
+      }
+
+      return Scaffold(
+        appBar: AppBar(
+          // automaticallyImplyLeading: false,
+          leadingWidth: 41,
+          titleSpacing: 6,
+          centerTitle: false,
+          leading: InkWell(
+            onTap: () {
+              ledgerprovider.falseloader('download');
+            },
+            child: const CustomBackBtn(),
+          ),
+          elevation: 0.2,
+          title: TextWidget.heroText(
+              text: "Download",
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 1),
+
+          // leading: InkWell(
+          //   onTap: () {
+
+          //   },
+          //   child: Icon(Icons.ios_share)),
+        ),
+        body: RefreshIndicator(
+          onRefresh: refresh,
+          child: TransparentLoaderScreen(
+            isLoading: ledgerprovider.pdfdownloadloading,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Text("${ddd}")
+                // Padding(
+                //     padding: EdgeInsets.only(left: 4.0, top: 10.0),
+                //     child: Text(
+                //       "Financial activities through debits and credits ",
+                //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+                //     )),
+
+                Padding(
+                  padding:
+                      const EdgeInsets.only(right: 30.0, left: 30.0, top: 16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            //  ledgerprovider.datePickerStart(context, theme);
+                            ledgerprovider.monthPickerDialog(context, theme);
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextWidget.paraText(
+                                  text: "Select Month",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 6),
+                                alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8),
+                                ),
+                                child: Text(
+                                    "${ledgerprovider.startDate} - ${ledgerprovider.endDate}",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        11,
+                                        FontWeight.w400)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16.0, top: 16.0),
+                        child: SizedBox(
+                            height: 27,
+                            child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.primaryDark
+                                          : colors.primaryLight,
+                                    ),
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5)))),
+                                onPressed: () async {
+                                  ledgerprovider.fetchpdfdownload(
+                                      context,
+                                      ledgerprovider.startDate,
+                                      // ledgerprovider.today);
+                                      ledgerprovider.endDate);
+                                },
+                               child: Text("Get",
+                                    style: textStyle(
+                                        theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
+                                        12,
+                                        FontWeight.w600)))),
+                      ),
+                      InkWell(
+                          onTap: () async {
+                            ledgerprovider.setfilterpage = 'pdfdownload';
+
+                            _showBottomSheet(context, const LedgerFilter());
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: SvgPicture.asset(assets.filterLines,
+                                color: theme.isDarkMode
+                                    ? const Color(0xffBDBDBD)
+                                    : colors.colorGrey),
+                          )),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 2.0,
+                    bottom: 0.0,
+                  ),
+                  child: Divider(
+                    color: theme.isDarkMode
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
+                    thickness: 1.0,
+                  ),
+                ),
+
+                // Padding(
+                //   padding: const EdgeInsets.only(left: 30 , right: 30),
+                //   child: Row(
+                //     children: [
+                //       // Static Column
+                //       Column(
+                //         children: [
+                //           Container(
+                //             margin: EdgeInsets.only(top: 20),
+                //             width: 100,
+                //             color: Colors
+                //                 .cardbgrey, // Header cell for the static column
+                //             padding: EdgeInsets.all(8.0),
+                //             child: Text(
+                //               'Exchange',
+                //               style: TextStyle(fontWeight: FontWeight.bold),
+                //             ),
+                //           ),
+                //           for (var item in ledgerprovider.ledgerAllData!.fullStat!)
+                //             Container(
+                //               width: 100, // Fixed width for the static column
+                //               height: 50,
+
+                //               padding: EdgeInsets.all(8.0),
+                //               decoration: BoxDecoration(
+                //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
+                //               ),
+                //               child: Text("${item.cOCD}",
+                //               style: textStyle(Colors.black, 14, FontWeight.w600),
+                //               ),
+                //             ),
+                //         ],
+                //       ),
+                //       // Scrollable Content
+
+                //       Expanded(
+                //         child: SingleChildScrollView(
+                //           scrollDirection: Axis.horizontal,
+                //           child: Column(
+                //             children: [
+                //               // Header Row for the scrollable content
+                //               Row(
+                //                 children: [
+                //                   for (int i = 0; i < Header.length; i++)
+                //                     Container(
+                //                        margin: EdgeInsets.only(top: 20),
+                //                       width: i == 4 ? 275 : 100, // Column width
+
+                //                       padding: EdgeInsets.all(8.0),
+                //                       color: Color(0xFFEEEEEE),
+                //                       child: Text(
+                //                         '${Header[i]}',
+                //                         style:
+                //                             TextStyle(fontWeight: FontWeight.bold),
+                //                       ),
+                //                     ),
+                //                 ],
+                //               ),
+                //               // Data Rows for the scrollable content
+                //               for (int rowIndex = 0;
+                //                   rowIndex <
+                //                       ledgerprovider
+                //                           .ledgerAllData!.fullStat!.length;
+                //                   rowIndex++)
+                //                 Row(
+                //                   children: [
+                //                     for (int colIndex = 0; colIndex < 5; colIndex++)
+                //                       Container(
+                //                          width: colIndex == 4 ? 275 : 100,  // Column width
+                //                         height: 50,
+                //                         padding: EdgeInsets.all(8.0),
+                //                         decoration: BoxDecoration(
+                //                           border: Border.all(color: Color.fromARGB(255, 224, 224, 224)),
+                //                         ),
+                //                         child: Text(colIndex == 0 ? dateFormatChangeForLedger(ledgerprovider
+                //                             .tablearray[rowIndex][colIndex]) : ledgerprovider
+                //                             .tablearray[rowIndex][colIndex] ,
+                //                             textAlign: colIndex == 1 ||colIndex == 2 || colIndex == 3  ? TextAlign.right : TextAlign.start ,
+                //                             ) ,
+                //                         //  child: Text(  ledgerprovider
+                //                         //     .tablearray[rowIndex][colIndex] ) ,
+                //                       ),
+                //                   ],
+                //                 ),
+                //             ],
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+
+                ledgerprovider.pdfdownload == null
+                    ? const Center(
+                        child: Padding(
+                        padding: EdgeInsets.only(top: 60),
+                        child: NoDataFound(),
+                      ))
+                    : Expanded(
+                        child: SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          child: ListView.separated(
+                            physics: const ScrollPhysics(),
+                            itemCount: ledgerprovider.pdfdownload!.data!.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              final value =
+                                  ledgerprovider.pdfdownload!.data![index];
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16.0, right: 16.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        TextWidget.subText(
+                                  text: "${value.docType} - ",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
+                                  fw: 3),
+                                   TextWidget.captionText(
+                                  text:  "${value.docDate}",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+
+ color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+
+                                  fw: 3),
+                                       
+                                         
+                                 
+                                      ],
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.download,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack),
+                                      onPressed: () =>
+                                          ledgerprovider.pdfdownloadfunction(
+                                              context,
+                                              "${value.recno}",
+                                              "${value.docFileName}"),
+                                    )
+                                  ],
+                                ),
+                              );
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 2.0, 
+                                ),
+                                child: Divider(
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8),
+                                  thickness: 1.0,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  void _showBottomSheet(BuildContext context, Widget bottomSheet) {
+    showModalBottomSheet(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        useSafeArea: true,
+        isDismissible: true,
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: bottomSheet));
+  }
+}

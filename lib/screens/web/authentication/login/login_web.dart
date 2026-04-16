@@ -1,0 +1,2009 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
+// import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+import '../../../../locator/preference.dart';
+import '../../../../provider/auth_provider.dart';
+import '../../../../provider/change_password_provider.dart';
+import '../../../../provider/index_list_provider.dart';
+import '../../../../provider/ledger_provider.dart';
+import '../../../../provider/web_auth_provider.dart';
+
+
+import '../../../../provider/thems.dart';
+import '../../../../provider/user_profile_provider.dart';
+import '../../../../provider/version_provider.dart';
+import '../../../../provider/websocket_provider.dart';
+import '../../../../res/res.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../routes/route_names.dart';
+import '../../../../sharedWidget/functions.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../utils/no_emoji_inputformatter.dart';
+import '../../../../utils/responsive_snackbar.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
+
+
+class LoginScreenWeb extends ConsumerStatefulWidget {
+  const LoginScreenWeb({super.key});
+
+  @override
+  ConsumerState<LoginScreenWeb> createState() => _LoginScreenWebState();
+}
+
+class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
+  bool _isProcessing = false;
+  bool _isInitializing = true; // True until auto-login check completes
+  late FocusNode focusNode;
+  late FocusNode focusNode1;
+  bool _showForgotPassword = false;
+  bool _showOtpScreen = false;
+  bool _showQrScreen = false;
+  bool _showChangePassword = false;
+  bool _isPasswordExpired = false; // Tracks if change password was triggered by password expiry
+  
+  // OTP Timer Logic
+  Timer? _timer;
+  int _start = 89;
+  String resendTime = "01.29";
+
+  void startTimer() {
+    _timer?.cancel();
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+        if (_start == 0) {
+          timer.cancel();
+          if (mounted) {
+            setState(() {
+              _timer = null;
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              _start--;
+              resendTime = formattedTime(timeInSecond: _start);
+            });
+          }
+        }
+      },
+    );
+  }
+
+  formattedTime({required int timeInSecond}) {
+    int sec = timeInSecond % 60;
+    int min = (timeInSecond / 60).floor();
+    String minute = min.toString().length <= 1 ? "0$min" : "$min";
+    String second = sec.toString().length <= 1 ? "0$sec" : "$sec";
+    return "$minute : $second";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode = FocusNode();
+    focusNode.addListener(_onFocusChange);
+    focusNode1 = FocusNode();
+    focusNode1.addListener(_onFocusChange);
+
+    // Defer context-dependent operations to avoid holding context reference
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted) {
+        ref.read(versionProvider).checkVersion(context);
+        ref.read(authProvider).setChangetotp(true);
+        ref.read(webAuthProvider).init(); // Initialize web auth provider
+
+        // Set up QR login success listener
+        _setupQrLoginListener();
+
+        // Auto-login check
+        await ref.read(webAuthProvider).checkAutoLogin(context);
+
+        // Mark initialization complete (show login form if no auto-login)
+        if (mounted) {
+          setState(() => _isInitializing = false);
+        }
+      }
+    });
+  }
+
+  /// Setup QR Login Success Listener (called once in initState)
+  void _setupQrLoginListener() {
+    ref.listenManual<WebAuthProvider>(webAuthProvider, (previous, next) {
+      if (_showQrScreen && next.mobileOtp?.stat == 'Ok' && next.mobileOtp?.apitoken != null) {
+        // Login Successful via QR
+        // Note: Navigation and initialLoadMethods are handled by web_auth_provider
+        // No need to call them here to avoid duplicate API calls
+      }
+    });
+  }
+
+  void _onFocusChange() {
+    // setState removed to prevent synchronous rebuilds during focus changes
+    // which was causing MouseTracker assertions.
+  }
+
+  @override
+  void dispose() {
+    // Remove listeners before disposing
+    focusNode.removeListener(_onFocusChange);
+    focusNode1.removeListener(_onFocusChange);
+    focusNode.dispose();
+    focusNode1.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  /// Helper method for consistent Mobile/Client ID input decoration
+  InputDecoration _mobileInputDecoration(BuildContext context) {
+    return InputDecoration(
+      filled: false,
+      labelText: "Mobile / Client ID",
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      labelStyle: MyntWebTextStyles.body(
+        context,
+        fontWeight: MyntFonts.regular,
+        color: resolveThemeColor(context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary),
+      ),
+      enabledBorder: UnderlineInputBorder(
+        borderSide: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark,
+                light: MyntColors.divider),
+            width: 1),
+      ),
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary),
+            width: 1),
+      ),
+      counterText: "",
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+    );
+  }
+
+  Future<void> _handleContinue() async {
+    final auth = ref.read(authProvider);
+    final ledgerprovider = ref.read(ledgerProvider);
+    auth.validateLogin();
+    auth.validatePass();
+
+    if (_isProcessing ||
+        auth.loginMethCtrl.text.isEmpty ||
+        auth.passCtrl.text.isEmpty) return;
+    if (auth.loginMethError != "" || auth.passError != "") return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      HapticFeedback.heavyImpact();
+      SystemSound.play(SystemSoundType.click);
+
+      auth.optError = "";
+      
+      // Pass preventNavigation: true so we can handle the UI switch locally
+      await auth.submitLogin(context, false, preventNavigation: true);
+      
+      // If the API call was successful and we have a mobile login response that indicates success/OTP sent
+      if (auth.mobileLogin != null && 
+          auth.mobileLogin!.stat == "Ok" && 
+          (auth.mobileLogin!.msg == "otp sended" || 
+           auth.mobileLogin!.msg == "otp sended, already logged in another device" ||
+           // If TOTP is enabled, msg might differ or be null, but stat is Ok
+           (auth.totp && (auth.mobileLogin!.msg != null || auth.mobileLogin!.msg == null)))) {
+            
+        if (mounted) {
+           setState(() {
+             _showOtpScreen = true;
+             _start = 89;
+             resendTime = "01.29";
+           });
+           startTimer();
+        }
+      }
+      
+      ledgerprovider.setterfornullallSwitch = null;
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  /// New Web Login - Uses webAuthProvider with source="WEB" and separate OTP flow
+  Future<void> _handleWebLogin() async {
+    final webAuth = ref.read(webAuthProvider);
+    final ledgerprovider = ref.read(ledgerProvider);
+
+    // Copy values from existing auth controllers to web auth controllers
+    webAuth.loginController.text = ref.read(authProvider).loginMethCtrl.text;
+    webAuth.passwordController.text = ref.read(authProvider).passCtrl.text;
+
+    // Validate inputs and show appropriate messages
+    if (_isProcessing) return;
+
+    if (webAuth.loginController.text.trim().isEmpty) {
+      ResponsiveSnackBar.showWarning(context, 'Please enter your Mobile / Client ID');
+      return;
+    }
+
+    if (webAuth.passwordController.text.isEmpty) {
+      ResponsiveSnackBar.showWarning(context, 'Please enter your password');
+      return;
+    }
+
+    setState(() => _isProcessing = true);
+
+    try {
+      HapticFeedback.heavyImpact();
+      SystemSound.play(SystemSoundType.click);
+
+      // Submit web login with source="WEB"
+      final success = await webAuth.submitWebLogin(context);
+
+      if (success && mounted) {
+        ref.read(authProvider).passCtrl.clear();
+        webAuth.passwordController.clear();
+        // Check if we need OTP verification
+        if (webAuth.mobileLogin?.stat == 'Ok' &&
+            webAuth.mobileLogin?.apitoken == null) {
+          // OTP/TOTP flow needed - clear previous OTP before showing
+          ref.read(authProvider).otpCtrl.clear();
+          webAuth.otpController.clear();
+          setState(() {
+            _showOtpScreen = true;
+            _start = 89;
+            resendTime = "01.29";
+          });
+
+          if (!webAuth.isTotp) {
+            startTimer();
+          }
+        } else if (webAuth.mobileLogin?.apitoken != null) {
+          // Direct login success - navigation and data loading handled by web_auth_provider
+          // No action needed here to avoid duplicate API calls
+        }
+      } else if (!success && mounted) {
+        // Handle specific error cases from login response
+        final emsg = webAuth.mobileLogin?.msg;
+        final forpass = ref.read(changePasswordProvider);
+
+        if (emsg == "Invalid Input : User Blocked due to multiple wrong attempts") {
+          // User blocked - show forgot password inline form after delay
+          forpass.forGetloginMethCtrl.text = webAuth.loginController.text.trim().toUpperCase();
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted) {
+              setState(() {
+                _showForgotPassword = true;
+                forpass.clearError();
+              });
+            }
+          });
+        } else if (emsg == "Invalid Input : Change Password" ||
+            emsg == "Invalid Input : Password Expired") {
+          // Password expired or forced change - show change password inline form
+          forpass.userIdController.text = "${webAuth.mobileLogin?.clientid}";
+          if (emsg == "Invalid Input : Password Expired") {
+            forpass.oldPassword.text = webAuth.passwordController.text;
+          }
+          setState(() {
+            _isPasswordExpired = emsg == "Invalid Input : Password Expired";
+            _showChangePassword = true;
+          });
+        }
+      }
+
+      ledgerprovider.setterfornullallSwitch = null;
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  /// Web OTP Verify - Uses webAuthProvider
+  Future<void> _handleWebOtpVerify(String otp) async {
+    // Delay to let gesture settle before altering focus/state
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (mounted) FocusScope.of(context).unfocus();
+    final webAuth = ref.read(webAuthProvider);
+    webAuth.otpController.text = otp;
+
+    if (_isProcessing) return;
+
+    // Validate OTP length
+    final requiredLength = webAuth.isTotp ? 6 : 4;
+    if (otp.trim().length != requiredLength) {
+      if (mounted) {
+        ResponsiveSnackBar.showWarning(
+          context,
+          'Please enter $requiredLength digit ${webAuth.isTotp ? 'TOTP' : 'OTP'}',
+        );
+      }
+      return;
+    }
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final success = await webAuth.verifyOtp(context);
+
+      if (success && mounted) {
+        // If in Generate TOTP flow (topflow) and showing setup, don't navigate
+        if (webAuth.topflow && webAuth.showTotpSetup) {
+          ref.read(authProvider).otpCtrl.clear();
+          webAuth.otpController.clear();
+          setState(() {}); // Updates UI to show QR code
+          return;
+        }
+
+        // OTP verification successful - navigation and data loading handled by web_auth_provider
+        ref.read(authProvider).otpCtrl.clear();
+        webAuth.otpController.clear();
+        // Note: No need to navigate or call initialLoadMethods here to avoid duplicate API calls
+      } else if (!success && mounted && webAuth.requiresPasswordChange) {
+        // Password change required after OTP verification
+        final forpass = ref.read(changePasswordProvider);
+        final isExpired = webAuth.isPasswordExpiredFlag;
+        forpass.userIdController.text = webAuth.mobileLogin?.clientid ?? '';
+        if (isExpired) {
+          forpass.oldPassword.text = webAuth.passwordController.text;
+        }
+        webAuth.clearPasswordChangeFlags();
+        setState(() {
+          _isPasswordExpired = isExpired;
+          _showOtpScreen = false;
+          _showChangePassword = true;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  /// Toggle between OTP and TOTP mode using webAuthProvider
+  void _toggleWebTotpMode() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (mounted) FocusScope.of(context).unfocus();
+    final webAuth = ref.read(webAuthProvider);
+    final auth = ref.read(authProvider);
+
+    // Ensure loginController has the client ID
+    if (webAuth.loginController.text.isEmpty) {
+      webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
+    }
+
+    // Clear OTP field and errors before switching mode
+    auth.otpCtrl.clear();
+    auth.optError = ''; // Clear old auth error
+
+    // Set processing to prevent full-screen loader during toggle
+    setState(() => _isProcessing = true);
+    try {
+      webAuth.toggleTotpMode(); // This also clears webAuth.otpError
+
+      // If switching to OTP mode, send OTP
+      if (!webAuth.isTotp) {
+        final success = await webAuth.sendOtp(context);
+        if (success && mounted) {
+          setState(() {
+            _start = 89;
+            resendTime = "01.29";
+          });
+          startTimer();
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  /// Resend OTP using webAuthProvider
+  Future<void> _handleWebResendOtp() async {
+    final webAuth = ref.read(webAuthProvider);
+    final auth = ref.read(authProvider);
+    
+    // Ensure loginController has the client ID
+    if (webAuth.loginController.text.isEmpty) {
+      webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
+    }
+
+    setState(() => _isProcessing = true);
+    try {
+      final success = await webAuth.sendOtp(context);
+      if (success && mounted) {
+        setState(() {
+          _start = 89;
+          resendTime = "01.29";
+        });
+        startTimer();
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+
+
+  /// Handle "Scan QR" Login - Switch to Inline QR Screen
+  void _handleQrLogin() {
+    final webAuth = ref.read(webAuthProvider);
+    
+    // Start QR polling
+    webAuth.startQrLogin(context);
+    
+    setState(() {
+      _showQrScreen = true;
+      _showOtpScreen = false;
+      _showForgotPassword = false; // Ensure other screens are hidden
+    });
+  }
+
+  /// Cancel QR Login - Back to Login Form
+  void _handleCancelQrLogin() {
+    final webAuth = ref.read(webAuthProvider);
+    webAuth.cancelQrLogin(); // Use cancelQrLogin to clear mobileOtp and prevent stale data
+
+    setState(() {
+      _showQrScreen = false;
+    });
+  }
+
+  /// Handle "Generate TOTP" button click
+  /// This initiates the flow where user needs to verify via OTP first to get their TOTP secret
+  Future<void> _handleGenerateTotpFlow() async {
+    // Delay to let gesture settle before altering focus/state
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (mounted) FocusScope.of(context).unfocus();
+
+    final webAuth = ref.read(webAuthProvider);
+    final auth = ref.read(authProvider);
+
+    // Ensure loginController has the client ID
+    if (webAuth.loginController.text.isEmpty) {
+      webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
+    }
+
+    // Clear OTP field and errors to prevent stale state
+    auth.otpCtrl.clear();
+    auth.optError = ''; // Clear old auth error
+
+    // Enable the Generate TOTP flow (sets topflow = true, switches to OTP mode, clears errors)
+    webAuth.enableGenerateTotpFlow();
+    
+    // Send OTP for verification
+    setState(() => _isProcessing = true);
+    try {
+      final success = await webAuth.sendOtp(context);
+      if (success && mounted) {
+        setState(() {
+          _start = 89;
+          resendTime = "01.29";
+        });
+        startTimer();
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  Future<void> _handleBackNavigation(BuildContext context, Preferences pref,
+      AuthProvider auth, UserProfileProvider userProfile, WidgetRef ref) async {
+    if (!mounted) return;
+    
+    final theme = ref.watch(themeProvider);
+    if (pref.islogOut! ||
+        auth.switchback == true &&
+            (pref.clientId!.isEmpty ||
+                pref.clientId!.isNotEmpty ||
+                pref.clientMob!.isEmpty ||
+                pref.clientMob!.isNotEmpty)) {
+      // This path is for logged out users with saved credentials
+      if (mounted) {
+        theme.removeUsermatrial(context);
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.loginScreenBanner, (route) => false);
+      }
+    } else {
+      // This path is for when we need to switch between accounts
+      // Note: Previous issue was caused by inconsistent navigation stack between app bar back button
+      // and system back button in the OTP screen
+      int activeIndex = auth.loggedMobile
+          .indexWhere((element) => element.clientId == pref.clientId);
+      if (activeIndex == -1) return;
+
+      // Show loading indicator
+      userProfile.profilePageloader(true);
+
+      try {
+        // Set client information
+        await pref.setClientId(auth.loggedMobile[activeIndex].clientId);
+        await pref.setClientMob(auth.loggedMobile[activeIndex].mobile);
+        await pref.setClientSession(auth.loggedMobile[activeIndex].sesstion);
+        await pref.setClientName(auth.loggedMobile[activeIndex].userName);
+        await pref.setImei(auth.loggedMobile[activeIndex].imei);
+        await pref.setMobileLogin(true);
+
+        // Calendar PnL cache cleared automatically when switching accounts
+        ref.read(ledgerProvider).clearCalendarPnLData();
+
+        // Fetch account data
+        await ref.read(authProvider).fetchMobileLogin(
+            context,
+            "",
+            auth.loggedMobile[activeIndex].clientId,
+            "switchAc",
+            auth.loggedMobile[activeIndex].imei,
+            true);
+
+        // Reset and restart websocket connection
+        ref.read(websocketProvider).closeSocket(true);
+        ref.read(websocketProvider).changeconnectioncount();
+
+        // Navigate to profile tab
+        ref.read(indexListProvider).bottomMenu(4, context);
+
+        // Wait for a short time to ensure data is loaded
+        await Future.delayed(const Duration(milliseconds: 200));
+
+        // Remove loading indicator after everything is done
+        if (mounted && context.mounted) {
+          userProfile.profilePageloader(false);
+        }
+      } catch (e) {
+        // Handle any errors during the process
+        if (mounted && context.mounted) {
+          userProfile.profilePageloader(false);
+        }
+      }
+    }
+  }
+
+  /// Handle forgot password and show change password form inline on success
+  Future<void> _handleForgotPasswordSubmit() async {
+    final forpass = ref.read(changePasswordProvider);
+
+    // Validate first
+    if (!forpass.validateForgetpassWord()) {
+      return;
+    }
+
+    // Store the value before API call
+    final inputValue = forpass.forGetloginMethCtrl.text;
+
+    // Call the API - this will show success snackbar and set userIdController
+    await forpass.fetchForgetPassword(
+      inputValue,
+      inputValue.toUpperCase(),
+      context,
+    );
+
+    // Check if forgot password was successful by checking if userIdController was set
+    if (forpass.userIdController.text.isNotEmpty && forpass.changePass?.stat == "Ok") {
+      // Success! Show change password
+      if (mounted) {
+        setState(() {
+          _showForgotPassword = false;
+          _showChangePassword = true;
+        });
+      }
+    }
+  }
+
+  /// Handle change password submission for web
+  Future<void> _handleChangePasswordSubmit() async {
+    final forpass = ref.read(changePasswordProvider);
+
+    // Validate both fields
+    forpass.validateOldPassword();
+    forpass.validateNewPassword();
+
+    if (forpass.oldPasswordError == "" && forpass.newPasswordError == "") {
+      await forpass.fetchChangePassword(
+        forpass.userIdController.text.toUpperCase(),
+        forpass.oldPassword.text,
+        forpass.newPassword.text,
+        context,
+        preventNavigation: true,
+      );
+
+      // Check if change password was successful
+      if (forpass.changepasswordmodel?.stat == "Ok") {
+        // Success! Go back to login form
+        if (mounted) {
+          setState(() {
+            _showChangePassword = false;
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Preferences pref = Preferences();
+    return Consumer(builder: ((context, WidgetRef ref, _) {
+      final auth = ref.watch(authProvider);
+      final forpass = ref.watch(changePasswordProvider);
+      final userProfile = ref.watch(userProfileProvider);
+
+      final webAuth = ref.watch(webAuthProvider);
+
+      // Show full-screen loader during:
+      // 1. Initial page load (_isInitializing) - prevents login form flash on refresh
+      // 2. Auth initial load (auth.initLoad)
+      // 3. Auto-login session check (webAuth.loading) - but NOT during manual login (_isProcessing)
+      if (_isInitializing || auth.initLoad || (webAuth.loading && !_isProcessing)) {
+        return Scaffold(
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.searchBgDark, light: MyntColors.searchBg),
+          body: Center(child: MyntLoader.branded()),
+        );
+      }
+
+      return GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
+          body: Center(
+            child: Container(
+              decoration: BoxDecoration(
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dialogDark,
+                    light: MyntColors.backgroundColor),
+                // borderRadius: BorderRadius.circular(12),
+              ),
+              height: MediaQuery.of(context).size.height - 40,
+              margin: const EdgeInsets.symmetric(vertical: 20),
+              width: getResponsiveWidth(context),
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height - 40,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 20),
+                      decoration: BoxDecoration(
+                     color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
+                        // borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.dividerDark,
+                                light: Colors.grey.shade300),
+                            width: 0.3),
+                        // boxShadow: [
+                        //   BoxShadow(
+                        //     color: Colors.black.withOpacity(0.1),
+                        //     blurRadius: 4,
+                        //     offset: const Offset(0, 4),
+                        //   ),
+                        // ],
+                      ),
+                      child: Stack(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                          // Logo
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: SvgPicture.asset(
+                              assets.appLogoIcon,
+                              width: 100,
+                              height: 40,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          // Welcome Text
+
+                             if (!(pref.islogOut == true &&
+                              (pref.clientId?.isNotEmpty == true ||
+                                  pref.clientMob?.isNotEmpty == true)))
+                          Text(
+                            "Welcome to Zebu",
+                            style: MyntWebTextStyles.titlesub(
+                              
+                              context,
+                             color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Main Heading
+
+                          if (!(pref.islogOut == true &&
+                              (pref.clientId?.isNotEmpty == true ||
+                                  pref.clientMob?.isNotEmpty == true)))
+                          Text(
+                            _showChangePassword ? "Change or Reset Password" : _showForgotPassword ? "Forgot Password" : "Login to MYNT",
+                            style: webText(
+                              context,
+                              size: MediaQuery.of(context).size.width < 600 ? 18 : 22,
+                              weight: FontWeight.w900,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // QR Login Screen
+                          if (_showQrScreen) 
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final wa = ref.watch(webAuthProvider);
+                                return Column(
+                                  children: [
+                                    Container(
+                                        height: 350, width: 350,
+                                        alignment: Alignment.center,
+                                        child: wa.qrLoginImageUrl != null
+                                          ? Image.network(wa.qrLoginImageUrl!)
+                                          : MyntLoader.simple(size: MyntLoaderSize.medium)
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      "Scan QR code from profile tab top appbar of MYNT to login.",
+                                      textAlign: TextAlign.center,
+                                      style: MyntWebTextStyles.body(context, color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary)),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(right: 12.0),
+                                          child: InkWell(
+                                            onTap: _handleCancelQrLogin,
+                                            child: Text("Back to login", style: MyntWebTextStyles.body(context, fontWeight: FontWeight.bold, color: MyntColors.primary)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                            ),
+
+                          // Form Fields
+                          // Check for TOTP Setup screen first (shown after OTP verify in Generate TOTP flow)
+                          Consumer(
+                            builder: (context, ref, child) {
+                              if (_showQrScreen) return const SizedBox.shrink(); // Hide if showing QR Login
+                              final webAuth = ref.watch(webAuthProvider);
+                              
+                              if (webAuth.showTotpSetup && webAuth.totpData != null) {
+                                // TOTP Setup Screen - Show QR code and secret
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Scan QR Title
+                                    Text(
+                                      "Scan QR",
+                                      style: MyntWebTextStyles.title(
+                                        context,
+                                        fontWeight: MyntFonts.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "Scan the QR code on authenticator app",
+                                      style: MyntWebTextStyles.body(
+                                        context,
+                                        color: MyntColors.textSecondary,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    
+                                    // QR Code - Centered
+                                    if (webAuth.totpData?.isValid == true)
+                                      Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: QrImageView(
+                                            data: webAuth.totpData!.getQrUri(),
+                                            size: 200,
+                                            version: QrVersions.auto,
+                                            backgroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    
+                                    const SizedBox(height: 24),
+                                    
+                                    // Authenticator Key Section
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            "Authenticator Key",
+                                            style: MyntWebTextStyles.body(
+                                              context,
+                                              fontWeight: MyntFonts.medium,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                webAuth.totpData?.pwd ?? "**********************",
+                                                style: MyntWebTextStyles.body(
+                                                  context,
+                                                  fontWeight: MyntFonts.medium,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.copy, size: 20),
+                                                onPressed: () {
+                                                  Clipboard.setData(ClipboardData(text: webAuth.totpData?.pwd ?? ""));
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text("Auth key copied to clipboard!")),
+                                                  );
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    
+                                    const SizedBox(height: 32),
+                                    
+                                    // Back to Login Button
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 48,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          webAuth.backToLogin();
+                                          setState(() {
+                                            _showOtpScreen = false;
+                                          });
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: MyntColors.primary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          "Back to Login",
+                                          style: MyntWebTextStyles.title(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                              
+                              // Return empty container, the actual form is rendered below
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          
+                          // Show OTP screen only if TOTP setup is not showing
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final webAuth = ref.watch(webAuthProvider);
+                              if (_showQrScreen) return const SizedBox.shrink(); // Hide
+                              if (webAuth.showTotpSetup) return const SizedBox.shrink();
+                              return child ?? const SizedBox.shrink();
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (_showOtpScreen) ...const [],
+                              ],
+                            ),
+                          ),
+                          
+                          if (!_showQrScreen && _showOtpScreen && !ref.watch(webAuthProvider).showTotpSetup) ...[
+                            // OTP Screen UI
+                            
+                            // Mobile / Client ID Display (Read Only)
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Mobile / Client ID",
+                                    style: MyntWebTextStyles.caption(
+                                        context,
+                                        color: MyntColors.textSecondary,
+                                        darkColor: MyntColors.textSecondaryDark
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        auth.loginMethCtrl.text,
+                                        style: MyntWebTextStyles.title(
+                                            context,
+                                            fontWeight: MyntFonts.medium
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _showOtpScreen = false;
+                                            _timer?.cancel();
+                                          });
+                                        },
+                                        child: Text(
+                                          "Change",
+                                          style: MyntWebTextStyles.body(
+                                              context,
+                                              fontWeight: MyntFonts.semiBold,
+                                             color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                   Divider(height: 24, thickness: 1, color: resolveThemeColor(context,
+                                      dark: MyntColors.dividerDark,
+                                      light: MyntColors.divider)),
+                                ],
+                            ),
+                            
+                            const SizedBox(height: 20),
+
+                            // OTP Input Field - Using webAuthProvider for mode detection
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final webAuth = ref.watch(webAuthProvider);
+                                return TextFormField(
+                                   // Force recreation when mode changes to prevent layout/hit-test errors
+                                   key: ValueKey("otp_${webAuth.isTotp}_${webAuth.topflow}"),
+                                   controller: auth.otpCtrl,
+                                   autofocus: true,
+                                   // focusNode: focusNode, 
+                                   readOnly: _isProcessing || auth.loading,
+                                   maxLength: webAuth.isTotp ? 6 : 4,
+                                   keyboardType: TextInputType.number,
+                                   textInputAction: TextInputAction.done,
+                                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                   style: MyntWebTextStyles.title(
+                                     context,
+                                     fontWeight: MyntFonts.medium,
+                                     color: resolveThemeColor(context,
+                                         dark: MyntColors.textPrimaryDark,
+                                         light: MyntColors.textPrimary),
+                                   ),
+                                   decoration: InputDecoration(
+                                     filled: false,
+                                     labelText: webAuth.topflow 
+                                         ? "Enter 4 digit OTP sent to mobile/email to generate the TOTP"
+                                         : "Enter ${webAuth.isTotp ? '6' : '4'} digit ${webAuth.isTotp ? 'TOTP' : 'OTP'}",
+                                     floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                     labelStyle: MyntWebTextStyles.body(
+                                       context,
+                                       fontWeight: MyntFonts.regular,
+                                       color: resolveThemeColor(context,
+                                           dark: MyntColors.textSecondaryDark,
+                                           light: MyntColors.textSecondary),
+                                     ),
+                                     enabledBorder:  UnderlineInputBorder(
+                                       borderSide: BorderSide(
+                                           color: resolveThemeColor(context,
+                                               dark: MyntColors.dividerDark,
+                                               light: MyntColors.divider),
+                                           width: 1),
+                                     ),
+                                     focusedBorder:  UnderlineInputBorder(
+                                       borderSide: BorderSide(
+                                           color: resolveThemeColor(context,
+                                               dark: MyntColors.primaryDark,
+                                               light: MyntColors.primary),
+                                           width: 1),
+                                     ),
+                                     counterText: "",
+                                     contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                                     // Timer / Resend Display inside decoration? Or separate? 
+                                     // Layout request shows "Resend in 117" on the right. 
+                                     
+                                     suffix: (!webAuth.isTotp && _start > 0) 
+                                         ? Column(
+                                             mainAxisAlignment: MainAxisAlignment.center,
+                                             crossAxisAlignment: CrossAxisAlignment.end,
+                                             mainAxisSize: MainAxisSize.min,
+                                             children: [
+                                                Text("Resend", style: MyntWebTextStyles.caption(context, color: resolveThemeColor(context,
+                                                    dark: MyntColors.textSecondaryDark,
+                                                    light: MyntColors.textSecondary))),
+                                                Text("in $_start", style: MyntWebTextStyles.caption(context, color: resolveThemeColor(context,
+                                                    dark: MyntColors.textSecondaryDark,
+                                                    light: MyntColors.textSecondary), fontWeight: FontWeight.bold)),
+                                             ],
+                                           )
+                                         : (!webAuth.isTotp && _start == 0)
+                                            ? InkWell(
+                                                onTap: () async {
+                                                    if (!mounted) return;
+                                                    _handleWebResendOtp(); // Use new web resend OTP
+                                                },
+                                                child: Text("Resend OTP", style: MyntWebTextStyles.caption(context, color: resolveThemeColor(context,
+                                                    dark: MyntColors.secondaryDark,
+                                                    light: MyntColors.secondary), fontWeight: FontWeight.bold)),
+                                              )
+                                            // Generate TOTP button when in TOTP mode
+                                            : webAuth.isTotp
+                                                ? InkWell(
+                                                    onTap: () async {
+                                                        if (!mounted) return;
+                                                        _handleGenerateTotpFlow(); // Start Generate TOTP flow
+                                                    },
+                                                    child: Text("Generate TOTP", style: MyntWebTextStyles.caption(context,  color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary), fontWeight: MyntFonts.semiBold)),
+                                                  )
+                                                : null
+                                   ),
+                                   onChanged: (v) {
+                                      // Clear error when user starts typing
+                                      if (webAuth.otpError != null) {
+                                        webAuth.clearErrors();
+                                      }
+                                      auth.activeBtnOtp(v);
+
+                                      // Auto-submit if length is sufficient (using web auth)
+                                      if (!_isProcessing && !auth.loading) {
+                                        if (webAuth.isTotp && v.length == 6) {
+                                          _handleWebOtpVerify(v);
+                                        } else if (!webAuth.isTotp && v.length == 4) {
+                                          _handleWebOtpVerify(v);
+                                        }
+                                      }
+                                   },
+                                   onFieldSubmitted: (v) {
+                                      _handleWebOtpVerify(v);
+                                   },
+                                );
+                              },
+                            ),
+                            
+                            const SizedBox(height: 5),
+                            // Use webAuth.otpError for proper TOTP/OTP error messages
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final webAuth = ref.watch(webAuthProvider);
+                                if (webAuth.otpError != null && webAuth.otpError!.isNotEmpty) {
+                                  return Text(
+                                    webAuth.otpError!,
+                                    style: MyntWebTextStyles.para(
+                                      context,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.lossDark,
+                                          light: MyntColors.loss),
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // Continue Button (OTP Submit)
+                            SizedBox(
+                               height: 48,
+                               child: ElevatedButton(
+                                 onPressed: (_isProcessing || auth.loading)
+                                     ? null
+                                     : () => _handleWebOtpVerify(auth.otpCtrl.text), // Use new web OTP verify
+                                 style: ElevatedButton.styleFrom(
+                                   backgroundColor: resolveThemeColor(context,
+                                       dark: MyntColors.secondary,
+                                       light: MyntColors.primary),
+                                   disabledBackgroundColor: resolveThemeColor(context,
+                                       dark: MyntColors.secondary.withOpacity(0.6),
+                                       light: MyntColors.primary.withOpacity(0.6)),
+                                   shape: RoundedRectangleBorder(
+                                       borderRadius: BorderRadius.circular(6)),
+                                   elevation: 0,
+                                 ),
+                                 child: (_isProcessing || auth.loading)
+                                     ? MyntLoader.inline()
+                                     : Text(
+                                         "Continue",
+                                         style: MyntWebTextStyles.title(
+                                           context,
+                                           fontWeight: MyntFonts.bold,
+                                           color: Colors.white,
+                                         ),
+                                       ),
+                               ),
+                            ),
+                            
+                            const SizedBox(height: 24),
+                            
+                            // Bottom Toolbar (Toggle / Forgot / Scan QR)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Left Side: Toggle OTP/TOTP or Forgot Password
+                                InkWell(
+                                    onTap: () async {
+                                      if (!auth.loading) {
+                                        auth.otpCtrl.clear();
+                                        _toggleWebTotpMode(); // Use new web toggle
+                                      }
+                                    },
+                                    child: Consumer(
+                                      builder: (context, ref, _) {
+                                        final webAuth = ref.watch(webAuthProvider);
+                                        return Text(
+                                          webAuth.isTotp ? "Enter OTP" : "Enter TOTP",
+                                          style: MyntWebTextStyles.body(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.secondaryDark,
+                                                light: MyntColors.secondary),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                ),
+                                
+                                // Right Side: Scan QR
+                                InkWell(
+                                    onTap: () async {
+                                      _handleQrLogin(); 
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Scan QR",
+                                          style: MyntWebTextStyles.body(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.secondaryDark,
+                                                light: MyntColors.secondary),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Icon(Icons.qr_code_scanner, size: 20, color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary)),
+                                      ],
+                                    ),
+                                ),
+                              ],
+                            ),
+
+                          ] else if (!_showQrScreen && _showForgotPassword) ...[
+                             // Forgot Password Form (Inlined)
+                             TextFormField(
+                               controller: forpass.forGetloginMethCtrl,
+                               focusNode: focusNode,
+                               readOnly: _isProcessing || forpass.loading,
+                               maxLength: 10,
+                               textCapitalization: TextCapitalization.characters,
+                               textInputAction: TextInputAction.done,
+                               inputFormatters: [
+                                  UpperCaseTextFormatter(),
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9]')),
+                               ],
+                               style: MyntWebTextStyles.title(
+                                 context,
+                                 fontWeight: MyntFonts.medium,
+                                 color: resolveThemeColor(context,
+                                     dark: MyntColors.textPrimaryDark,
+                                     light: MyntColors.textPrimary),
+                               ),
+                               decoration: _mobileInputDecoration(context),
+                               onChanged: (v) {
+                                  forpass.validateForgetpassWord();
+                                  forpass.activateFrogetbtn();
+                               },
+                               onFieldSubmitted: (_) {
+                                  _handleForgotPasswordSubmit();
+                               },
+                             ),
+                             const SizedBox(height: 5),
+                             if (forpass.forgetpassError != null &&
+                                 forpass.forgetpassError!.isNotEmpty)
+                               Text(
+                                 "${forpass.forgetpassError}",
+                                 style: MyntWebTextStyles.para(
+                                   context,
+                                   color: resolveThemeColor(context,
+                                       dark: MyntColors.lossDark,
+                                       light: MyntColors.loss),
+                                 ),
+                               ),
+                             
+                             const SizedBox(height: 32),
+
+                             // Continue Button
+                             SizedBox(
+                               height: 48,
+                               child: ElevatedButton(
+                                 onPressed: (forpass.loading)
+                                     ? null
+                                     : _handleForgotPasswordSubmit,
+                                 style: ElevatedButton.styleFrom(
+                                   backgroundColor: resolveThemeColor(context,
+                                       dark: MyntColors.secondary,
+                                       light: MyntColors.primary),
+                                   disabledBackgroundColor:
+                                       resolveThemeColor(context,
+                                           dark: MyntColors.secondary.withOpacity( 0.6),
+                                           light: MyntColors.primary.withOpacity(0.6)),
+                                   shape: RoundedRectangleBorder(
+                                       borderRadius: BorderRadius.circular(6)),
+                                   elevation: 0,
+                                 ),
+                                 child: (forpass.loading)
+                                     ? MyntLoader.inline()
+                                     : Text(
+                                         "Continue",
+                                         style: MyntWebTextStyles.title(
+                                           context,
+                                           fontWeight: MyntFonts.bold,
+                                           color: Colors.white,
+                                         ),
+                                       ),
+                               ),
+                             ),
+                             const SizedBox(height: 24),
+                             
+                             // Back to Login Button
+                             Align(
+                               alignment: Alignment.centerLeft, // Left aligned as per image? Or Center? Image shows left.
+                               child: InkWell(
+                                 onTap: () {
+                                    setState(() {
+                                      // Restore client ID back to login form before clearing
+                                      auth.loginMethCtrl.text = forpass.forGetloginMethCtrl.text;
+                                      auth.passCtrl.clear();
+                                      _showForgotPassword = false;
+                                      forpass.clearError();
+                                      forpass.clearTextField();
+                                    });
+                                 },
+                                 child: Text(
+                                    "Back to login",
+                                    style: MyntWebTextStyles.para(
+                                      context,
+                                      fontWeight: MyntFonts.bold,
+                                      color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary),
+                                    ),
+                                 ),
+                               ),
+                             ),
+
+                          ] else if (_showChangePassword) ...[
+                            // Change Password Form
+
+                            // Client ID Field (Disabled)
+                            TextFormField(
+                              controller: forpass.userIdController,
+                              readOnly: true,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                              ),
+                              decoration: InputDecoration(
+                                filled: false,
+                                labelText: "Client ID",
+                                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                labelStyle: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.regular,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                disabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                counterText: "",
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Old/Generated Password Field
+                            TextFormField(
+                              controller: forpass.oldPassword,
+                              focusNode: focusNode,
+                              readOnly: forpass.loading,
+                              obscureText: forpass.hideoldpassword,
+                              textInputAction: TextInputAction.next,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                              ),
+                              decoration: InputDecoration(
+                                filled: false,
+                                labelText: _isPasswordExpired ? "Old Password" : "Generated Password",
+                                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                labelStyle: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.regular,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                                suffixIcon: InkWell(
+                                  onTap: () {
+                                    forpass.hiddeoldpasswords();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: SvgPicture.asset(
+                                      forpass.hideoldpassword
+                                          ? "assets/icon/eye-off.svg"
+                                          : "assets/icon/eye.svg",
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                      width: 20,
+                                    ),
+                                  ),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
+                                      width: 1),
+                                ),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              onChanged: (v) {
+                                forpass.validateOldPassword();
+                                forpass.activateChangePass();
+                              },
+                            ),
+                            const SizedBox(height: 5),
+                            if (forpass.oldPasswordError != null &&
+                                forpass.oldPasswordError!.isNotEmpty &&
+                                forpass.oldPasswordError != "")
+                              Text(
+                                "${forpass.oldPasswordError}",
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                                ),
+                              ),
+                            const SizedBox(height: 20),
+
+                            // New Password Field
+                            TextFormField(
+                              controller: forpass.newPassword,
+                              focusNode: focusNode1,
+                              readOnly: forpass.loading,
+                              obscureText: forpass.hidenewpassword,
+                              textInputAction: TextInputAction.done,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                              ),
+                              decoration: InputDecoration(
+                                filled: false,
+                                labelText: "New Password",
+                                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                labelStyle: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.regular,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                                suffixIcon: InkWell(
+                                  onTap: () {
+                                    forpass.hiddenewpasswords();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: SvgPicture.asset(
+                                      forpass.hidenewpassword
+                                          ? "assets/icon/eye-off.svg"
+                                          : "assets/icon/eye.svg",
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                      width: 20,
+                                    ),
+                                  ),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
+                                      width: 1),
+                                ),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              onChanged: (v) {
+                                forpass.validateNewPassword();
+                                forpass.activateChangePass();
+                              },
+                              onFieldSubmitted: (_) {
+                                _handleChangePasswordSubmit();
+                              },
+                            ),
+                            const SizedBox(height: 5),
+                            if (forpass.newPasswordError != null &&
+                                forpass.newPasswordError!.isNotEmpty &&
+                                forpass.newPasswordError != "")
+                              Text(
+                                "${forpass.newPasswordError}",
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                                ),
+                              ),
+
+                            const SizedBox(height: 32),
+
+                            // Continue Button (Change Password Submit)
+                            SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                onPressed: (forpass.loading)
+                                    ? null
+                                    : _handleChangePasswordSubmit,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.secondary,
+                                      light: MyntColors.primary),
+                                  disabledBackgroundColor: resolveThemeColor(
+                                      context,
+                                      dark:
+                                          MyntColors.secondary.withOpacity(0.6),
+                                      light:
+                                          MyntColors.primary.withOpacity(0.6)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6)),
+                                  elevation: 0,
+                                ),
+                                child: (forpass.loading)
+                                    ? MyntLoader.inline()
+                                    : Text(
+                                        "Continue",
+                                        style: MyntWebTextStyles.title(
+                                          context,
+                                          fontWeight: MyntFonts.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Back to Login Button
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _showChangePassword = false;
+                                    _isPasswordExpired = false;
+                                    forpass.changePassMethod();
+                                  });
+                                },
+                                child: Text(
+                                  "Back to login",
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    fontWeight: MyntFonts.bold,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.secondaryDark,
+                                        light: MyntColors.secondary),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          ] else if (!_showQrScreen && !_showOtpScreen && pref.islogOut! &&
+                              (pref.clientId!.isNotEmpty ||
+                                  pref.clientMob!.isNotEmpty)) ...[
+                            // Saved Account UI
+                            Builder(
+                              builder: (context) {
+                                if (auth.loginMethCtrl.text.isEmpty) {
+                                  auth.loginMethCtrl.text = pref.clientId ?? "";
+                                }
+                                return Center(
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.backgroundColorDark,
+                                              light: MyntColors.backgroundColor),
+                                          border: Border.all(
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.primaryDark,
+                                                light: MyntColors.primary),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            pref.clientName!.isNotEmpty
+                                                ? pref.clientName!
+                                                    .split(' ')
+                                                    .map((e) => e[0])
+                                                    .take(2)
+                                                    .join('')
+                                                : '',
+                                            style: MyntWebTextStyles.hero(
+                                              context,
+                                              fontWeight: MyntFonts.bold,
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.primaryDark,
+                                                  light: MyntColors.primary),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        pref.clientName ?? '',
+                                        style: MyntWebTextStyles.head(
+                                          context,
+                                          fontWeight: MyntFonts.bold,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        pref.clientId ?? '',
+                                        style: MyntWebTextStyles.title(
+                                          context,
+                                          fontWeight: MyntFonts.semiBold,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            )
+                          ] else if (!_showQrScreen && !_showOtpScreen) ...[
+                            // Login Form - User ID Input
+                            TextFormField(
+                              controller: auth.loginMethCtrl,
+                              focusNode: focusNode,
+                              readOnly: _isProcessing || auth.loading,
+                              maxLength: 10,
+                              textCapitalization: TextCapitalization.characters,
+                              textInputAction: TextInputAction.next,
+                              inputFormatters: [
+                                UpperCaseTextFormatter(),
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z0-9]')),
+                              ],
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                              ),
+                              decoration: _mobileInputDecoration(context),
+                              onTap: pref.isMobileLogin!
+                                  ? auth.getCurrentPhone
+                                  : null,
+                              onChanged: (v) {
+                                auth.validateLogin();
+                                auth.activeBtnLogin();
+                              },
+                              onFieldSubmitted: (_) {
+                                FocusScope.of(context).requestFocus(focusNode1);
+                              },
+                            ),
+                            const SizedBox(height: 5),
+                            if (auth.loginMethError != null &&
+                                auth.loginMethError!.isNotEmpty)
+                              Text(
+                                "${auth.loginMethError}",
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                                ),
+                              ),
+                          ],
+                          
+                          // Password and Actions (Only Show if NOT in Forgot Password or Change Password Mode)
+                          if (!_showQrScreen && !_showForgotPassword && !_showOtpScreen && !_showChangePassword) ...[
+                            const SizedBox(height: 20),
+                            
+                            // Password Input (Always Visible)
+                            TextFormField(
+                              controller: auth.passCtrl,
+                              focusNode: focusNode1,
+                              obscureText: auth.hidePass,
+                              readOnly: _isProcessing || auth.loading,
+                              textInputAction: TextInputAction.done,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                              ),
+                              decoration: InputDecoration(
+                                labelText: "Password",
+                                filled: false,
+                                labelStyle: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.regular,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                                suffixIcon: InkWell(
+                                  onTap: auth.hiddenPass,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: SvgPicture.asset(
+                                      auth.hidePass
+                                          ? "assets/icon/eye-off.svg"
+                                          : "assets/icon/eye.svg",
+                                      color: resolveThemeColor(context,
+                                          dark:  MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                      width: 20,
+                                    ),
+                                  ),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
+                                      width: 1),
+                                ),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              inputFormatters: [
+                                NoEmojiInputFormatter(),
+                                FilteringTextInputFormatter.deny(
+                                    RegExp('[π£•₹€℅™∆√¶/,]')),
+                                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                              ],
+                              onChanged: (v) {
+                                auth.validatePass();
+                                auth.activeBtnLogin();
+                              },
+                              onFieldSubmitted: (_) {
+                                if (!_isProcessing && !auth.loading) {
+                                  _handleWebLogin(); // Use new web login flow
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 5),
+                            if (auth.passError != null &&
+                                auth.passError!.isNotEmpty)
+                              Text(
+                                "${auth.passError}",
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                                ),
+                              ),
+                            const SizedBox(height: 32),
+
+
+                            // Login Button
+                            SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                onPressed: (_isProcessing || auth.loading)
+                                    ? null
+                                    : _handleWebLogin, // Use new web login flow
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.secondary,
+                                      light: MyntColors.primary),
+                                  disabledBackgroundColor:
+                                      resolveThemeColor(context,
+                                          dark: MyntColors.secondary.withOpacity(0.6),
+                                          light: MyntColors.primary.withOpacity(0.6)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6)),
+                                  elevation: 0,
+                                ),
+                                child: (_isProcessing || auth.loading)
+                                    ? MyntLoader.inline()
+                                    : Text(
+                                        "Login",
+                                        style: MyntWebTextStyles.title(
+                                          context,
+                                          fontWeight: MyntFonts.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Actions Row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Left Logic: Switch Account (if saved) OR Forgot Password (if new)
+                                if (pref.islogOut! &&
+                                    (pref.clientId!.isNotEmpty ||
+                                        pref.clientMob!.isNotEmpty))
+                                  InkWell(
+                                    onTap: () async {
+                                      pref.setLogout(false);
+                                      pref.setHideLoginOptBtn(true);
+                                      // Clear controller
+                                      auth.loginMethCtrl.clear(); 
+                                      auth.passCtrl.clear();
+                                      await auth.loginMethod();
+                                      auth.switchbackbutton(true);
+                                    },
+                                    child: Text(
+                                      "Switch account",
+                                      style: MyntWebTextStyles.para(
+                                        context,
+                                        fontWeight: MyntFonts.bold,
+                                       color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        // Copy client ID to forgot password form before clearing
+                                        forpass.forGetloginMethCtrl.text = auth.loginMethCtrl.text;
+                                        // Clear the login client ID field
+                                        auth.loginMethCtrl.clear();
+                                        auth.loginMethError = null;
+                                        _showForgotPassword = true;
+                                        forpass.clearError();
+                                      });
+                                    },
+                                    child: Text(
+                                      "Forgot password",
+                                      style: MyntWebTextStyles.para(
+                                        context,
+                                        fontWeight: MyntFonts.bold,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary),
+                                      ),
+                                    ),
+                                  ),
+
+                                // Right Logic: Forgot Password (if saved) OR Empty (if new)
+                                // Right Logic: Scan QR
+                                InkWell(
+                                    onTap: () {
+                                      _handleQrLogin(); 
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Scan QR",
+                                          style: MyntWebTextStyles.para(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Icon(Icons.qr_code_scanner, size: 20, color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary)),
+                                      ],
+                                    ),
+                                ),
+                              ],
+                            ),
+                          ],
+
+                          const SizedBox(height: 32),
+
+
+
+                          if (!_showQrScreen) ...[
+                             const SizedBox(height: 32),
+                             // Sign Up Link
+                             Center(
+                               child: InkWell(
+                                 onTap: () {
+                                   launch('https://oa.mynt.in/?ref=zws');
+                                 },
+                                 child: RichText(
+                                   text: TextSpan(
+                                     text: "Don't have an account yet? ",
+                                     style: MyntWebTextStyles.body(
+                                       context,
+                                       color: resolveThemeColor(context,
+                                           dark: MyntColors.textPrimaryDark,
+                                           light: MyntColors.textPrimary),
+                                     ),
+                                     children: [
+                                       TextSpan(
+                                           text: "Sign Up",
+                                           style: MyntWebTextStyles.body(
+                                             context,
+                                             fontWeight: MyntFonts.bold,
+                                          color: resolveThemeColor(context,
+                                            dark: MyntColors.secondaryDark,
+                                            light: MyntColors.secondary),
+                                           ))
+                                     ],
+                                   ),
+                                 ),
+                               ),
+                             ),
+                          ],
+
+                          const SizedBox(height: 140),
+                        ],
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Column(
+                            children: [
+                              Text(
+                                "Zebu Share and Wealth Managements Pvt. Ltd.",
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.bold,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  "SEBI Registration No: INZ000174634 | NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL : 12080400 | AMFI ARN : 113118 | Research Analyst : INH200006044",
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                  ).copyWith(height: 1.5),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }));
+  }
+}
