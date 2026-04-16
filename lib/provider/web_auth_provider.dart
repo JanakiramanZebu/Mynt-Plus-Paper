@@ -460,7 +460,7 @@ class WebAuthProvider extends ChangeNotifier {
 
     try {
       _totpData = await WebAuthApi.getOrGenerateTotp(
-        clientId: loginController.text.trim().toUpperCase(),
+        clientId: _mobileOtp?.clientid ?? loginController.text.trim().toUpperCase(),
         apiSession: _apiSession!,
         context: context,
       );
