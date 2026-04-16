@@ -1015,6 +1015,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
         ref.read(optionFlashProvider).closePanel();
 
+        ref.read(ledgerProvider).clearOnLogout();
+
         // Reset web auth provider state to ensure clean login on web
         if (kIsWeb) {
           ref.read(webAuthProvider).reset();
