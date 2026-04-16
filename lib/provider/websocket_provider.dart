@@ -869,20 +869,18 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _handleOrderMessage(Map<String, dynamic> res) {
-    // [POS_DIAG] Verify "om" message arrives on order fill. Remove after diagnosis.
-    log('🔍 [POS_DIAG] _handleOrderMessage fired — norenordno=${res['norenordno']}, status=${res['status']}, tsym=${res['tsym']}');
     if (_holdStartTime?.isActive ?? false) {
       _holdStartTime?.cancel();
     }
 
     // Show order status notification
     _showOrderStatusNotification(res);
+    
+    final status = res['status']?.toString().toUpperCase() ?? '';
 
     _holdStartTime = Timer(const Duration(milliseconds: 500), () {
-      // [POS_DIAG] Verify the 500ms-delayed refresh actually triggers.
-      log('🔍 [POS_DIAG] _handleOrderMessage 500ms timer fired — _context=${_context != null ? "set" : "NULL"}');
       if (_context != null) {
-        _refreshData(_context!);
+        _refreshData(_context!, orderStatus: status);
       }
       _holdStartTime = null;
     });
@@ -947,7 +945,7 @@ class WebSocketProvider extends ChangeNotifier {
     }
   }
 
-  void _refreshData(BuildContext context) {
+  void _refreshData(BuildContext context, {String orderStatus = ''}) {
     // **FIX: Check if provider is disposed before using ref.read()**
     // This prevents "provider[_addListener] is not a function" errors
     // that occur when reconnection timer fires after provider disposal
@@ -968,24 +966,16 @@ class WebSocketProvider extends ChangeNotifier {
       ref.read(orderProvider).fetchGTTOrderBook(context, "");
       ref.read(fundProvider).fetchFunds(context);
 
-      Timer(const Duration(seconds: 1), () async {
-        // Also check before delayed call
-        if (!_isDisposed) {
-          // [POS_DIAG] About to call fetchPositionBook from WebSocket path.
-          log('🔍 [POS_DIAG] _refreshData → calling fetchPositionBook now (1s post-om delay elapsed)');
-          await ref.read(portfolioProvider).fetchPositionBook(context, false);
-          final pos = ref.read(portfolioProvider);
-          log('🔍 [POS_DIAG] fetchPositionBook returned — allPostionList.length=${pos.allPostionList.length}, openPosition.length=${pos.openPosition?.length ?? 0}');
-
-          // Refresh ticker subscriptions after positions update (web only)
-          // This ensures new position symbols are subscribed for ticker header
+      
+      if (orderStatus == 'COMPLETE') {
+        ref.read(portfolioProvider).fetchPositionBook(context, false).then((_) {
           if (kIsWeb && !_isDisposed) {
-            ref.read(webSubscriptionManagerProvider).refreshTickerSubscriptions(context);
+            ref
+                .read(webSubscriptionManagerProvider)
+                .refreshTickerSubscriptions(context);
           }
-        } else {
-          log('🔍 [POS_DIAG] _refreshData 1s-delayed fetchPositionBook SKIPPED — _isDisposed=true');
-        }
-      });
+        });
+      }
     } catch (e) {
       log('WebSocket: Error in _refreshData (likely provider disposed): $e');
     }
@@ -1181,6 +1171,8 @@ class WebSocketProvider extends ChangeNotifier {
     if (input.isEmpty) {
       return;
     }
+
+    _context = context;
 
     // Update SubscriptionManager based on task type
     final subscriptionManager = ref.read(subscriptionManagerProvider);

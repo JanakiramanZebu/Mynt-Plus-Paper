@@ -743,8 +743,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         ? portfolioData.allPostionList
         : portfolioData.openPosition ?? [];
 
-    // [POS_DIAG] Verify table rebuilds when provider data changes.
-    debugPrint('🔍 [POS_DIAG] PositionTable build — positions.length=${positions.length}, allPostionList.hashCode=${portfolioData.allPostionList.hashCode}');
 
     final theme = ref.read(themeProvider);
     final positionBook = ref.read(portfolioProvider);

@@ -33,7 +33,6 @@ import '../models/order_book_model/trade_book_model.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
-import '../utils/custom_navigator.dart';
 import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
@@ -1188,22 +1187,6 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_placeOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-
-        // Refresh the currently-active portfolio screen so it updates in place
-        // when user places an order from a side panel (e.g. watchlist) without
-        // navigating away. When the user is elsewhere, the existing screen-enter
-        // refresh handles it on next navigation.
-        if (kIsWeb) {
-          final path = WebNavigationHelper.getCurrentPath();
-          final portfolio = ref.read(portfolioProvider);
-          if (path.contains('positions')) {
-            portfolio.fetchPositionBook(context, portfolio.isDay,
-                isRefresh: true);
-          } else if (path.contains('holdings')) {
-            portfolio.fetchHoldings(context, "Refresh");
-          }
-        }
-
         // _orderBookModel = await fetchOrderBook(context, true);
         // if (_orderBookModel!.isNotEmpty) {
         //   if (_orderBookModel![0].stat != "Not_Ok") {

@@ -66,6 +66,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   List<PositionBookModel>? _postionBookModel = [];
   List<PositionBookModel>? get postionBookModel => _postionBookModel;
+  
+  bool _positionFetchErrored = false;
+  bool get lastRefreshSucceeded => !_positionFetchErrored;
+
   List<PositionBookModel>? _openPosition = [];
   List<PositionBookModel>? get openPosition => _openPosition;
   List<PositionBookModel>? _closedPosion = [];
@@ -577,8 +581,11 @@ changeHoldingsTabIndex(int index) {
       } else {
         if (result['stat'] == 'no data') {
           _postionBookModel = [];
-        }else if(result['emsg'] == "Session Expired :  Invalid Session Key"){
+        } else if (result['emsg'] == "Session Expired :  Invalid Session Key") {
           ref.read(authProvider).ifSessionExpired(context);
+          _positionFetchErrored = true;
+        } else {
+          _positionFetchErrored = true;
         }
         _tpostionBookModel = [];
       }
@@ -775,7 +782,8 @@ changeHoldingsTabIndex(int index) {
     }
   }
 
-  Future fetchPositionBook(BuildContext context, bool isDay, {bool isRefresh = false}) async {
+  Future fetchPositionBook(BuildContext context, bool isDay, {bool isRefresh = false}) async {    
+    _positionFetchErrored = false;
     try {
       // Use separate loader states: full-screen loader for initial load, refresh loader for updates
       if (isRefresh) {
@@ -848,8 +856,6 @@ changeHoldingsTabIndex(int index) {
           // Merges custom group data with live positions after fetch completes.
           _refreshCustomGroups();
         } else {
-          //
-
           if (_postionBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _postionBookModel![0].stat == "Not_Ok") {
@@ -867,6 +873,7 @@ changeHoldingsTabIndex(int index) {
           .read(indexListProvider)
           .logError
           .add({"type": "API Position Book", "Error": "$e"});
+      _positionFetchErrored = true;
       notifyListeners();
     } finally {
       _posloader = false;

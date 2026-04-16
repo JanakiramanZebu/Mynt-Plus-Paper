@@ -2591,8 +2591,7 @@ class _CustomizableSplitHomeScreenState
             final allPostionList =
                 ref.watch(portfolioProvider.select((p) => p.allPostionList));
 
-            // [POS_DIAG] Verify parent Consumer rebuilds when allPostionList ref changes.
-            debugPrint('🔍 [POS_DIAG] Positions parent Consumer rebuild — isLoading=$isLoading, posloader=$posloader, allPostionList.length=${allPostionList.length}, hashCode=${allPostionList.hashCode}');
+           
 
             // Show loader only when actively loading, not when no data exists
             if (isLoading || posloader) {

@@ -30,6 +30,7 @@ import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../utils/responsive_navigation.dart';
+import '../../../../utils/responsive_snackbar.dart';
 import '../../../../utils/rupee_convert_format.dart';
 import '../../../../utils/pip_service.dart';
 import '../../../../provider/strategy_builder_provider.dart';
@@ -125,10 +126,21 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     super.dispose();
   }
 
-  // Manual refresh method for button click
+  // Manual refresh method for button click. fetchPositionBook keeps its
+  // original return (the model) — the provider exposes a separate
+  // `lastRefreshSucceeded` getter we read after awaiting, so the user sees
+  // a success/error toaster instead of a silently-stale list.
   Future<void> _handleManualRefresh() async {
     final positionBook = ref.read(portfolioProvider);
-    await positionBook.fetchPositionBook(context, positionBook.isDay, isRefresh: true);
+    await positionBook.fetchPositionBook(context, positionBook.isDay,
+        isRefresh: true);
+    if (!mounted) return;
+    if (positionBook.lastRefreshSucceeded) {
+      ResponsiveSnackBar.showSuccess(context, 'Positions refreshed');
+    } else {
+      ResponsiveSnackBar.showError(
+          context, 'Refresh failed. Please try again.');
+    }
   }
 
   @override
