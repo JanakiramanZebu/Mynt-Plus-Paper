@@ -1,12 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mynt_plus/screens/Mobile/desk_reports/bottom_sheets/pledge_list.dart';
-import 'package:mynt_plus/screens/web/profile/pledge/pledge_unpledge_screen.dart';
 import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
-import '../screens/web/scalper/scalper_screen_web.dart';
 import '../utils/custom_navigator.dart';
 import '../main.dart' show registerWebNavigatorKey;
 
@@ -34,15 +31,21 @@ class WebRoutes {
   static const String funds = '/funds';
   static const String optionChain = '/option-chain';
   static const String ipo = '/ipo';
+  static const String bonds = '/bonds';
   static const String mutualFunds = '/mutual-funds';
   static const String reports = '/reports';
   static const String profile = '/profile';
+  static const String myAccount = '/my-account';
   static const String portfolioAnalysis = '/portfolio-analysis';
   static const String strategyBuilder = '/strategy-builder';
   static const String scalper = '/scalper';
   static const String tradingViewWebHook = '/tradingview-webhook';
   static const String basketDashboard = '/basket-dashboard';
   static const String pledge = '/pledge';
+  static const String refer = '/refer';
+  static const String helpSupport = '/help-support';
+  static const String settings = '/settings';
+  static const String notification = '/notification';
 }
 
 /// Global GoRouter instance for web
@@ -130,6 +133,14 @@ void initializeWebRouter() {
         ),
       ),
 
+      // Bonds screen
+      GoRoute(
+        path: WebRoutes.bonds,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.bond,
+        ),
+      ),
+
       // Mutual Funds screen
       GoRoute(
         path: WebRoutes.mutualFunds,
@@ -151,6 +162,14 @@ void initializeWebRouter() {
         path: WebRoutes.portfolioAnalysis,
         builder: (context, state) => const CustomizableSplitHomeScreen(
           initialRightPanel: ScreenTypeParam.portfolioAnalysis,
+        ),
+      ),
+
+      // My Account screen
+      GoRoute(
+        path: WebRoutes.myAccount,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.myAccount,
         ),
       ),
 
@@ -178,14 +197,51 @@ void initializeWebRouter() {
         ),
       ),
 
-      // Scalper screen - standalone full-screen trading interface
+      // Scalper screen - embedded in home layout (full-width, watchlist hidden)
       GoRoute(
         path: WebRoutes.scalper,
-        builder: (context, state) => const ScalperScreenWeb(),
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.scalper,
+        ),
       ),
+      // Pledge & Unpledge — embedded in home layout
       GoRoute(
         path: WebRoutes.pledge,
-        builder: (context, state) => const PledgenUnpledge( ddd: 'args', ),
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.pledgeUnpledge,
+        ),
+      ),
+
+      // Refer
+      GoRoute(
+        path: WebRoutes.refer,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.refer,
+        ),
+      ),
+
+      // Help & Support
+      GoRoute(
+        path: WebRoutes.helpSupport,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.helpSupport,
+        ),
+      ),
+
+      // Settings
+      GoRoute(
+        path: WebRoutes.settings,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.settings,
+        ),
+      ),
+
+      // Notification
+      GoRoute(
+        path: WebRoutes.notification,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.notification,
+        ),
       ),
 
       // Profile details screen (also handles Digilocker callback with ?code=&state=)
