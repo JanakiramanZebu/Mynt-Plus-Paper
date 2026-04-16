@@ -3347,6 +3347,8 @@ class LDProvider extends DefaultChangeNotifier {
     }
     if (_listforpledge.isEmpty) {
       _pledgeorunpledge = '';
+      _segmentvalue = '';
+      _segmentvaluedummy = '';
     }
     notifyListeners();
   }
@@ -3380,6 +3382,24 @@ class LDProvider extends DefaultChangeNotifier {
     }
     //  _pledgeandunpledge!.data = [];
 
+    notifyListeners();
+  }
+
+  void clearOnLogout() {
+    _segmentvalue = '';
+    _segmentvaluedummy = '';
+    _listforpledge = [];
+    _pledgeorunpledge = '';
+    _pledgeoruppledgedelete = '';
+    pledgesubtn = true;
+    if (_pledgeandunpledge?.data != null) {
+      for (final item in _pledgeandunpledge!.data!) {
+        item.dummvalue = 'null';
+        item.dummunpledgevalue = 'null';
+        item.segmentselect = 'null';
+        item.deleteselected = '';
+      }
+    }
     notifyListeners();
   }
 
