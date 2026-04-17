@@ -982,33 +982,48 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     const SizedBox(height: 12),
 
                                     // Amount input
-                                    MyntTextField(
-                                      focusNode: fund.focusNode,
-                                      controller: fund.amount,
-                                      placeholder: "0.00",
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      leadingWidget: Center(
-                                        widthFactor: 1,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(left: 12),
-                                          child: Text(
-                                            "₹",
-                                            style: MyntWebTextStyles.body(
-                                              context,
-                                              fontWeight: MyntFonts.medium,
-                                              darkColor: MyntColors.textSecondaryDark,
-                                              lightColor: MyntColors.textSecondary,
+                                    IgnorePointer(
+                                      ignoring: !fund.hasActiveSegments,
+                                      child: Opacity(
+                                        opacity:
+                                            fund.hasActiveSegments ? 1.0 : 0.5,
+                                        child: MyntTextField(
+                                          focusNode: fund.focusNode,
+                                          controller: fund.amount,
+                                          placeholder: "0.00",
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          leadingWidget: Center(
+                                            widthFactor: 1,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 12),
+                                              child: Text(
+                                                "₹",
+                                                style: MyntWebTextStyles.body(
+                                                  context,
+                                                  fontWeight: MyntFonts.medium,
+                                                  darkColor: MyntColors
+                                                      .textSecondaryDark,
+                                                  lightColor:
+                                                      MyntColors.textSecondary,
+                                                ),
+                                              ),
                                             ),
                                           ),
+                                          onChanged: (value) {
+                                            fund.textFiledonChange(value);
+                                          },
                                         ),
                                       ),
-                                      onChanged: (value) {
-                                        fund.textFiledonChange(value);
-                                      },
                                     ),
+                                    if (!fund.hasActiveSegments) ...[
+                                      const SizedBox(height: 12),
+                                      _buildSegmentInactiveBanner(context),
+                                    ],
 
                                     // Quick amount chips
                                     const SizedBox(height: 12),
@@ -1023,10 +1038,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                 "₹${NumberFormat('#,##,###').format(amt)}",
                                               ),
                                               selected: isSelected,
-                                              onSelected: (_) {
+                                              onSelected:  fund.hasActiveSegments
+                                                  ?  (_) {
                                                 fund.amount.text = amt.toString();
                                                 fund.textFiledonChange(amt.toString());
-                                              },
+                                              } : null,
                                               labelStyle: MyntWebTextStyles.bodySmall(
                                                 context,
                                                 color: isSelected
@@ -1110,6 +1126,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     const SizedBox(height: 20),
 
                                     // Segment selection
+                                     if (fund.hasActiveSegments) ...[
                                     Text(
                                       "Segment",
                                       style: MyntWebTextStyles.bodySmall(
@@ -1122,7 +1139,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     const SizedBox(height: 10),
                                     _buildSegmentSelector(fund, context),
                                     const SizedBox(height: 20),
-
+                                     ],
                                     // Bank account
                                     Text(
                                       "Bank account",
@@ -1266,12 +1283,19 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       title: "Scan QR",
                                       maxLimit: "₹1,00,000",
                                       badges: ["free", "recommended"],
-                                      isDisabled: fund.intValue > 100000,
+                                      isDisabled: !fund.hasActiveSegments ||
+                                          fund.intValue > 100000,
                                     ),
                                     const SizedBox(height: 10),
 
                                     // Enter UPI ID (with inline form inside card)
-                                    _buildUpiIdCard(fund, theme, context),
+                                    IgnorePointer(
+                                      ignoring: !fund.hasActiveSegments,
+                                      child: Opacity(
+                                        opacity: fund.hasActiveSegments ? 1.0 : 0.5,
+                                        child: _buildUpiIdCard(fund, theme, context),
+                                      ),
+                                    ),
                                     const SizedBox(height: 10),
 
                                     // Net Banking
@@ -1291,7 +1315,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       title: "Net Banking",
                                       maxLimit: "₹50,00,000",
                                       badges: ["free"],
-                                      isDisabled: false,
+                                      isDisabled: !fund.hasActiveSegments,
                                     ),
 
                                     // Gateway selector (visible when Net Banking is selected)
@@ -1410,6 +1434,57 @@ class _FundScreenState extends ConsumerState<FundScreen> {
   {'label': 'Commodity', 'codes': ['MCX', 'NSE_COM', 'BSE_COM']},
 ];
 
+  Widget _buildSegmentInactiveBanner(BuildContext context) {
+    final borderColor = resolveThemeColor(
+      context,
+      dark: const Color(0xFFFFB74D),
+      light: const Color(0xFFFFA726),
+    );
+    final textColor = resolveThemeColor(
+      context,
+      dark: MyntColors.textPrimaryDark,
+      light: MyntColors.textPrimary,
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFA726).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, size: 18, color: borderColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: textColor,
+                ),
+                children: [
+                  const TextSpan(text: "Activate the "),
+                  TextSpan(
+                    text: "Segments",
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      color: borderColor,
+                      fontWeight: MyntFonts.semiBold,
+                    ),
+                  ),
+                  const TextSpan(
+                     text: " on this account to add funds.",)
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSegmentSelector(TranctionProvider fund, BuildContext context) {
     final codes = fund.companycodes;
 
@@ -1498,13 +1573,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
             logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg',
             isSelected: _selectedGateway == 'RAZORPAY',
           ),
-          _buildGatewayMenuItem(
-            context,
-            value: 'ATOM',
-            label: 'Atom',
-            logoUrl: null,
-            isSelected: _selectedGateway == 'ATOM',
-          ),
+          // _buildGatewayMenuItem(
+          //   context,
+          //   value: 'ATOM',
+          //   label: 'Atom',
+          //   logoUrl: null,
+          //   isSelected: _selectedGateway == 'ATOM',
+          // ),
         ],
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1764,6 +1839,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
   }
 
   void _onPayPressed(BuildContext context, TranctionProvider fund) {
+    if (!fund.hasActiveSegments) {
+      warningMessage(context,
+          "Activate the Segments on my account for fund adding.");
+      return;
+    }
     if (fund.amount.text.isEmpty || fund.intValue < 50) {
       warningMessage(context, "Min amount ₹50");
       return;

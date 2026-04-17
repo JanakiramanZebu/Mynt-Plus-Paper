@@ -140,7 +140,9 @@ class TranctionProvider extends DefaultChangeNotifier {
   }
 
   segmentselection(int index) {
-    _textValue = decryptclientcheck!.companyCode![index];
+    final codes = decryptclientcheck?.companyCode;
+    if (codes == null || index < 0 || index >= codes.length) return;
+    _textValue = codes[index];
     notifyListeners();
   }
 
@@ -257,8 +259,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     upiAppsAccnoFormat(bankdetails!.dATA![indexss][2]);
     _initbank =
         '${bankdetails!.dATA![indexss][1]} - ${hideAccountNumber(accno)}';
-    _textValue = decryptclientcheck!.companyCode![0];
-    _companycode = decryptclientcheck!.companyCode!;
+    _companycode = decryptclientcheck!.companyCode ?? [];
     setAccountslist(_accno);
     if (_companycode.contains("NSE_FNO")) {
       _textValue = "NSE_FNO";
@@ -266,10 +267,15 @@ class TranctionProvider extends DefaultChangeNotifier {
       _textValue = "NSE_CASH";
     } else if (_companycode.contains("MCX")) {
       _textValue = "MCX";
+    } else if (_companycode.isNotEmpty) {
+      _textValue = _companycode[0];
     } else {
-      _textValue = decryptclientcheck!.companyCode![0];
+      _textValue = '';
     }
   }
+
+  bool get hasActiveSegments =>
+      (decryptclientcheck?.companyCode?.isNotEmpty ?? false);
 
   changeValue(bool value, BuildContext context, {bool isUpiApps = true}) {
     if (isUpiApps) {
