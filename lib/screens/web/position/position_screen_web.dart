@@ -126,18 +126,15 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     super.dispose();
   }
 
-  // Manual refresh method for button click. fetchPositionBook keeps its
-  // original return (the model) — the provider exposes a separate
-  // `lastRefreshSucceeded` getter we read after awaiting, so the user sees
-  // a success/error toaster instead of a silently-stale list.
+  // Manual refresh method for button click. Only surface an error toaster
+  // when the fetch actually fails (API error or exception). Successful
+  // refreshes are silent — the table updating is the feedback.
   Future<void> _handleManualRefresh() async {
     final positionBook = ref.read(portfolioProvider);
     await positionBook.fetchPositionBook(context, positionBook.isDay,
         isRefresh: true);
     if (!mounted) return;
-    if (positionBook.lastRefreshSucceeded) {
-      ResponsiveSnackBar.showSuccess(context, 'Positions refreshed');
-    } else {
+    if (!positionBook.lastRefreshSucceeded) {
       ResponsiveSnackBar.showError(
           context, 'Refresh failed. Please try again.');
     }
