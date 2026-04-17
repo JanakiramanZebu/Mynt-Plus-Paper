@@ -2591,6 +2591,8 @@ class _CustomizableSplitHomeScreenState
             final allPostionList =
                 ref.watch(portfolioProvider.select((p) => p.allPostionList));
 
+           
+
             // Show loader only when actively loading, not when no data exists
             if (isLoading || posloader) {
               return Container(

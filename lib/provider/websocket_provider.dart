@@ -875,10 +875,12 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Show order status notification
     _showOrderStatusNotification(res);
+    
+    final status = res['status']?.toString().toUpperCase() ?? '';
 
     _holdStartTime = Timer(const Duration(milliseconds: 500), () {
       if (_context != null) {
-        _refreshData(_context!);
+        _refreshData(_context!, orderStatus: status);
       }
       _holdStartTime = null;
     });
@@ -943,7 +945,7 @@ class WebSocketProvider extends ChangeNotifier {
     }
   }
 
-  void _refreshData(BuildContext context) {
+  void _refreshData(BuildContext context, {String orderStatus = ''}) {
     // **FIX: Check if provider is disposed before using ref.read()**
     // This prevents "provider[_addListener] is not a function" errors
     // that occur when reconnection timer fires after provider disposal
@@ -964,18 +966,16 @@ class WebSocketProvider extends ChangeNotifier {
       ref.read(orderProvider).fetchGTTOrderBook(context, "");
       ref.read(fundProvider).fetchFunds(context);
 
-      Timer(const Duration(seconds: 1), () async {
-        // Also check before delayed call
-        if (!_isDisposed) {
-          await ref.read(portfolioProvider).fetchPositionBook(context, false);
-
-          // Refresh ticker subscriptions after positions update (web only)
-          // This ensures new position symbols are subscribed for ticker header
+      
+      if (orderStatus == 'COMPLETE') {
+        ref.read(portfolioProvider).fetchPositionBook(context, false).then((_) {
           if (kIsWeb && !_isDisposed) {
-            ref.read(webSubscriptionManagerProvider).refreshTickerSubscriptions(context);
+            ref
+                .read(webSubscriptionManagerProvider)
+                .refreshTickerSubscriptions(context);
           }
-        }
-      });
+        });
+      }
     } catch (e) {
       log('WebSocket: Error in _refreshData (likely provider disposed): $e');
     }
@@ -1171,6 +1171,8 @@ class WebSocketProvider extends ChangeNotifier {
     if (input.isEmpty) {
       return;
     }
+
+    _context = context;
 
     // Update SubscriptionManager based on task type
     final subscriptionManager = ref.read(subscriptionManagerProvider);
