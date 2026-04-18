@@ -1284,16 +1284,16 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       title: "Scan QR",
                                       maxLimit: "₹1,00,000",
                                       badges: ["free", "recommended"],
-                                      isDisabled: !fund.hasActiveSegments ||
+                                      isDisabled: !_hasTradableSegments(fund) ||
                                           fund.intValue > 100000,
                                     ),
                                     const SizedBox(height: 10),
 
                                     // Enter UPI ID (with inline form inside card)
                                     IgnorePointer(
-                                      ignoring: !fund.hasActiveSegments,
+                                      ignoring: !_hasTradableSegments(fund),
                                       child: Opacity(
-                                        opacity: fund.hasActiveSegments ? 1.0 : 0.5,
+                                        opacity: _hasTradableSegments(fund) ? 1.0 : 0.5,
                                         child: _buildUpiIdCard(fund, theme, context),
                                       ),
                                     ),
@@ -1316,7 +1316,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       title: "Net Banking",
                                       maxLimit: "₹50,00,000",
                                       badges: ["free"],
-                                      isDisabled: !fund.hasActiveSegments,
+                                      isDisabled: !_hasTradableSegments(fund),
                                     ),
 
                                     // Gateway selector (visible when Net Banking is selected)
@@ -1486,10 +1486,8 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     );
   }
 
-  Widget _buildSegmentSelector(TranctionProvider fund, BuildContext context) {
+  List<Map<String, String>> _availableSegments(TranctionProvider fund) {
     final codes = fund.companycodes;
-
-    // Build the list of available segments with the first matching code
     final available = <Map<String, String>>[];
     for (final group in _segmentGroups) {
       final groupCodes = group['codes'] as List<String>;
@@ -1500,6 +1498,28 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       if (match.isNotEmpty) {
         available.add({'label': group['label'] as String, 'code': match});
       }
+    }
+    return available;
+  }
+
+  bool _hasTradableSegments(TranctionProvider fund) =>
+      fund.hasActiveSegments && _availableSegments(fund).isNotEmpty;
+
+  Widget _buildSegmentSelector(TranctionProvider fund, BuildContext context) {
+    final available = _availableSegments(fund);
+
+    if (available.isEmpty) {
+      return Text(
+        "You have no active segments.",
+        style: MyntWebTextStyles.bodySmall(
+          context,
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary,
+          ),
+        ),
+      );
     }
 
     return Wrap(
@@ -1843,6 +1863,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     if (!fund.hasActiveSegments) {
       warningMessage(context,
           "Activate the Segments on my account for fund adding.");
+      return;
+    }
+    if (fund.textValue.isEmpty) {
+      warningMessage(context, "Please select a segment to add money.");
+      return;
+    }
+    if (fund.textValue == "MF_NSE" || fund.textValue == "MF_BSE") {
+      warningMessage(context,
+          "Fund addition is not supported for Mutual Fund segments.");
       return;
     }
     if (fund.amount.text.isEmpty || fund.intValue < 50) {
