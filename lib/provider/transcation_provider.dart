@@ -252,14 +252,24 @@ class TranctionProvider extends DefaultChangeNotifier {
     _isUpiAppsBottomSheetShown = false;
     _isUpiIdBottomSheetShown = false;
 
+    // Guard against missing/empty bank and client data
+    final data = bankdetails?.dATA;
+    if (data == null || data.isEmpty) return;
+    final safeIndex = index >= 0 && index < data.length ? index : 0;
+    final safeIndexss = indexss >= 0 && indexss < data.length ? indexss : 0;
+
     // Initialize bank and account data
-    _multipleAccno = _accno = bankdetails!.dATA![index][2];
-    _ifsc = bankdetails!.dATA![indexss][3];
-    _bankname = bankdetails!.dATA![indexss][1];
-    upiAppsAccnoFormat(bankdetails!.dATA![indexss][2]);
+    _multipleAccno = _accno = data[safeIndex][2];
+    _ifsc = data[safeIndexss][3];
+    _bankname = data[safeIndexss][1];
+    upiAppsAccnoFormat(data[safeIndexss][2]);
     _initbank =
-        '${bankdetails!.dATA![indexss][1]} - ${hideAccountNumber(accno)}';
-    _companycode = decryptclientcheck!.companyCode ?? [];
+        '${data[safeIndexss][1]} - ${hideAccountNumber(accno)}';
+
+    final codes = decryptclientcheck?.companyCode;
+    if (codes == null || codes.isEmpty) return;
+    _textValue = codes[0];
+    _companycode = codes;
     setAccountslist(_accno);
     if (_companycode.contains("NSE_FNO")) {
       _textValue = "NSE_FNO";
