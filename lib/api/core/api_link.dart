@@ -284,6 +284,12 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get wrapperCheckStatus => '$wrapperUrl/check_status';
   String get qrCodeUrl => 'https://copy.mynt.in/get_qr1';
 
+  // Atom gateway
+  String get atomUrl => 'https://fundapi.mynt.in/atom';
+  String get atomNetBankingRedirect => '$atomUrl/atomredirect';
+  String get atomUpiRedirect => '$atomUrl/atomupiredirect';
+  String get atomCallback => '$atomUrl/fromatom';
+
   //hdfc mainurl//
   String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';
   String get verifyUPI => '$hdfcmainurl/checkClientVPA';
