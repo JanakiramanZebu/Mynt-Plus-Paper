@@ -1121,7 +1121,7 @@ class _CustomizableSplitHomeScreenState
 
     // Refresh portfolio data (holdings, positions)
     final portfolio = ref.read(portfolioProvider);
-    portfolio.fetchPositionBook(context, true).then((_) {
+    portfolio.fetchPositionBook(context, portfolio.isDay).then((_) {
       // After positions are fetched, refresh ticker subscriptions
       if (mounted) {
         final subscriptionManager = ref.read(webSubscriptionManagerProvider);
