@@ -468,9 +468,35 @@ class WebAuthProvider extends ChangeNotifier {
       if (_totpData?.isValid == true) {
         _startTotpTimer();
       }
-      
+
       notifyListeners();
     } catch (e) {
+    }
+  }
+
+  /// Generate a brand-new TOTP secret key (triggered from "Generate New Key" button
+  /// shown when no existing key is set up for the user).
+  Future<void> generateNewTotpKey(BuildContext context) async {
+    if (_apiSession == null) return;
+
+    _setLoading(true);
+    try {
+      final newData = await WebAuthApi.generateTotpSecretKey(
+        clientId: _mobileOtp?.clientid ?? loginController.text.trim().toUpperCase(),
+        apiSession: _apiSession!,
+        context: context,
+      );
+
+      if (newData != null) {
+        _totpData = newData;
+        if (_totpData?.isValid == true) {
+          _startTotpTimer();
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+    } finally {
+      _setLoading(false);
     }
   }
 

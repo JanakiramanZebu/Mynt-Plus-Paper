@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -4329,6 +4330,8 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
   bool _passwordField = false;
   Map<String, dynamic>? _ifscInfo;
   bool _isSubmitting = false;
+  bool _isIfscLoading = false;
+  bool _ifscNotFound = false;
   Timer? _ifscDebounce;
 
   Color get _textPrimary => resolveThemeColor(context,
@@ -4380,11 +4383,27 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
 
   void _fetchIfsc(String code) async {
     if (code.length < 11) {
-      setState(() => _ifscInfo = null);
+      setState(() {
+        _ifscInfo = null;
+        _ifscNotFound = false;
+      });
       return;
     }
+    setState(() {
+      _isIfscLoading = true;
+      _ifscNotFound = false;
+    });
     final data = await widget.provider.ifscLookup(code);
-    if (mounted) setState(() => _ifscInfo = data);
+    if (mounted) {
+      setState(() {
+        _ifscInfo = data;
+        _isIfscLoading = false;
+        _ifscNotFound = data == null;
+      });
+      if (data == null) {
+        error(context, 'Invalid IFSC code. Please check and try again.');
+      }
+    }
   }
 
   void _onIfscChanged(String val) {
@@ -4423,6 +4442,14 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_ifscInfo == null || _ifscNotFound) {
+      error(context, 'Please enter a valid IFSC code');
+      return;
+    }
+    if (_isIfscLoading) {
+      error(context, 'Please wait while IFSC code is being verified');
+      return;
+    }
     if (_proofType.isEmpty) {
       error(context, 'Please select a proof type');
       return;
@@ -4622,21 +4649,101 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                 // IFSC Code
                 _buildLabel('IFSC CODE'),
                 const SizedBox(height: 6),
-                MyntFormTextField(
-                  controller: _ifscCtrl,
-                  textCapitalization: TextCapitalization.characters,
-                  placeholder: 'Enter IFSC Code',
-                  onChanged: _onIfscChanged,
+                SizedBox(
+                  height: 45,
+                  child: TextField(
+                    controller: _ifscCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    ],
+                    onChanged: _onIfscChanged,
+                    style: MyntWebTextStyles.bodyMedium(context),
+                    decoration: InputDecoration(
+                      hintText: 'Enter IFSC Code',
+                      hintStyle: MyntWebTextStyles.placeholder(context),
+                      filled: true,
+                      fillColor: resolveThemeColor(
+                        context,
+                        dark: const Color(0xffB5C0CF).withOpacity(.15),
+                        light: const Color(0xffF1F3F8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      suffixIcon: _isIfscLoading
+                          ? Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: SizedBox(
+                                width: 10,
+                                height: 10,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)),
+                              ),
+                            )
+                          : _ifscNotFound && _ifscCtrl.text.length >= 11
+                              ? Icon(Icons.error_outline,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.errorDark,
+                                      light: MyntColors.error),
+                                  size: 20)
+                              : _ifscInfo != null
+                                  ? Icon(Icons.check_circle,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.successDark,
+                                          light: MyntColors.success),
+                                      size: 20)
+                                  : null,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.primary),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.primary),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.primary),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.primary),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                  ),
                 ),
 
-                // Manual bank name if IFSC not found
-                if (_ifscInfo != null && _ifscInfo!['BANK'] == null) ...[
-                  const SizedBox(height: 12),
-                  _buildLabel('Bank Name (IFSC not found)'),
-                  const SizedBox(height: 6),
-                  MyntFormTextField(
-                    controller: _manualBankNameCtrl,
-                    placeholder: 'Bank Name',
+                if (_ifscNotFound && _ifscCtrl.text.length >= 11) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'IFSC code not found. Please enter a valid IFSC code.',
+                    style: MyntWebTextStyles.para(context,
+                      color: resolveThemeColor(context,
+                        dark: MyntColors.errorDark, light: MyntColors.error)
+                    ),
                   ),
                 ],
 

@@ -66,6 +66,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   List<PositionBookModel>? _postionBookModel = [];
   List<PositionBookModel>? get postionBookModel => _postionBookModel;
+
+  // Set true whenever the position-book API returned an unexpected/error
+  // status or the fetch threw. Reset at the start of every fetchPositionBook
+  // call. The manual refresh button reads `lastRefreshSucceeded` after
+  // awaiting to decide whether to surface an error toaster.
+  bool _positionFetchErrored = false;
+
+  /// True if the last `fetchPositionBook` call finished without an API error
+  /// ('success' or 'no data' — both valid). False if the API returned an
+  /// unknown status or the call threw.
+  bool get lastRefreshSucceeded => !_positionFetchErrored;
+
   List<PositionBookModel>? _openPosition = [];
   List<PositionBookModel>? get openPosition => _openPosition;
   List<PositionBookModel>? _closedPosion = [];
@@ -577,8 +589,13 @@ changeHoldingsTabIndex(int index) {
       } else {
         if (result['stat'] == 'no data') {
           _postionBookModel = [];
-        }else if(result['emsg'] == "Session Expired :  Invalid Session Key"){
+        } else if (result['emsg'] == "Session Expired :  Invalid Session Key") {
           ref.read(authProvider).ifSessionExpired(context);
+          _positionFetchErrored = true;
+        } else {
+          // Real API error (not 'success', not 'no data', not session expired).
+          // Mark the flag so the manual refresh caller shows an error toaster.
+          _positionFetchErrored = true;
         }
         _tpostionBookModel = [];
       }
@@ -776,6 +793,9 @@ changeHoldingsTabIndex(int index) {
   }
 
   Future fetchPositionBook(BuildContext context, bool isDay, {bool isRefresh = false}) async {
+    // Reset flag at the start of every fetch so lastRefreshSucceeded
+    // reflects THIS call's outcome, not a previous one.
+    _positionFetchErrored = false;
     try {
       // Use separate loader states: full-screen loader for initial load, refresh loader for updates
       if (isRefresh) {
@@ -786,9 +806,14 @@ changeHoldingsTabIndex(int index) {
       notifyListeners();
 
       await setPortfolioupdate('P',context);
+      // [POS_DIAG] Capture what the API actually returned vs what we had before.
+      debugPrint('🔍 [POS_DIAG] fetchPositionBook — isDay=$isDay, old _postionBookModel.length=${_postionBookModel?.length ?? 0}, new _tpostionBookModel.length=${_tpostionBookModel?.length ?? 0}');
       if (_postionBookModel!.isNotEmpty) {
         if (_tpostionBookModel!.isNotEmpty) {
           _postionBookModel = _tpostionBookModel;
+        } else {
+          // [POS_DIAG] API returned empty but we had data — stale-data path.
+          debugPrint('🔍 [POS_DIAG] ⚠️ STALE PATH — _tpostionBookModel is empty but _postionBookModel has ${_postionBookModel!.length} items. Old data kept.');
         }
       } else {
         _posloader = true;
@@ -835,7 +860,16 @@ changeHoldingsTabIndex(int index) {
 
           ConstantName.sessCheck = true;
           _isDay = isDay;
+
+          // Patch positions where the broker returned lp=0 using the last-good LTP
+          // from the WebSocket cache. Happens when the API is called right after an
+          // order fills — the broker's position aggregator lags the latest tick.
+          // Without this, UI shows 0 P&L until the next df update or manual refresh.
+          _patchStaleLtpsFromSocketCache();
+
           await splitPositionBook(isDay);
+          // [POS_DIAG] After split: see how many ended up in each bucket.
+          debugPrint('🔍 [POS_DIAG] splitPositionBook done — isDay=$isDay, openPosition=${_openPosition?.length ?? 0}, closedPosion=${_closedPosion?.length ?? 0}, allPostionList=${_allPostionList.length}');
 
           // Reapply sorting if previously set
           if (_currentPositionSortOption.isNotEmpty) {
@@ -848,8 +882,8 @@ changeHoldingsTabIndex(int index) {
           // Merges custom group data with live positions after fetch completes.
           _refreshCustomGroups();
         } else {
-          //
-
+          // [POS_DIAG] API returned stat=Not_Ok — positions cleared.
+          debugPrint('🔍 [POS_DIAG] ⚠️ stat=Not_Ok — emsg=${_postionBookModel![0].emsg}, clearing _openPosition');
           if (_postionBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _postionBookModel![0].stat == "Not_Ok") {
@@ -862,11 +896,15 @@ changeHoldingsTabIndex(int index) {
       notifyListeners();
       return _postionBookModel;
     } catch (e) {
-      // print("qwqwqw pos sw catch ${e}");
+      // [POS_DIAG] Exception thrown during fetchPositionBook — positions may be stale.
+      debugPrint('🔍 [POS_DIAG] ❌ fetchPositionBook CATCH — error: $e');
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Position Book", "Error": "$e"});
+      // Exception during fetch counts as a refresh failure so
+      // lastRefreshSucceeded reports false to the caller.
+      _positionFetchErrored = true;
       notifyListeners();
     } finally {
       _posloader = false;
@@ -2100,6 +2138,51 @@ changeHoldingsTabIndex(int index) {
     }
   }
 
+  /// Patch positions whose lp came back as 0 / null / empty from the API using
+  /// the last-good LTP cached by the WebSocket provider.
+  ///
+  /// Why: when an order fills, the broker's position-book endpoint may return
+  /// lp=0 for a few seconds because its aggregator lags the latest market tick.
+  /// Meanwhile _socketDatas has the real last-traded price from the live feed.
+  /// Without this patch, the user sees 0 P&L until the next df update or a
+  /// manual refresh.
+  void _patchStaleLtpsFromSocketCache() {
+    if (_postionBookModel == null || _postionBookModel!.isEmpty) return;
+
+    try {
+      final socketDatas = ref.read(websocketProvider).socketDatas;
+      if (socketDatas.isEmpty) return;
+
+      int patched = 0;
+      for (final position in _postionBookModel!) {
+        final token = position.token;
+        if (token == null || token.isEmpty) continue;
+
+        // Only patch when the API-returned lp is missing or zero
+        final apiLp = position.lp;
+        final apiLpNum = double.tryParse(apiLp ?? '') ?? 0.0;
+        if (apiLpNum != 0.0) continue;
+
+        final cached = socketDatas[token];
+        if (cached is! Map) continue;
+        final cachedLp = cached['lp']?.toString();
+        if (cachedLp == null || cachedLp.isEmpty) continue;
+
+        final cachedLpNum = double.tryParse(cachedLp) ?? 0.0;
+        if (cachedLpNum == 0.0) continue;
+
+        position.lp = cachedLp;
+        patched++;
+      }
+
+      if (patched > 0) {
+        debugPrint('🔍 [POS_DIAG] Patched $patched position(s) with cached WebSocket LTP');
+      }
+    } catch (e) {
+      debugPrint('🔍 [POS_DIAG] _patchStaleLtpsFromSocketCache error: $e');
+    }
+  }
+
   // Optimized for fast updates from websocket - Updates position values when price changes
   // This enables ticker to show real-time P&L regardless of which screen is active
   void updatePositionValues(String token, Map<String, dynamic> socketData) {
@@ -2468,6 +2551,7 @@ changeHoldingsTabIndex(int index) {
       _exitAll = false;
       if (isDay) {
         int check = 0;
+        int skippedCount = 0;
         for (var element in _openPosition!) {
           if (element.daybuyqty != "0" || element.daysellqty != "0") {
             check = check + 1;
@@ -2476,7 +2560,14 @@ changeHoldingsTabIndex(int index) {
             if (check >= 2) {
               _exitAll = true;
             }
+          } else {
+            skippedCount++;
+            // [POS_DIAG] This open position is being DROPPED from allPostionList in Day mode.
+            debugPrint('🔍 [POS_DIAG] ⚠️ isDay SKIP — tsym=${element.tsym}, netqty=${element.netqty}, daybuyqty=${element.daybuyqty}, daysellqty=${element.daysellqty}');
           }
+        }
+        if (skippedCount > 0) {
+          debugPrint('🔍 [POS_DIAG] ⚠️ isDay=true dropped $skippedCount open positions from allPostionList');
         }
       } else {
         int check = 0;
