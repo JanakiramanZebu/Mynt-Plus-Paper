@@ -860,6 +860,13 @@ changeHoldingsTabIndex(int index) {
 
           ConstantName.sessCheck = true;
           _isDay = isDay;
+
+          // Patch positions where the broker returned lp=0 using the last-good LTP
+          // from the WebSocket cache. Happens when the API is called right after an
+          // order fills — the broker's position aggregator lags the latest tick.
+          // Without this, UI shows 0 P&L until the next df update or manual refresh.
+          _patchStaleLtpsFromSocketCache();
+
           await splitPositionBook(isDay);
           // [POS_DIAG] After split: see how many ended up in each bucket.
           debugPrint('🔍 [POS_DIAG] splitPositionBook done — isDay=$isDay, openPosition=${_openPosition?.length ?? 0}, closedPosion=${_closedPosion?.length ?? 0}, allPostionList=${_allPostionList.length}');
@@ -2128,6 +2135,51 @@ changeHoldingsTabIndex(int index) {
     _totalCurrentVal = 0.0;
     for (var holdingJson in holdingsModel!) {
       _totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
+    }
+  }
+
+  /// Patch positions whose lp came back as 0 / null / empty from the API using
+  /// the last-good LTP cached by the WebSocket provider.
+  ///
+  /// Why: when an order fills, the broker's position-book endpoint may return
+  /// lp=0 for a few seconds because its aggregator lags the latest market tick.
+  /// Meanwhile _socketDatas has the real last-traded price from the live feed.
+  /// Without this patch, the user sees 0 P&L until the next df update or a
+  /// manual refresh.
+  void _patchStaleLtpsFromSocketCache() {
+    if (_postionBookModel == null || _postionBookModel!.isEmpty) return;
+
+    try {
+      final socketDatas = ref.read(websocketProvider).socketDatas;
+      if (socketDatas.isEmpty) return;
+
+      int patched = 0;
+      for (final position in _postionBookModel!) {
+        final token = position.token;
+        if (token == null || token.isEmpty) continue;
+
+        // Only patch when the API-returned lp is missing or zero
+        final apiLp = position.lp;
+        final apiLpNum = double.tryParse(apiLp ?? '') ?? 0.0;
+        if (apiLpNum != 0.0) continue;
+
+        final cached = socketDatas[token];
+        if (cached is! Map) continue;
+        final cachedLp = cached['lp']?.toString();
+        if (cachedLp == null || cachedLp.isEmpty) continue;
+
+        final cachedLpNum = double.tryParse(cachedLp) ?? 0.0;
+        if (cachedLpNum == 0.0) continue;
+
+        position.lp = cachedLp;
+        patched++;
+      }
+
+      if (patched > 0) {
+        debugPrint('🔍 [POS_DIAG] Patched $patched position(s) with cached WebSocket LTP');
+      }
+    } catch (e) {
+      debugPrint('🔍 [POS_DIAG] _patchStaleLtpsFromSocketCache error: $e');
     }
   }
 
