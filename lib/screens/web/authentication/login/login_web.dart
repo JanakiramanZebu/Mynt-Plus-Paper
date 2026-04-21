@@ -97,6 +97,15 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     focusNode1 = FocusNode();
     focusNode1.addListener(_onFocusChange);
 
+    // When arriving from the OAuth flow (URL carries ?client_id=...), skip the
+    // saved-account view and show fresh credential fields — the URL's client_id
+    // may be a different user from the one stored in prefs, so showing the last
+    // logged-in user's profile would be misleading.
+    final oauthClientId = Uri.base.queryParameters['client_id'];
+    if (oauthClientId != null && oauthClientId.isNotEmpty) {
+      Preferences().setLogout(false);
+    }
+
     // Defer context-dependent operations to avoid holding context reference
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {

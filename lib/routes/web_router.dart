@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
+import '../screens/web/oauth/oauth_login_screen.dart';
 import '../utils/custom_navigator.dart';
 import '../main.dart' show registerWebNavigatorKey;
 
@@ -46,6 +47,7 @@ class WebRoutes {
   static const String helpSupport = '/help-support';
   static const String settings = '/settings';
   static const String notification = '/notification';
+  static const String oauthAuthorize = '/OAuthlogin/authorize/oauth';
 }
 
 /// Global GoRouter instance for web
@@ -207,7 +209,7 @@ void initializeWebRouter() {
       // Pledge & Unpledge — embedded in home layout
       GoRoute(
         path: WebRoutes.pledge,
-        builder: (context, state) => const CustomizableSplitHomeScreen(
+       builder: (context, state) => const CustomizableSplitHomeScreen(
           initialRightPanel: ScreenTypeParam.pledgeUnpledge,
         ),
       ),
@@ -241,6 +243,55 @@ void initializeWebRouter() {
         path: WebRoutes.notification,
         builder: (context, state) => const CustomizableSplitHomeScreen(
           initialRightPanel: ScreenTypeParam.notification,
+        ),
+      ),
+      
+
+      // Refer
+      GoRoute(
+        path: WebRoutes.refer,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.refer,
+        ),
+      ),
+
+      // Help & Support
+      GoRoute(
+        path: WebRoutes.helpSupport,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.helpSupport,
+        ),
+      ),
+
+      // Settings
+      GoRoute(
+        path: WebRoutes.settings,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.settings,
+        ),
+      ),
+
+      // Notification
+      GoRoute(
+        path: WebRoutes.notification,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.notification,
+        ),
+      ),
+
+      // OAuth login screen - partner apps direct users here with ?client_id=<id>
+      GoRoute(
+        path: WebRoutes.oauthAuthorize,
+        builder: (context, state) => OAuthLoginScreen(
+          clientId: state.uri.queryParameters['client_id'],
+        ),
+      ),
+
+      // OAuth login screen - partner apps direct users here with ?client_id=<id>
+      GoRoute(
+        path: WebRoutes.oauthAuthorize,
+        builder: (context, state) => OAuthLoginScreen(
+          clientId: state.uri.queryParameters['client_id'],
         ),
       ),
 
