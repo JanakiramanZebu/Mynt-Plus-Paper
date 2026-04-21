@@ -6,6 +6,7 @@ import 'package:mynt_plus/screens/web/profile/pledge/pledge_unpledge_screen.dart
 import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
+import '../screens/web/oauth/oauth_login_screen.dart';
 import '../screens/web/scalper/scalper_screen_web.dart';
 import '../utils/custom_navigator.dart';
 import '../main.dart' show registerWebNavigatorKey;
@@ -43,6 +44,7 @@ class WebRoutes {
   static const String tradingViewWebHook = '/tradingview-webhook';
   static const String basketDashboard = '/basket-dashboard';
   static const String pledge = '/pledge';
+  static const String oauthAuthorize = '/OAuthlogin/authorize/oauth';
 }
 
 /// Global GoRouter instance for web
@@ -186,6 +188,14 @@ void initializeWebRouter() {
       GoRoute(
         path: WebRoutes.pledge,
         builder: (context, state) => const PledgenUnpledge( ddd: 'args', ),
+      ),
+
+      // OAuth login screen - partner apps direct users here with ?client_id=<id>
+      GoRoute(
+        path: WebRoutes.oauthAuthorize,
+        builder: (context, state) => OAuthLoginScreen(
+          clientId: state.uri.queryParameters['client_id'],
+        ),
       ),
 
       // Profile details screen (also handles Digilocker callback with ?code=&state=)

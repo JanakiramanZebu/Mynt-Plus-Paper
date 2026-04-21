@@ -16,6 +16,11 @@ class ApiLinks {
   String get goMyntURL => "https://go.mynt.in/NorenWClientWeb";
   static String wsURL = 'wss://go.mynt.in/NorenWSWeb/';
   String get bemynt => "https://be.mynt.in/";
+  String get oauthBase => "https://ws.mynt.in/login/";
+
+  /// OAuth partner-app authorization endpoints (used by OAuthLoginScreen).
+  String get myntValidate => '${oauthBase}api/mynt-validate';
+  String get myntAuth => '${oauthBase}api/mynt-auth';
 
   String get newsurl => "$bemynt/news";
   String get weblog => "$bemynt/weblog/addlogversion";
