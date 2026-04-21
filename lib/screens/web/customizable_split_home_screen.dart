@@ -676,7 +676,7 @@ class _CustomizableSplitHomeScreenState
         _navigateToScreen(ScreenType.pledgeUnpledge);
         break;
       case ScreenTypeParam.mutualFund:
-        _handleHoldingsTap(initialTabIndex: 1); // Mutual funds tab
+        _handleMutualFundTap();
         break;
       case ScreenTypeParam.reports:
         _handleReportsTap();
