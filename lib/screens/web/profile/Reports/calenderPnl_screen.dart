@@ -1809,21 +1809,34 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
 
   // --- Trade Table (shadcn) ---
   Widget _buildTradeTable(BuildContext context, List<TradeData> trades) {
+    final isCommodity =
+        ref.read(ledgerProvider).selectedSegment == "Commodity";
     return LayoutBuilder(
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth;
-        // 9 columns: Symbol, Buy Qty, Buy Rate, Sell Qty, Sell Rate, Net Qty, Close Price, Unrealised P&L, Realised P&L
-        final columnWidths = {
-          0: shadcn.FixedTableSize(totalWidth * 0.22),
-          1: shadcn.FixedTableSize(totalWidth * 0.08),
-          2: shadcn.FixedTableSize(totalWidth * 0.11),
-          3: shadcn.FixedTableSize(totalWidth * 0.08),
-          4: shadcn.FixedTableSize(totalWidth * 0.11),
-          5: shadcn.FixedTableSize(totalWidth * 0.08),
-          6: shadcn.FixedTableSize(totalWidth * 0.10),
-          7: shadcn.FixedTableSize(totalWidth * 0.11),
-          8: shadcn.FixedTableSize(totalWidth * 0.11),
-        };
+        // Commodity: 9 columns (with Unrealised P&L); others: 8 columns.
+        final columnWidths = isCommodity
+            ? {
+                0: shadcn.FixedTableSize(totalWidth * 0.22),
+                1: shadcn.FixedTableSize(totalWidth * 0.08),
+                2: shadcn.FixedTableSize(totalWidth * 0.11),
+                3: shadcn.FixedTableSize(totalWidth * 0.08),
+                4: shadcn.FixedTableSize(totalWidth * 0.11),
+                5: shadcn.FixedTableSize(totalWidth * 0.08),
+                6: shadcn.FixedTableSize(totalWidth * 0.10),
+                7: shadcn.FixedTableSize(totalWidth * 0.11),
+                8: shadcn.FixedTableSize(totalWidth * 0.11),
+              }
+            : {
+                0: shadcn.FixedTableSize(totalWidth * 0.24),
+                1: shadcn.FixedTableSize(totalWidth * 0.09),
+                2: shadcn.FixedTableSize(totalWidth * 0.12),
+                3: shadcn.FixedTableSize(totalWidth * 0.09),
+                4: shadcn.FixedTableSize(totalWidth * 0.12),
+                5: shadcn.FixedTableSize(totalWidth * 0.09),
+                6: shadcn.FixedTableSize(totalWidth * 0.11),
+                7: shadcn.FixedTableSize(totalWidth * 0.14),
+              };
 
         return Container(
           color: resolveThemeColor(context,
@@ -1842,7 +1855,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   _buildTableHeaderCell('Sell Rate', alignRight: true),
                   _buildTableHeaderCell('Net Qty', alignRight: true),
                   _buildTableHeaderCell('Close Price', alignRight: true),
-                  _buildTableHeaderCell('Unrealised P&L', alignRight: true),
+                  if (isCommodity)
+                    _buildTableHeaderCell('Unrealised P&L', alignRight: true),
                   _buildTableHeaderCell('Realised P&L', alignRight: true),
                 ],
               ),
@@ -1999,16 +2013,17 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                         style: _getTextStyle(context),
                       ),
                     ),
-                    // Unrealised P&L
-                    _buildTableDataCell(
-                      rowKey: rowKey,
-                      alignRight: true,
-                      child: Text(
-                        unrealisedPnl == 0 ? '0' : _formatAmount(unrealisedPnl),
-                        style: _getTextStyle(context,
-                            color: _getPnlColor(context, unrealisedPnl)),
+                    // Unrealised P&L (Commodity only)
+                    if (isCommodity)
+                      _buildTableDataCell(
+                        rowKey: rowKey,
+                        alignRight: true,
+                        child: Text(
+                          unrealisedPnl == 0 ? '0' : _formatAmount(unrealisedPnl),
+                          style: _getTextStyle(context,
+                              color: _getPnlColor(context, unrealisedPnl)),
+                        ),
                       ),
-                    ),
                     // Realised P&L
                     _buildTableDataCell(
                       rowKey: rowKey,
