@@ -423,6 +423,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   @override
   void initState() {
+    // Clear stale GTT/OCO state from any previous order session so the
+    // trigger price, qty, and price fields don't carry over old values.
+    ref.read(ordInputProvider).clearTextField();
+
     ref.read(fundProvider).fetchFunds(context);
     _stockExchangesList = ref.read(marketWatchProvider).equls ?? [];
 
