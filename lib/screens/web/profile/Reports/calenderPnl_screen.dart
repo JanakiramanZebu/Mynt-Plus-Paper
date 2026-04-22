@@ -76,21 +76,31 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
   void _initializeData() {
     if (!_isInitialized) {
       final ledgerprovider = ref.read(ledgerProvider);
+
+      // Re-initialize FY if the provider was cleared (e.g. on account switch)
+      if (ledgerprovider.formattedStartDate.isEmpty) {
+        ledgerprovider.setFinancialYear('');
+        _startDate = ledgerprovider.startTaxDate;
+      }
+
+      final startFormatted = DateFormat('dd/MM/yyyy').format(_startDate);
       final todayFormatted = DateFormat('dd/MM/yyyy').format(_endDate);
 
-      // Set end date to today in provider
+      // Sync provider dates with the screen's local state
+      ledgerprovider.startTaxDate = _startDate;
       ledgerprovider.endTaxDate = _endDate;
+      ledgerprovider.formattedStartDate = startFormatted;
       ledgerprovider.formattedendDate = todayFormatted;
 
       if (!ledgerprovider.hasDataForAllSegments) {
         ledgerprovider.fetchDataForAllSegmentsIfEmpty(
           context,
-          ledgerprovider.formattedStartDate,
+          startFormatted,
           todayFormatted,
         );
       }
       ledgerprovider.fetchsharingdata(
-        ledgerprovider.formattedStartDate,
+        startFormatted,
         todayFormatted,
         ledgerprovider.selectedSegment,
         context,
@@ -672,9 +682,10 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                     onTap: () {
                       final value = !ledgerprovider.notsharing;
                       ledgerprovider.sharingornotsharing(value);
-                      if (value == false && ledgerprovider.ucode == '') {
+                      if (value == false) {
+                        // Turning ON — always send fresh response + segment
                         ledgerprovider.sendsharing(
-                          "",
+                          ledgerprovider.ucode,
                           ledgerprovider.formattedStartDate,
                           ledgerprovider.formattedendDate,
                           ledgerprovider.calenderpnlAllData!.fullresponse!,
@@ -683,6 +694,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                           context,
                         );
                       } else {
+                        // Turning OFF — ucode only
                         ledgerprovider.sendsharing(
                           ledgerprovider.ucode,
                           "",
@@ -1237,15 +1249,22 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth;
-        final columnWidths = {
-          0: shadcn.FixedTableSize(totalWidth * 0.60), // Arrow + Date + Count
-          1: shadcn.FixedTableSize(totalWidth * 0.40), // P&L
-        };
+        final columnWidths = isCommodity
+            ? {
+                0: shadcn.FixedTableSize(totalWidth * 0.50), // Arrow + Date + Count
+                1: shadcn.FixedTableSize(totalWidth * 0.25), // Unrealised P&L
+                2: shadcn.FixedTableSize(totalWidth * 0.25), // Realised P&L
+              }
+            : {
+                0: shadcn.FixedTableSize(totalWidth * 0.60), // Arrow + Date + Count
+                1: shadcn.FixedTableSize(totalWidth * 0.40), // P&L
+              };
 
         // Build rows data
         final List<_DateRowData> dateRows = sortedDates.map((dateKey) {
           List<TradeData> tradesForDate;
           double totalRealisedPnl;
+          double? totalUnrealisedPnl;
 
           if (isCommodity) {
             final dateStr =
@@ -1259,6 +1278,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                 : [];
             totalRealisedPnl =
                 dateData?['realised_pnl']?.toDouble() ?? 0.0;
+            totalUnrealisedPnl =
+                dateData?['total_unrealized_pnl']?.toDouble() ?? 0.0;
           } else {
             tradesForDate = ledgerprovider.grouped[dateKey] ?? [];
             totalRealisedPnl = tradesForDate.fold(
@@ -1276,6 +1297,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
             dateKey: dateKey,
             tradesForDate: tradesForDate,
             totalRealisedPnl: totalRealisedPnl,
+            totalUnrealisedPnl: totalUnrealisedPnl,
             dateString: dateString,
             isExpanded: isExpanded,
           );
@@ -1290,13 +1312,22 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                 columnWidths: columnWidths,
                 rows: [
                   shadcn.TableHeader(
-                    cells: [
-                      _buildDateSectionHeaderCell('Date Wise P&L'),
-                      _buildDateSectionHeaderCell(
-                          '${sortedDates.length} Days',
-                          alignRight: true,
-                          isSecondary: true),
-                    ],
+                    cells: isCommodity
+                        ? [
+                            _buildDateSectionHeaderCell('Date',
+                                isSecondary: true),
+                            _buildDateSectionHeaderCell('Unrealised P&L',
+                                alignRight: true, isSecondary: true),
+                            _buildDateSectionHeaderCell('Realised P&L',
+                                alignRight: true, isSecondary: true),
+                          ]
+                        : [
+                            _buildDateSectionHeaderCell('Date Wise P&L'),
+                            _buildDateSectionHeaderCell(
+                                '${sortedDates.length} Days',
+                                alignRight: true,
+                                isSecondary: true),
+                          ],
                   ),
                 ],
               ),
@@ -1374,6 +1405,20 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                   ],
                                 ),
                               ),
+                              if (row.totalUnrealisedPnl != null)
+                                _buildDateRowCell(
+                                  rowIndex: index,
+                                  alignRight: true,
+                                  child: Text(
+                                    _formatAmount(row.totalUnrealisedPnl!),
+                                    style: MyntWebTextStyles.body(context,
+                                        darkColor: _getPnlColor(context,
+                                            row.totalUnrealisedPnl!),
+                                        lightColor: _getPnlColor(context,
+                                            row.totalUnrealisedPnl!),
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
                               _buildDateRowCell(
                                 rowIndex: index,
                                 alignRight: true,
@@ -1764,20 +1809,34 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
 
   // --- Trade Table (shadcn) ---
   Widget _buildTradeTable(BuildContext context, List<TradeData> trades) {
+    final isCommodity =
+        ref.read(ledgerProvider).selectedSegment == "Commodity";
     return LayoutBuilder(
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth;
-        // 8 columns: Symbol, Buy Qty, Buy Rate, Sell Qty, Sell Rate, Net Qty, Close Price, Realised P&L
-        final columnWidths = {
-          0: shadcn.FixedTableSize(totalWidth * 0.24),
-          1: shadcn.FixedTableSize(totalWidth * 0.09),
-          2: shadcn.FixedTableSize(totalWidth * 0.12),
-          3: shadcn.FixedTableSize(totalWidth * 0.09),
-          4: shadcn.FixedTableSize(totalWidth * 0.12),
-          5: shadcn.FixedTableSize(totalWidth * 0.09),
-          6: shadcn.FixedTableSize(totalWidth * 0.11),
-          7: shadcn.FixedTableSize(totalWidth * 0.14),
-        };
+        // Commodity: 9 columns (with Unrealised P&L); others: 8 columns.
+        final columnWidths = isCommodity
+            ? {
+                0: shadcn.FixedTableSize(totalWidth * 0.22),
+                1: shadcn.FixedTableSize(totalWidth * 0.08),
+                2: shadcn.FixedTableSize(totalWidth * 0.11),
+                3: shadcn.FixedTableSize(totalWidth * 0.08),
+                4: shadcn.FixedTableSize(totalWidth * 0.11),
+                5: shadcn.FixedTableSize(totalWidth * 0.08),
+                6: shadcn.FixedTableSize(totalWidth * 0.10),
+                7: shadcn.FixedTableSize(totalWidth * 0.11),
+                8: shadcn.FixedTableSize(totalWidth * 0.11),
+              }
+            : {
+                0: shadcn.FixedTableSize(totalWidth * 0.24),
+                1: shadcn.FixedTableSize(totalWidth * 0.09),
+                2: shadcn.FixedTableSize(totalWidth * 0.12),
+                3: shadcn.FixedTableSize(totalWidth * 0.09),
+                4: shadcn.FixedTableSize(totalWidth * 0.12),
+                5: shadcn.FixedTableSize(totalWidth * 0.09),
+                6: shadcn.FixedTableSize(totalWidth * 0.11),
+                7: shadcn.FixedTableSize(totalWidth * 0.14),
+              };
 
         return Container(
           color: resolveThemeColor(context,
@@ -1796,6 +1855,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   _buildTableHeaderCell('Sell Rate', alignRight: true),
                   _buildTableHeaderCell('Net Qty', alignRight: true),
                   _buildTableHeaderCell('Close Price', alignRight: true),
+                  if (isCommodity)
+                    _buildTableHeaderCell('Unrealised P&L', alignRight: true),
                   _buildTableHeaderCell('Realised P&L', alignRight: true),
                 ],
               ),
@@ -1808,6 +1869,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                 final displaySymbol = scripSymbol.isNotEmpty ? scripSymbol : scripName;
                 final realisedPnl =
                     double.tryParse(trade.realisedpnl ?? '0') ?? 0.0;
+                final unrealisedPnl = trade.safeUnrealisedPnl;
                 final rowKey = '${trade.tRADEDATE}_${index}_$scripSymbol';
                 final openQty = trade.safeOpenQty;
                 final openRate = trade.safeOpenRate;
@@ -1951,6 +2013,17 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                         style: _getTextStyle(context),
                       ),
                     ),
+                    // Unrealised P&L (Commodity only)
+                    if (isCommodity)
+                      _buildTableDataCell(
+                        rowKey: rowKey,
+                        alignRight: true,
+                        child: Text(
+                          unrealisedPnl == 0 ? '0' : _formatAmount(unrealisedPnl),
+                          style: _getTextStyle(context,
+                              color: _getPnlColor(context, unrealisedPnl)),
+                        ),
+                      ),
                     // Realised P&L
                     _buildTableDataCell(
                       rowKey: rowKey,
@@ -3008,6 +3081,7 @@ class _DateRowData {
   final DateTime dateKey;
   final List<TradeData> tradesForDate;
   final double totalRealisedPnl;
+  final double? totalUnrealisedPnl;
   final String dateString;
   final bool isExpanded;
 
@@ -3015,6 +3089,7 @@ class _DateRowData {
     required this.dateKey,
     required this.tradesForDate,
     required this.totalRealisedPnl,
+    this.totalUnrealisedPnl,
     required this.dateString,
     required this.isExpanded,
   });
