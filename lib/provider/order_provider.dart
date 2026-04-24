@@ -2472,6 +2472,15 @@ class OrderProvider extends DefaultChangeNotifier {
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
+        } else {
+          final errorMsg = _placeGttOrderModel!.emsg ??
+              _placeGttOrderModel!.stat ??
+              "Failed to place GTT order";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         }
       }
       notifyListeners();
@@ -2485,6 +2494,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   modifyGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
+    toggleLoadingOn(true);
     try {
       _modifyGttOrderModel = await api.modifyGTTOrderAPI(input);
 
@@ -2514,12 +2524,13 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      notifyListeners();
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Modify GTT Order ", "Error": "$e"});
+    } finally {
+      toggleLoadingOn(false);
       notifyListeners();
     }
   }
@@ -2604,6 +2615,15 @@ class OrderProvider extends DefaultChangeNotifier {
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
+        } else {
+          final errorMsg = _placeGttOrderModel!.emsg ??
+              _placeGttOrderModel!.stat ??
+              "Failed to place OCO order";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         }
       }
     } catch (e) {
@@ -2617,6 +2637,7 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   modifyOCOOrder(PlaceOcoOrderInput input, BuildContext context) async {
+    toggleLoadingOn(true);
     try {
       _modifyGttOrderModel = await api.modifyOCOOrderAPI(input);
 
@@ -2646,12 +2667,13 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      notifyListeners();
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Modify OCO Order ", "Error": "$e"});
+    } finally {
+      toggleLoadingOn(false);
       notifyListeners();
     }
   }
@@ -4369,6 +4391,15 @@ class OrderProvider extends DefaultChangeNotifier {
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
+        } else {
+          final errorMsg = _placeGttOrderModel!.emsg ??
+              _placeGttOrderModel!.stat ??
+              "Failed to place GTT order";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         }
       }
       notifyListeners();
