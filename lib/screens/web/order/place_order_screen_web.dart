@@ -2346,7 +2346,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       headerTitleText(
                                                         (_isStock)
                                                             ? (_isQtyToAmount ? "Amount" : "Qty")
-                                                            : (_isGTTLotToQty ? "Qty" : "Lot"),
+                                                            : widget.scripInfo.exch == "MCX"
+                                                                ? "Lot"
+                                                                : (_isGTTLotToQty ? "Qty" : "Lot"),
                                                         theme),
                                                       const SizedBox(width: 16),
                                                       if (widget.scripInfo.exch == "NFO" ||
@@ -3122,7 +3124,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         headerTitleText(
                                                           (_isStock)
                                                               ? (_isQtyToAmount ? "Amount" : "Qty")
-                                                              : (_isGTTLotToQty ? "Qty" : "Lot"),
+                                                              : widget.scripInfo.exch == "MCX"
+                                                                  ? "Lot"
+                                                                  : (_isGTTLotToQty ? "Qty" : "Lot"),
                                                           theme),
                                                         const SizedBox(width: 16),
                                                         if (widget.scripInfo.exch == "NFO" ||
@@ -4242,9 +4246,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       ? (_isQtyToAmount
                                                                           ? "Amount"
                                                                           : "Qty")
-                                                                      : (_isLotToQty
-                                                                          ? "Qty"
-                                                                          : "Lot"),
+                                                                      : widget.scripInfo.exch == "MCX"
+                                                                          ? "Lot"
+                                                                          : (_isLotToQty
+                                                                              ? "Qty"
+                                                                              : "Lot"),
                                                                   theme),
                                                               const SizedBox(
                                                                   width: 16),
@@ -5952,6 +5958,32 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   }
                                                                 } else if (orderType ==
                                                                     "GTT") {
+                                                                  // Guard: Amount-mode (stocks) can produce qty 0 when amount < LTP.
+                                                                  // Block submission and tell the user before any other validation runs.
+                                                                  final computedQty = SafeParse.toDouble(
+                                                                      getGTTFinalQuantity(orderInput.qtyCtrl.text));
+                                                                  if (orderInput.qtyCtrl.text.trim().isNotEmpty &&
+                                                                      computedQty <= 0) {
+                                                                    ResponsiveSnackBar.showWarning(
+                                                                        context,
+                                                                        _isStock && _isQtyToAmount
+                                                                            ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}"
+                                                                            : "Quantity cannot be 0");
+                                                                    return;
+                                                                  }
+                                                                  if (orderInput.disableGTTCond) {
+                                                                    final computedOcoQty = SafeParse.toDouble(
+                                                                        getGTTFinalQuantity(orderInput.ocoQtyCtrl.text));
+                                                                    if (orderInput.ocoQtyCtrl.text.trim().isNotEmpty &&
+                                                                        computedOcoQty <= 0) {
+                                                                      ResponsiveSnackBar.showWarning(
+                                                                          context,
+                                                                          _isStock && _isQtyToAmount
+                                                                              ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}"
+                                                                              : "Quantity cannot be 0");
+                                                                      return;
+                                                                    }
+                                                                  }
                                                                   if (orderInput
                                                                       .disableGTTCond) {
                                                                     if ((orderInput.val1Ctrl.text.isNotEmpty &&
@@ -7798,6 +7830,19 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   placeOrder(OrderInputProvider orderInput, bool isSliceOrd,
       ThemesProvider theme) async {
+    // Guard: for stocks in Amount mode, an amount below LTP floors to qty 0.
+    // Compute what would actually be sent to the API and block if it's 0.
+    final int finalApiQty = widget.scripInfo.exch == 'MCX'
+        ? SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) * lotSize
+        : SafeParse.toInt(getFinalQuantity(qtyCtrl.text));
+    if (qtyCtrl.text.trim().isNotEmpty && finalApiQty <= 0) {
+      ResponsiveSnackBar.showWarning(
+          context,
+          _isStock && _isQtyToAmount
+              ? "Minimum Allowed Amount should be greater than ${widget.orderArg.ltp}"
+              : "Quantity cannot be 0");
+      return;
+    }
     String bsktName = ref.read(orderProvider).selectedBsktName;
     int frezQtyOrderSliceMaxLimit =
         ref.read(orderProvider).frezQtyOrderSliceMaxLimit;

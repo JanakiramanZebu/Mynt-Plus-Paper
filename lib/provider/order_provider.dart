@@ -2547,6 +2547,15 @@ class OrderProvider extends DefaultChangeNotifier {
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
+        } else {
+          final errorMsg = _placeGttOrderModel!.emsg ??
+              _placeGttOrderModel!.stat ??
+              "Failed to place GTT order";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         }
       }
       notifyListeners();
@@ -2681,6 +2690,15 @@ class OrderProvider extends DefaultChangeNotifier {
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
+        } else {
+          final errorMsg = _placeGttOrderModel!.emsg ??
+              _placeGttOrderModel!.stat ??
+              "Failed to place OCO order";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         }
       }
     } catch (e) {
@@ -4626,6 +4644,15 @@ class OrderProvider extends DefaultChangeNotifier {
                 "Session Expired :  Invalid Session Key" &&
             _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
+        } else {
+          final errorMsg = _placeGttOrderModel!.emsg ??
+              _placeGttOrderModel!.stat ??
+              "Failed to place GTT order";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         }
       }
       notifyListeners();
