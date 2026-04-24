@@ -987,7 +987,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                                 );
                                               }
                                             }
-                                          } else {}
+                                          }
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(

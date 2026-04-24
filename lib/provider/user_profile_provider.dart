@@ -249,6 +249,12 @@ class UserProfileProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  /// Hides inline chart without notifying listeners.
+  /// Use in dispose() to avoid modifying provider during widget tree finalization.
+  void hideInlineChartSilent() {
+    _showInlineChart = false;
+  }
+
   // Method to clear all user data when switching accounts
   void clearUserData() {
     _userDetailModel = null;
@@ -609,15 +615,11 @@ class UserProfileProvider extends DefaultChangeNotifier {
   Future fetchAlgoStrategies(BuildContext context) async {
     try {
       toggleLoadingOn(true);
-      print("🔍 Fetching algo strategies...");
       _algoStrategies = await api.getAlgoStrategy();
-      print("📊 API Response - Number of strategies: ${_algoStrategies.length}");
       for (int i = 0; i < _algoStrategies.length; i++) {
-        print("📋 Strategy $i: ${_algoStrategies[i].algorithmName} - ${_algoStrategies[i].status}");
       }
       notifyListeners();
     } catch (e) {
-      print("❌ Error fetching algo strategies: $e");
       error(context, 'Failed to load algo strategies: $e');
       notifyListeners();
     } finally {
@@ -649,13 +651,11 @@ class UserProfileProvider extends DefaultChangeNotifier {
         codeLang: '',
       );
       
-      print("Creating algo strategy: $algorithmName");
       final response = await api.createAlgoStrategy(
         requestData: requestData,
         file: file,
       );
       
-      print("Algo strategy created successfully: $response");
       
       // Refresh the algo strategies list
       await fetchAlgoStrategies(context);
@@ -666,8 +666,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
       successMessage(context, 'Algorithm strategy created successfully!');
       
     } catch (e) {
-      print("Error creating algo strategy: $e");
-      print("Stack trace: ${StackTrace.current}");
       error(context, 'Failed to create algorithm strategy: $e');
     } finally {
       toggleLoadingOn(false);
@@ -735,11 +733,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
   }
 
   void populateFormForEdit(AlgoStrategyModel strategy) {
-    print("🔍 POPULATING FORM FOR EDIT:");
-    print("  Algorithm Name: ${strategy.algorithmName}");
-    print("  Type: ${strategy.type}");
-    print("  Category: ${strategy.category}");
-    print("  Risk Level (raw): ${strategy.riskLevel}");
     
     _isEditMode = true; // Set edit mode flag
     _algorithmNameController.text = strategy.algorithmName;
@@ -750,8 +743,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
     // Convert risk level to proper case (e.g., "medium" -> "Medium")
     _selectedRiskLevel = _capitalizeFirstLetter(strategy.riskLevel);
     
-    print("  Risk Level (converted): $_selectedRiskLevel");
-    print("  Available risk levels: $riskLevels");
     
     _hasAttemptedSubmit = false;
     _selectedFileName = strategy.filePath.split('/').last ?? 'Existing file';
@@ -798,7 +789,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
           // Verify file bytes are loaded
           if (file.bytes != null) {
             setSelectedFile(file);
-            print("✅ File selected successfully with ${file.bytes!.length} bytes");
           } else {
             error(context, 'Failed to load file content. Please try again.');
           }
@@ -807,7 +797,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         }
       }
     } catch (e) {
-      print("💥 File selection error: $e");
       error(context, 'Error selecting file: $e');
     }
   }
@@ -909,7 +898,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         codeLang: '',
       );
       
-      print("Updating algo strategy: $algorithmName");
       final response = await api.updateAlgoStrategy(
         requestData: requestData,
         file: file,
@@ -917,7 +905,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         algoId: algoId,
       );
       
-      print("Algo strategy updated successfully: $response");
       
       // Refresh the algo strategies list
       await fetchAlgoStrategies(context);
@@ -928,8 +915,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
       successMessage(context, 'Algorithm strategy updated successfully!');
       
     } catch (e) {
-      print("Error updating algo strategy: $e");
-      print("Stack trace: ${StackTrace.current}");
       error(context, 'Failed to update algorithm strategy: $e');
     } finally {
       toggleLoadingOn(false);
@@ -937,17 +922,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
   }
 
   Future<bool> updateForm(BuildContext context, String submissionId, String algoId) async {
-    print("🔍 UPDATE FORM CALLED:");
-    print("  Submission ID: $submissionId");
-    print("  Algo ID: $algoId");
-    print("  Algorithm Name: ${_algorithmNameController.text.trim()}");
-    print("  Algorithm Type: $_selectedAlgorithmType");
-    print("  Category: $_selectedCategory");
-    print("  Risk Level: $_selectedRiskLevel");
-    print("  Description: ${_descriptionController.text.trim()}");
-    print("  Strategy Logic: ${_strategyLogicController.text.trim()}");
-    print("  Selected File: ${_selectedFile?.name}");
-    print("  Form Valid: ${isFormValid()}");
     
     setAttemptedSubmit(true);
     
@@ -967,11 +941,9 @@ class UserProfileProvider extends DefaultChangeNotifier {
         );
         return true; // Success
       } catch (e) {
-        print("❌ Update failed: $e");
         return false; // Failed
       }
     }
-    print("❌ Form validation failed");
     return false; // Form not valid
   }
 
@@ -979,10 +951,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       
-      print("Deleting algo strategy: $algoId");
       final response = await api.deleteAlgoStrategy(submissionId, algoId);
       
-      print("Algo strategy deleted successfully: $response");
       
       // Refresh the algo strategies list
       await fetchAlgoStrategies(context);
@@ -995,8 +965,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
       return true; // Success
       
     } catch (e) {
-      print("Error deleting algo strategy: $e");
-      print("Stack trace: ${StackTrace.current}");
       error(context, 'Failed to delete algorithm strategy: $e');
       return false; // Failed
     } finally {
@@ -1030,11 +998,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
       } else {
         await uploadImage(context, file);
       }
-    } else {
-      print("No image selected");
     }
   } catch (e) {
-    print("Error selecting image: $e");
   }
 }
 
@@ -1051,7 +1016,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         warningMessage(context, 'Failed to remove profile picture');
       }
     } catch (e) {
-      print("Error removing profile image: $e");
     }
   }
 
@@ -1099,7 +1063,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print("error in get profile image $e");
     } finally {
       toggleimageloader(false);
     }
@@ -1137,7 +1100,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
             'Failed to update image: ${responseData.statusCode} - $responseData');
       }
     } catch (e) {
-      print("error in upload image $e");
     } finally {
       toggleimageloader(false);
     }
@@ -1177,7 +1139,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
         }
       }
     } catch (e) {
-      print("error in web upload image $e");
     } finally {
       toggleimageloader(false);
     }

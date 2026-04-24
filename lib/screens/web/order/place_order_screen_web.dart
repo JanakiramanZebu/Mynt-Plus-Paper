@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
+import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
@@ -36,7 +38,6 @@ import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/screens/web/funds/fund_screen_web.dart';
 import 'orderscreen_header_web.dart';
 import 'slice_order_sheet_web.dart';
-import 'package:mynt_plus/screens/Mobile/profile_screen/profile_main_screen.dart';
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/custom_widget_button.dart';
 import 'package:mynt_plus/sharedWidget/enums.dart';
@@ -48,7 +49,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
-import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import '../../../models/order_book_model/place_gtt_order.dart';
 import 'package:intl/intl.dart';
@@ -4088,7 +4088,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ),
                                                     onPressed: () {
                                                       final profileDetails =
-                                                          ref.watch(
+                                                          ref.read(
                                                               profileAllDetailsProvider);
                                                       final clientData =
                                                           profileDetails
@@ -4101,46 +4101,53 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       bool POAActive =
                                                           clientData?.pOA ==
                                                               'Y';
-                                                      // Navigate to the screen where the user enables MTF
-                                                      // Navigator.pushNamed(context, Routes.mtfEnableScreen);
 
-                                                      if (!DDPIActive &&
+                                                      if (!DDPIActive ||
                                                           !POAActive) {
-                                                        // final pendingStatuses =
-                                                        //   ref.watch(profileAllDetailsProvider).pendingStatusList;
-                                                        // if (pendingStatuses.isNotEmpty &&
-                                                        //     pendingStatuses[0].data != null) {
-                                                        //   final hasPendingChanges = pendingStatuses[0]
-                                                        //       .data!
-                                                        //       .any((status) => status == 'mtf_pending');
-                                                        //   ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                        // if (hasPendingChanges) {
-                                                        //     ResponsiveSnackBar.showWarning(context, 'You have pending request.click on the E-Sign to proceed.');
-                                                        //     return;
-                                                        //   }
-                                                        // }
-                                                        // profileDetails.openInWebURL(context, "segment");
-                                                        ref
-                                                            .watch(
-                                                                profileAllDetailsProvider)
-                                                            .openInWebURLk(
-                                                                context,
-                                                                "segment",
-                                                                "mtf");
+                                                        final pendingStatuses =
+                                                            profileDetails
+                                                                .pendingStatusList;
+                                                        if (pendingStatuses
+                                                                .isNotEmpty &&
+                                                            pendingStatuses[0]
+                                                                    .data !=
+                                                                null) {
+                                                          final hasPendingChanges =
+                                                              pendingStatuses[0]
+                                                                  .data!
+                                                                  .any((status) =>
+                                                                      status ==
+                                                                      'mtf_pending');
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .removeCurrentSnackBar();
+                                                          if (hasPendingChanges) {
+                                                            ResponsiveSnackBar
+                                                                .showWarning(
+                                                                    context,
+                                                                    'You have pending request. Click on the E-Sign to proceed.');
+                                                            return;
+                                                          }
+                                                        }
+                                                        // Navigate to MTF screen, then close the order dialog
+                                                        WebNavigationHelper
+                                                            .navigateTo(
+                                                                'mtfDetails');
+                                                        _PlaceOrderDialogCloseNotifier
+                                                                .of(context)
+                                                            ?.onClose();
                                                       } else {
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (_) =>
-                                                                const MyAccountScreen(
-                                                                    initialIndex:
-                                                                        2),
-                                                          ),
-                                                        );
+                                                        // Show warning and navigate to My Account before closing the dialog
                                                         ResponsiveSnackBar
                                                             .showWarning(
                                                                 context,
                                                                 'You need to enable DDPI before you can proceed with enabling MTF.');
+                                                        WebNavigationHelper
+                                                            .navigateTo(
+                                                                'myAccount');
+                                                        _PlaceOrderDialogCloseNotifier
+                                                                .of(context)
+                                                            ?.onClose();
                                                       }
                                                     },
                                                     child: Text(
@@ -8063,7 +8070,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -8078,7 +8084,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -8538,26 +8543,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
     String jsonData = jsonEncode(data);
 
-    print("=== ADDING TO BASKET DEBUG ===");
-    print("Basket name: $bsktName");
-    print("Script count after add: ${scripList.length}");
-    print("Full data being saved: $jsonData");
 
     // Save to the same storage type we read from
     if (userId != null && userId.isNotEmpty) {
       await pref.setBasketScripForUser(userId, jsonData);
-      print("Saved to user storage for user: $userId");
 
       // Clear general storage to prevent conflicts
       if (pref.bsktScrips != null && pref.bsktScrips!.isNotEmpty) {
         await pref.setBasketScrip("{}");
-        print("Cleared general storage");
       }
     } else {
       await pref.setBasketScrip(jsonData);
-      print("Saved to general storage");
     }
-    print("==============================");
 
     // **FIX: Add small delay to ensure storage write completes before reading**
     await Future.delayed(const Duration(milliseconds: 100));
@@ -8774,7 +8771,6 @@ class _DraggablePlaceOrderScreenDialogState
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -8789,7 +8785,6 @@ class _DraggablePlaceOrderScreenDialogState
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

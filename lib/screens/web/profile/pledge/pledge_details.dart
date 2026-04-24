@@ -37,6 +37,7 @@ class DropdownItem {
 
 class _PledgeDeytails extends State<PledgeDeytails> {
   bool _isLoadingMf = false;
+  bool _didAutoSelectSegment = false;
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +66,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       // final myController = TextEditingController(text: ledgerdata.selectnetpledge.text);
       // String selectedValue = ledgerdata.segmentvalue;
       String? selectedValue;
-      print(
-          "$selectedValue selectedValueselectedValueselectedValueselectedValue");
       //     if (ledgerdata.pledgeandunpledge!.data!.isNotEmpty) {
       //       for (var i = 0; i < ledgerdata.pledgeandunpledge!.data!.length; i++) {
       //         final val = ledgerdata.pledgeandunpledge!.data![i];
@@ -108,7 +107,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: false,
                   ),
                 );
-                print("Added: $segment");
               } else {
                 dropdownItems.add(
                   DropdownItem(
@@ -117,7 +115,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: false,
                   ),
                 );
-                print("No matching company code for $segment");
               }
               dropdownItems.add(
                 DropdownItem(
@@ -135,7 +132,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("Added: $segment");
               } else {
                 dropdownItems.add(
                   DropdownItem(
@@ -144,7 +140,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("No matching company code for $segment");
               }
               dropdownItems.add(
                 DropdownItem(
@@ -162,7 +157,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("Added: $segment");
               } else {
                 dropdownItems.add(
                   DropdownItem(
@@ -171,7 +165,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     isEnabled: true,
                   ),
                 );
-                print("No matching company code for $segment");
               }
               dropdownItems.add(
                 DropdownItem(
@@ -190,7 +183,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                   isEnabled: true,
                 ),
               );
-              print("Added: $segment");
             } else {
               dropdownItems.add(
                 DropdownItem(
@@ -199,7 +191,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                   isEnabled: false,
                 ),
               );
-              print("No matching company code for $segment");
             }
             dropdownItems.add(
               DropdownItem(
@@ -209,8 +200,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
               ),
             );
           }
-        } else {
-          print("Segment $segment is not in segmentMap");
         }
       }
 
@@ -219,7 +208,35 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       dropdownItems =
           dropdownItems.where((item) => seen.add(item.value)).toList();
 
-      print("${dropdownItems} printprintprintpritn");
+      // Single-segment lock: once a segment is chosen for the current pledge
+      // batch, force every other chip to be disabled so the user cannot mix
+      // segments within one batch.
+      final lockedSegment = ledgerdata.segmentvaluedummy;
+      final hasLock = lockedSegment.isNotEmpty;
+      if (hasLock) {
+        dropdownItems = dropdownItems
+            .map((item) => DropdownItem(
+                  value: item.value,
+                  label: item.label,
+                  isEnabled: item.value == lockedSegment,
+                ))
+            .toList();
+      }
+
+      if (!_didAutoSelectSegment && ledgerdata.screenpledge == 'pledge') {
+        final current = widget.data.segmentselect?.toString() ?? '';
+        if (hasLock && (current.isEmpty || current == 'null')) {
+          _didAutoSelectSegment = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              ledgerdata.changesegval(lockedSegment, widget.data);
+            }
+          });
+        } else {
+          _didAutoSelectSegment = true;
+        }
+      }
+
 
       return WillPopScope(
         onWillPop: () async {
@@ -227,8 +244,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
             ledgerdata.changesegvaldummy('');
           }
           Navigator.pop(context);
-          print(
-              "objectobjectobjectobjectobjectobjectobjectobject ${screenheight * 0.00038}");
           return true;
         },
         child: Stack(
@@ -634,7 +649,9 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                   : const Color(0xffFCEFD4),
                             ),
                             child: Text(
-                              'Note: Please ensure that you submit separate pledge requests for MTF and other segments (FO, CD, and Commodities). Combining pledges for MTF and other segments is not permitted. However, combining pledges for FO, CD, and Commodities segments is allowed.',
+                              hasLock
+                                  ? 'Segment locked to $lockedSegment based on your first pledge selection. All remaining stocks must be pledged under the same segment. To pledge under a different segment, please submit a separate pledge request.'
+                                  : 'Note: Each pledge batch can include only one segment. Once you select a segment for a stock, all other stocks in the same batch must use the same segment. Submit this batch and start a new one to switch segments.',
                               maxLines: 7,
                               overflow: TextOverflow.ellipsis,
                               style: MyntWebTextStyles.para(

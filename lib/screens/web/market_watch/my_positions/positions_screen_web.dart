@@ -202,7 +202,6 @@ class _PositionCardWebState extends ConsumerState<_PositionCardWeb> {
                             .calldepthApis(context, depthArgs, "");
                       });
                     } catch (e) {
-                      debugPrint('Error opening chart: $e');
                     } finally {
                       if (mounted) {
                         Future.delayed(const Duration(milliseconds: 500), () {
@@ -406,7 +405,6 @@ class _PositionCardWebState extends ConsumerState<_PositionCardWeb> {
                                       try {
                                         await _placeOrderInput(context, true);
                                       } catch (e) {
-                                        debugPrint('Buy button error: $e');
                                       }
                                     },
                                   ),
@@ -427,7 +425,6 @@ class _PositionCardWebState extends ConsumerState<_PositionCardWeb> {
                                       try {
                                         await _placeOrderInput(context, false);
                                       } catch (e) {
-                                        debugPrint('Sell button error: $e');
                                       }
                                     },
                                   ),
@@ -463,7 +460,6 @@ class _PositionCardWebState extends ConsumerState<_PositionCardWeb> {
                                                   context, depthArgs, "");
                                         });
                                       } catch (e) {
-                                        debugPrint('Error opening chart: $e');
                                       } finally {
                                         if (mounted) {
                                           Future.delayed(
@@ -597,7 +593,6 @@ class _PositionCardWebState extends ConsumerState<_PositionCardWeb> {
         },
       );
     } catch (e) {
-      debugPrint('Place order error: $e');
       if (mounted) {
         ResponsiveSnackBar.showError(
             context, 'Error placing order: ${e.toString()}');

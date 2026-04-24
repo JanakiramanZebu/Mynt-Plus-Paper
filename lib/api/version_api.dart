@@ -11,7 +11,6 @@ mixin VersionApi on ApiCore {
 
       //  print("Top Indices Data ${response.body}");
       final json = jsonDecode(response.body);
-      print("version $json");
       return VersionModel.fromJson(json);
     } catch (e) {
       rethrow;

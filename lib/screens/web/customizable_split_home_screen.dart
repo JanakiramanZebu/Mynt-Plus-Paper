@@ -154,6 +154,13 @@ enum ScreenTypeParam {
   funds,
   mutualFund,
   ipo,
+  bond,
+  scalper,
+  myAccount,
+  refer,
+  helpSupport,
+  notification,
+  pledgeUnpledge,
   optionChain,
   reports,
   settings,
@@ -259,7 +266,6 @@ class _CustomizableSplitHomeScreenState
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -274,7 +280,6 @@ class _CustomizableSplitHomeScreenState
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -375,8 +380,6 @@ class _CustomizableSplitHomeScreenState
       WebNavigationHelper.initialize(
         navigatorKey: GlobalKey<NavigatorState>(),
         navigateToScreen: (routeName, {arguments}) {
-          debugPrint(
-              "WebNavigationHelper.navigateToScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -393,8 +396,6 @@ class _CustomizableSplitHomeScreenState
             _handleSettingsTap();
           } else if (routeName == Routes.tradeActionScreen ||
               routeName == "tradeActionScreen") {
-            debugPrint(
-                "Trade action screen navigation triggered with arguments: $arguments");
             final tabIndex = arguments is int ? arguments : null;
             showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
@@ -422,15 +423,12 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == Routes.portfolioDashboard ||
               routeName == "portfolioAnalysis" ||
               routeName == "portfolioDashboard") {
-            debugPrint("Portfolio analysis route matched: $routeName");
             _handlePortfolioAnalysisTap();
           } else if (routeName == Routes.strategyBuilder ||
               routeName == "strategyBuilder") {
-            debugPrint("Strategy Builder route matched: $routeName");
             _handleStrategyBuilderTap();
           } else if (routeName == Routes.scalperScreen ||
               routeName == "scalper") {
-            debugPrint("Scalper route matched: $routeName");
             _handleScalperTap();
           } else if (routeName == "tradingViewWebHook") {
             _handleWebHookTap();
@@ -451,14 +449,12 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
           } else if (routeName == "mtfDetails") {
-            _replaceScreenInPanel(ScreenType.mtfDetails);
-          } else {
-            debugPrint("Unknown route: $routeName");
+            _navigateToScreen(ScreenType.mtfDetails);
+          } else if (routeName == "myAccount") {
+            _navigateToScreen(ScreenType.myAccount);
           }
         },
         replaceScreen: (routeName, {arguments}) {
-          debugPrint(
-              "WebNavigationHelper.replaceScreen called with: $routeName");
           if (routeName == "orderBook") {
             showOrderBookInPanel();
           } else if (routeName == "optionChain") {
@@ -475,8 +471,6 @@ class _CustomizableSplitHomeScreenState
             _handleSettingsTap();
           } else if (routeName == Routes.tradeActionScreen ||
               routeName == "tradeActionScreen") {
-            debugPrint(
-                "Trade action screen replacement triggered with arguments: $arguments");
             final tabIndex = arguments is int ? arguments : null;
             showTradeActionInPanel(tabIndex: tabIndex);
             // caEvent and cpAction removed from panel navigation
@@ -504,15 +498,12 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == Routes.portfolioDashboard ||
               routeName == "portfolioAnalysis" ||
               routeName == "portfolioDashboard") {
-            debugPrint("Portfolio analysis route matched: $routeName");
             _handlePortfolioAnalysisTap();
           } else if (routeName == Routes.strategyBuilder ||
               routeName == "strategyBuilder") {
-            debugPrint("Strategy Builder route matched: $routeName");
             _handleStrategyBuilderTap();
           } else if (routeName == Routes.scalperScreen ||
               routeName == "scalper") {
-            debugPrint("Scalper route matched: $routeName");
             _handleScalperTap();
           } else if (routeName == "tradingViewWebHook") {
             _handleWebHookTap();
@@ -533,10 +524,10 @@ class _CustomizableSplitHomeScreenState
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
           } else if (routeName == "mtfDetails") {
-            _replaceScreenInPanel(ScreenType.mtfDetails);
-          } else {
-            debugPrint("Unknown route: $routeName");
-          }
+            _navigateToScreen(ScreenType.mtfDetails);
+          } else if (routeName == "myAccount") {
+            _navigateToScreen(ScreenType.myAccount);
+          } 
         },
         goBack: () {
           // Handle back navigation if needed
@@ -545,7 +536,6 @@ class _CustomizableSplitHomeScreenState
 
       // Set up browser back/forward navigation handler
       WebNavigationHelper.setOnBrowserNavigation((String urlPath) {
-        debugPrint('Browser navigation event: $urlPath');
         _handleBrowserNavigation(urlPath);
       });
     });
@@ -608,7 +598,6 @@ class _CustomizableSplitHomeScreenState
     // Check if session exists
     if (session == null || session.isEmpty || clientId == null || clientId.isEmpty) {
       // No session - redirect to login
-      debugPrint('CustomizableSplitHomeScreen: No session, redirecting to login');
       if (mounted) {
         context.go(WebRoutes.login);
       }
@@ -619,7 +608,6 @@ class _CustomizableSplitHomeScreenState
     // This prevents duplicate initialLoadMethods calls
     final auth = ref.read(authProvider);
     if (auth.initLoad) {
-      debugPrint('CustomizableSplitHomeScreen: Data already loading, skipping');
       return;
     }
 
@@ -627,13 +615,11 @@ class _CustomizableSplitHomeScreenState
     // indexListProvider.checkSess is set after session validation in initialLoadMethods
     final indexProvider = ref.read(indexListProvider);
     if (indexProvider.checkSess != null && indexProvider.checkSess!.stat == "Ok") {
-      debugPrint('CustomizableSplitHomeScreen: Data already loaded, skipping');
       return;
     }
 
     // Session exists but data not loaded - this is a page refresh scenario
     // Call initialLoadMethods to load all essential data
-    debugPrint('CustomizableSplitHomeScreen: Page refresh detected, calling initialLoadMethods');
     if (mounted) {
       await ref.read(authProvider).initialLoadMethods(context, "");
     }
@@ -646,7 +632,6 @@ class _CustomizableSplitHomeScreenState
     final initialPanel = widget.initialRightPanel;
     if (initialPanel == null) return;
 
-    debugPrint('WebRouter: Applying initial right panel: $initialPanel');
 
     // Map ScreenTypeParam to the appropriate handler
     switch (initialPanel) {
@@ -669,8 +654,29 @@ class _CustomizableSplitHomeScreenState
       case ScreenTypeParam.ipo:
         _handleIPOTap();
         break;
+      case ScreenTypeParam.bond:
+        _handleBondTap();
+        break;
+      case ScreenTypeParam.scalper:
+        _handleScalperTap();
+        break;
+      case ScreenTypeParam.myAccount:
+        _navigateToScreen(ScreenType.myAccount);
+        break;
+      case ScreenTypeParam.refer:
+        _navigateToScreen(ScreenType.refer);
+        break;
+      case ScreenTypeParam.helpSupport:
+        _navigateToScreen(ScreenType.helpSupport);
+        break;
+      case ScreenTypeParam.notification:
+        _navigateToScreen(ScreenType.notification);
+        break;
+      case ScreenTypeParam.pledgeUnpledge:
+        _navigateToScreen(ScreenType.pledgeUnpledge);
+        break;
       case ScreenTypeParam.mutualFund:
-        _handleHoldingsTap(initialTabIndex: 1); // Mutual funds tab
+        _handleMutualFundTap();
         break;
       case ScreenTypeParam.reports:
         _handleReportsTap();
@@ -682,9 +688,7 @@ class _CustomizableSplitHomeScreenState
         showTradeActionInPanel();
         break;
       case ScreenTypeParam.portfolioAnalysis:
-        debugPrint('WebRouter: Handling portfolioAnalysis initial panel');
         _handlePortfolioAnalysisTap();
-        debugPrint('WebRouter: portfolioAnalysis handler called');
         break;
       case ScreenTypeParam.strategyBuilder:
         _handleStrategyBuilderTap();
@@ -712,7 +716,6 @@ class _CustomizableSplitHomeScreenState
         // Default panels, no action needed
         break;
     }
-    debugPrint('WebRouter: _applyInitialRightPanel completed');
   }
 
   void _createPanelsForCount(int count) {
@@ -773,7 +776,6 @@ class _CustomizableSplitHomeScreenState
       };
       await prefs.setString('custom_split_layout', jsonEncode(layoutData));
     } catch (e) {
-      print('Error saving split layout: $e');
     }
   }
 
@@ -810,8 +812,6 @@ class _CustomizableSplitHomeScreenState
             // DeleteMultiMWScrips API calls on every lifecycle resume.
             if (mounted && shouldFetchPortfolio) {
               // Only fetch data for ACTIVE screens (smart fetching)
-              debugPrint(
-                  'Fetching data for active portfolio screens after cooldown');
               _lastPortfolioFetch = now;
 
               final futures = <Future>[];
@@ -838,23 +838,16 @@ class _CustomizableSplitHomeScreenState
               }
 
               if (futures.isNotEmpty) {
-                debugPrint(
-                    'Fetching ${futures.length} API(s) for ${_panels.where((p) => p.screenType == ScreenType.positions || p.screenType == ScreenType.holdings || p.screenType == ScreenType.orderBook).length} active portfolio screen(s)');
                 await Future.wait(futures);
-              } else {
-                debugPrint('No portfolio screens active, skipping data fetch');
               }
 
               if (mounted) {
                 setState(() {});
               }
             } else if (!shouldFetchPortfolio) {
-              debugPrint(
-                  'Skipping portfolio fetch - cooldown active or no portfolio screens');
             }
             _handleWebSocketConnections();
           } catch (e) {
-            debugPrint("Error during app resume: $e");
           }
         });
         _handleChartData();
@@ -1153,11 +1146,10 @@ class _CustomizableSplitHomeScreenState
   void _refreshDataAfterReconnection() {
     if (!mounted) return;
 
-    debugPrint('[RECONNECTION] Refreshing data after WebSocket reconnection');
 
     // Refresh portfolio data (holdings, positions)
     final portfolio = ref.read(portfolioProvider);
-    portfolio.fetchPositionBook(context, true).then((_) {
+    portfolio.fetchPositionBook(context, portfolio.isDay).then((_) {
       // After positions are fetched, refresh ticker subscriptions
       if (mounted) {
         final subscriptionManager = ref.read(webSubscriptionManagerProvider);
@@ -2135,6 +2127,7 @@ class _CustomizableSplitHomeScreenState
 
   void _handleScalperTap() {
     setState(() => _isScalperMode = true);
+    WebNavigationHelper.updateUrl(WebRoutes.scalper);
   }
 
   // Build navigation screens for app bar
@@ -2500,6 +2493,12 @@ class _CustomizableSplitHomeScreenState
 
   // Navigate to a specific screen type in the main panel
   void _navigateToScreen(ScreenType screenType) {
+    // Exit scalper mode when navigating to any other screen — otherwise the
+    // scalper full-width view stays rendered regardless of panel state.
+    if (_isScalperMode && screenType != ScreenType.scalper) {
+      _isScalperMode = false;
+    }
+
     // Find the active panel (not watchlist) and switch to the new screen
     int targetPanelIndex = 0;
     for (int i = 0; i < _panels.length; i++) {
@@ -2525,6 +2524,8 @@ class _CustomizableSplitHomeScreenState
     });
     _saveLayout();
     _handleScreenTypeChange(screenType);
+    // Keep URL in sync (no-op for screens that don't map to a route)
+    _updateUrlForScreenType(screenType);
   }
 
   // Build index slots for app bar
@@ -2626,6 +2627,8 @@ class _CustomizableSplitHomeScreenState
                 ref.watch(portfolioProvider.select((p) => p.posloader));
             final allPostionList =
                 ref.watch(portfolioProvider.select((p) => p.allPostionList));
+
+           
 
             // Show loader only when actively loading, not when no data exists
             if (isLoading || posloader) {
@@ -3718,10 +3721,8 @@ class _CustomizableSplitHomeScreenState
       }
 
       if (removedCount > 0) {
-        print('🗑️ [Cache] Cleared $removedCount tokens from ${screenType.name} cache (protected ${protectedTokens.length} tokens)');
       }
     } catch (e) {
-      print('⚠️ [Cache] Error clearing screen cache: $e');
     }
   }
 
@@ -4052,7 +4053,6 @@ class _CustomizableSplitHomeScreenState
       // Only fetch if positions haven't been fetched yet
       if (portfolio.postionBookModel == null ||
           portfolio.postionBookModel!.isEmpty) {
-        debugPrint('[TICKER] Fetching positions for ticker header...');
         await portfolio.fetchPositionBook(context, false);
 
         // Subscribe ticker symbols after positions are fetched
@@ -4339,6 +4339,27 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.ipo:
         urlPath = WebRoutes.ipo;
         break;
+      case ScreenType.bond:
+        urlPath = WebRoutes.bonds;
+        break;
+      case ScreenType.myAccount:
+        urlPath = WebRoutes.myAccount;
+        break;
+      case ScreenType.refer:
+        urlPath = WebRoutes.refer;
+        break;
+      case ScreenType.helpSupport:
+        urlPath = WebRoutes.helpSupport;
+        break;
+      case ScreenType.settings:
+        urlPath = WebRoutes.settings;
+        break;
+      case ScreenType.notification:
+        urlPath = WebRoutes.notification;
+        break;
+      case ScreenType.pledgeUnpledge:
+        urlPath = WebRoutes.pledge;
+        break;
       case ScreenType.mutualFund:
         urlPath = WebRoutes.mutualFunds;
         break;
@@ -4432,8 +4453,6 @@ class _CustomizableSplitHomeScreenState
 
       // Check if request is already in progress (prevents duplicate calls on rapid clicks)
       if (_isRequestInProgress('order_book')) {
-        debugPrint(
-            '⏭️ Skipping Order Book fetch - request already in progress');
         return;
       }
 
@@ -4464,8 +4483,6 @@ class _CustomizableSplitHomeScreenState
 
           // Force WebSocket subscription for current tab's order tokens
           orderProviderRef.requestWSOrderBook(isSubscribe: true, context: context);
-          debugPrint(
-              "📥 [Order Book] Subscription to tab $tabToSelect");
         }
 
         // Update subscription manager (order book is now SubscriptionType.none, so it won't subscribe)
@@ -4559,7 +4576,6 @@ class _CustomizableSplitHomeScreenState
   void _handleBrowserNavigation(String urlPath) {
     if (!mounted) return;
 
-    debugPrint('_handleBrowserNavigation: $urlPath');
 
     // Map URL path to screen type and navigate
     switch (urlPath) {
@@ -4577,6 +4593,30 @@ class _CustomizableSplitHomeScreenState
         break;
       case WebRoutes.ipo: // '/ipo'
         _handleIPOTap();
+        break;
+      case WebRoutes.bonds: // '/bonds'
+        _handleBondTap();
+        break;
+      case WebRoutes.scalper: // '/scalper'
+        _handleScalperTap();
+        break;
+      case WebRoutes.myAccount: // '/my-account'
+        _navigateToScreen(ScreenType.myAccount);
+        break;
+      case WebRoutes.refer: // '/refer'
+        _navigateToScreen(ScreenType.refer);
+        break;
+      case WebRoutes.helpSupport: // '/help-support'
+        _navigateToScreen(ScreenType.helpSupport);
+        break;
+      case WebRoutes.settings: // '/settings'
+        _handleSettingsTap();
+        break;
+      case WebRoutes.notification: // '/notification'
+        _navigateToScreen(ScreenType.notification);
+        break;
+      case WebRoutes.pledge: // '/pledge'
+        _navigateToScreen(ScreenType.pledgeUnpledge);
         break;
       case WebRoutes.mutualFunds: // '/mutual-funds'
         _handleMutualFundTap();
@@ -4630,7 +4670,6 @@ class _CustomizableSplitHomeScreenState
 
       // Check if request is already in progress (prevents duplicate calls on rapid clicks)
       if (_isRequestInProgress('holdings')) {
-        debugPrint('⏭️ Skipping Holdings fetch - request already in progress');
         if (mounted) {
           setState(() {
             _screenLoadingStates[ScreenType.holdings] = false;
@@ -4684,7 +4723,6 @@ class _CustomizableSplitHomeScreenState
 
       // Check if request is already in progress (prevents duplicate calls on rapid clicks)
       if (_isRequestInProgress('positions')) {
-        debugPrint('⏭️ Skipping Positions fetch - request already in progress');
         if (mounted) {
           setState(() {
             _screenLoadingStates[ScreenType.positions] = false;
@@ -4831,8 +4869,10 @@ class _CustomizableSplitHomeScreenState
 
   // Handle reports tap
   void _handleReportsTap() async {
-    // Add reports as a panel tab
-    _addScreenAsPanelTab(ScreenType.reports);
+    // Show reports in the right (content) panel. `_addScreenAsPanelTab` adds
+    // to panel 0, but panel 0 is the watchlist panel and renders watchlist
+    // regardless of its screens list — so the tab would be invisible.
+    _replaceScreenInPanel(ScreenType.reports);
 
     final portfolio = ref.read(portfolioProvider);
     final reportsprovider = ref.read(ledgerProvider);
@@ -4866,8 +4906,9 @@ class _CustomizableSplitHomeScreenState
 
   // Handle settings tap
   void _handleSettingsTap() async {
-    // Add settings as a panel tab
-    _addScreenAsPanelTab(ScreenType.settings);
+    // Show settings in the right (content) panel — panel 0 always renders
+    // watchlist, so `_addScreenAsPanelTab` would add an invisible tab.
+    _replaceScreenInPanel(ScreenType.settings);
 
     final portfolio = ref.read(portfolioProvider);
 
@@ -4884,7 +4925,6 @@ class _CustomizableSplitHomeScreenState
 
   // Handle portfolio analysis tap
   void _handlePortfolioAnalysisTap() async {
-    debugPrint('_handlePortfolioAnalysisTap called');
 
     // Set loading state immediately
     setState(() {
@@ -4893,7 +4933,6 @@ class _CustomizableSplitHomeScreenState
 
     // Replace screen in panel (right panel) immediately for instant UI response
     _replaceScreenInPanel(ScreenType.portfolioAnalysis);
-    debugPrint('Replaced screen in panel with portfolio analysis');
 
     // Move all async operations to background to prevent blocking UI
     Future.microtask(() async {
@@ -4947,8 +4986,6 @@ class _CustomizableSplitHomeScreenState
 
     // Check if request is already in progress (prevents duplicate calls on rapid clicks)
     if (_isRequestInProgress('trade_action')) {
-      debugPrint(
-          '⏭️ Skipping Trade Action fetch - request already in progress');
       return;
     }
 
@@ -5662,7 +5699,6 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
       await widget.marketWatch
           .requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
-      debugPrint("Error in index slot tap: $e");
     }
   }
 
@@ -5686,7 +5722,6 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
         await widget.marketWatch.calldepthApis(context, depthArgs, "");
       }
     } catch (e) {
-      debugPrint("Error in index click: $e");
     }
   }
 

@@ -1005,7 +1005,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                               );
 
                               // After successful password change, logout on web
-                              if (changePassword.changepasswordmodel?.stat == "Ok" && mounted) {
+                              if (changePassword.changepasswordmodel?.stat == "Ok" && mounted && context.mounted) {
                                 ref.read(authProvider).fetchLogout(context);
                               }
                             },
@@ -4750,7 +4750,9 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
                   dark: MyntColors.listItemBgDark,
                   light: MyntColors.listItemBg),
               borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: MyntColors.primary, width: 1),
+              border: Border.all(color: resolveThemeColor(context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary), width: 1),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -97,6 +97,15 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     focusNode1 = FocusNode();
     focusNode1.addListener(_onFocusChange);
 
+    // When arriving from the OAuth flow (URL carries ?client_id=...), skip the
+    // saved-account view and show fresh credential fields — the URL's client_id
+    // may be a different user from the one stored in prefs, so showing the last
+    // logged-in user's profile would be misleading.
+    final oauthClientId = Uri.base.queryParameters['client_id'];
+    if (oauthClientId != null && oauthClientId.isNotEmpty) {
+      Preferences().setLogout(false);
+    }
+
     // Defer context-dependent operations to avoid holding context reference
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
@@ -569,7 +578,6 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
         }
       } catch (e) {
         // Handle any errors during the process
-        print("Error restoring user data: $e");
         if (mounted && context.mounted) {
           userProfile.profilePageloader(false);
         }
@@ -802,31 +810,37 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               final webAuth = ref.watch(webAuthProvider);
                               
                               if (webAuth.showTotpSetup && webAuth.totpData != null) {
+                                final hasKey = webAuth.totpData?.isValid == true;
                                 // TOTP Setup Screen - Show QR code and secret
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Scan QR Title
+                                    // Title / subtitle vary based on whether a key exists
                                     Text(
-                                      "Scan QR",
+                                      hasKey ? "Scan QR" : "Set up TOTP",
                                       style: MyntWebTextStyles.title(
                                         context,
                                         fontWeight: MyntFonts.bold,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      "Scan the QR code on authenticator app",
-                                      style: MyntWebTextStyles.body(
-                                        context,
-                                        color: MyntColors.textSecondary,
-                                        darkColor: MyntColors.textSecondaryDark,
+                                    if (hasKey) ...[
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "Scan the QR code on authenticator app",
+                                        style: MyntWebTextStyles.body(
+                                          context,
+                                          color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                     const SizedBox(height: 24),
-                                    
-                                    // QR Code - Centered
-                                    if (webAuth.totpData?.isValid == true)
+
+                                    // If a TOTP key already exists for the user show the QR + key.
+                                    // Otherwise show a "Generate New Key" button so they can create one.
+                                    if (hasKey) ...[
+                                      // QR Code - Centered
                                       Center(
                                         child: Container(
                                           padding: const EdgeInsets.all(16),
@@ -842,48 +856,96 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                           ),
                                         ),
                                       ),
-                                    
-                                    const SizedBox(height: 24),
-                                    
-                                    // Authenticator Key Section
-                                    Center(
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            "Authenticator Key",
-                                            style: MyntWebTextStyles.body(
-                                              context,
-                                              fontWeight: MyntFonts.medium,
+
+                                      const SizedBox(height: 24),
+
+                                      // Authenticator Key Section
+                                      Center(
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              "Authenticator Key",
+                                              style: MyntWebTextStyles.body(
+                                                context,
+                                                fontWeight: MyntFonts.medium,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  webAuth.totpData?.pwd ?? "**********************",
+                                                  style: MyntWebTextStyles.body(
+                                                    context,
+                                                    fontWeight: MyntFonts.medium,
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.copy, size: 20),
+                                                  onPressed: () {
+                                                    Clipboard.setData(ClipboardData(text: webAuth.totpData?.pwd ?? ""));
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text("Auth key copied to clipboard!")),
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ] else ...[
+                                      const SizedBox(height: 40),
+                                      Center(
+                                        child: Text(
+                                          "No authenticator key found.\nGenerate a new key to set up TOTP.",
+                                          textAlign: TextAlign.center,
+                                          style: MyntWebTextStyles.body(
+                                            context,
+                                            color:resolveThemeColor(context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary
+                                          ),)
+                                        ),
+                                      ),
+                                      const SizedBox(height: 15),
+                                      Center(
+                                        child: ElevatedButton(
+                                          onPressed: webAuth.loading
+                                              ? null
+                                              : () => webAuth.generateNewTotpKey(context),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+                                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(6),
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                webAuth.totpData?.pwd ?? "**********************",
-                                                style: MyntWebTextStyles.body(
-                                                  context,
-                                                  fontWeight: MyntFonts.medium,
+                                          child: webAuth.loading
+                                              ? const SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  "Generate New Key",
+                                                  style: MyntWebTextStyles.titlesub(
+                                                    context,
+                                                    fontWeight: MyntFonts.bold,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(Icons.copy, size: 20),
-                                                onPressed: () {
-                                                  Clipboard.setData(ClipboardData(text: webAuth.totpData?.pwd ?? ""));
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(content: Text("Auth key copied to clipboard!")),
-                                                  );
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                    
-                                    const SizedBox(height: 32),
+                                      const SizedBox(height: 70),
+                                    ],
+
+                                    SizedBox(height: hasKey ? 32 : 8),
                                     
                                     // Back to Login Button
                                     SizedBox(
@@ -897,7 +959,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                           });
                                         },
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: MyntColors.primary,
+                                          backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(6),
                                           ),

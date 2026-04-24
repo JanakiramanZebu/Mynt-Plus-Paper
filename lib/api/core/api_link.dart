@@ -16,6 +16,11 @@ class ApiLinks {
   String get goMyntURL => "https://go.mynt.in/NorenWClientWeb";
   static String wsURL = 'wss://go.mynt.in/NorenWSWeb/';
   String get bemynt => "https://be.mynt.in/";
+  String get oauthBase => "https://ws.mynt.in/login/";
+
+  /// OAuth partner-app authorization endpoints (used by OAuthLoginScreen).
+  String get myntValidate => '${oauthBase}api/mynt-validate';
+  String get myntAuth => '${oauthBase}api/mynt-auth';
 
   String get newsurl => "$bemynt/news";
   String get weblog => "$bemynt/weblog/addlogversion";
@@ -270,7 +275,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get withdrawstatus => 'https://fundapi.mynt.in/withdraw/status';
   String get upiIdUpdate => 'https://fundapi.mynt.in/withdraw/upi_id_update';
 
-  String fundvalidatetoken = "https://rekycbe.mynt.in/autho/validate_session";
+  String fundvalidatetoken = "https://ws.mynt.in/login/validate_session";
 
   /////
   String get upimainfund => 'https://fundapi.mynt.in';
@@ -283,6 +288,12 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get upiCollectRequest => '$wrapperUrl/UPICollectRequest';
   String get wrapperCheckStatus => '$wrapperUrl/check_status';
   String get qrCodeUrl => 'https://copy.mynt.in/get_qr1';
+
+  // Atom gateway
+  String get atomUrl => 'https://fundapi.mynt.in/atom';
+  String get atomNetBankingRedirect => '$atomUrl/atomredirect';
+  String get atomUpiRedirect => '$atomUrl/atomupiredirect';
+  String get atomCallback => '$atomUrl/fromatom';
 
   //hdfc mainurl//
   String get hdfcmainurl => 'https://fundapi.mynt.in/hdfc/upi';

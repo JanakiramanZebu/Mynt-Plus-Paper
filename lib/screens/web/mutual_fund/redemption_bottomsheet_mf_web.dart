@@ -42,7 +42,6 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreenW
         mfRef.redemptionAmount.text = (redemptionQty * navValue).toStringAsFixed(2);
       }
     } catch (e) {
-      debugPrint("Error initializing redemption values: $e");
     }
     super.initState();
   }
@@ -170,7 +169,6 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreenW
                               mf.redemptionAmount.text = (qty * nav).toStringAsFixed(2);
                             }
                           } catch (e) {
-                            debugPrint("Error validating redemption: $e");
                           }
                         },
                         // initialValue:portfolio.mfQuotes!.minRdQty,

@@ -49,7 +49,6 @@ class WebAuthApi {
         'password': password,
       };
 
-      log("Web Login Request => $data");
       
       final res = await http.post(
         uri, 
@@ -57,7 +56,6 @@ class WebAuthApi {
         body: jsonEncode(data),
       );
 
-      log("Web Login Response => ${res.body}");
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
@@ -74,7 +72,6 @@ class WebAuthApi {
         ResponsiveSnackBar.showError(context, "Server error. Please try again later.");
       }
     } catch (e) {
-      debugPrint("Web Login error: $e");
       ResponsiveSnackBar.showError(context, "An error occurred. Please try again.");
     }
     return null;
@@ -97,7 +94,6 @@ class WebAuthApi {
         inputType: mobileOrClientId.toUpperCase(),
       };
 
-      log("Send OTP Request => $data");
       
       final res = await http.post(
         uri, 
@@ -105,13 +101,11 @@ class WebAuthApi {
         body: jsonEncode(data),
       );
 
-      log("Send OTP Response => ${res.body}");
       
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Send OTP error: $e");
       ResponsiveSnackBar.showError(context, "Failed to send OTP. Please try again.");
     }
     return null;
@@ -144,7 +138,6 @@ class WebAuthApi {
         data['log'] = logData;
       }
 
-      log("Web OTP Verify Request => $data");
       
       final res = await http.post(
         uri, 
@@ -152,7 +145,6 @@ class WebAuthApi {
         body: jsonEncode(data),
       );
 
-      log("Web OTP Verify Response => ${res.body}");
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
@@ -164,7 +156,6 @@ class WebAuthApi {
         ResponsiveSnackBar.showError(context, "Server error. Please try again later.");
       }
     } catch (e) {
-      debugPrint("Web OTP Verify error: $e");
       ResponsiveSnackBar.showError(context, "OTP verification failed. Please try again.");
     }
     return null;
@@ -181,7 +172,6 @@ class WebAuthApi {
       
       final body = 'jData={"uid":"$clientId"}&jKey=$apiSession';
 
-      log("Get TOTP Key Request => $body");
       
       final res = await http.post(
         uri, 
@@ -189,16 +179,17 @@ class WebAuthApi {
         body: body,
       );
 
-      log("Get TOTP Key Response => ${res.body}");
       
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        if (json['uid'] != null && json['pwd'] != null) {
-          return TotpData.fromJson(json as Map<String, dynamic>);
+        // Return TotpData even if pwd is empty so caller can detect
+        // the "no key generated yet" state and prompt the user to create one.
+        if (json is Map<String, dynamic>) {
+          return TotpData.fromJson(json);
         }
       }
     } catch (e) {
-      debugPrint("Get TOTP Key error: $e");
+      debugPrint("Failed to fetch TOTP. Please try again.");
     }
     return null;
   }
@@ -214,7 +205,6 @@ class WebAuthApi {
       
       final body = 'jData={"uid":"$clientId"}&jKey=$apiSession';
 
-      log("Gen TOTP Key Request => $body");
       
       final res = await http.post(
         uri, 
@@ -222,42 +212,30 @@ class WebAuthApi {
         body: body,
       );
 
-      log("Gen TOTP Key Response => ${res.body}");
       
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         return TotpData.fromJson(json as Map<String, dynamic>);
       }
     } catch (e) {
-      debugPrint("Gen TOTP Key error: $e");
       ResponsiveSnackBar.showError(context, "Failed to generate TOTP. Please try again.");
     }
     return null;
   }
 
-  /// Get or Generate TOTP - Tries to get existing, generates new if not found
+  /// Fetch existing TOTP only
+  /// Returns TotpData (possibly with empty pwd) so UI can show a
+  /// "Generate New Key" button when no key exists yet.
   static Future<TotpData?> getOrGenerateTotp({
     required String clientId,
     required String apiSession,
     required BuildContext context,
   }) async {
-    // First try to get existing TOTP
-    TotpData? totpData = await getTotpSecretKey(
+    return getTotpSecretKey(
       clientId: clientId,
       apiSession: apiSession,
       context: context,
     );
-    
-    // If no existing TOTP, generate new one
-    if (totpData == null) {
-      totpData = await generateTotpSecretKey(
-        clientId: clientId,
-        apiSession: apiSession,
-        context: context,
-      );
-    }
-    
-    return totpData;
   }
 
   /// QR Login API - For QR code based login
@@ -276,7 +254,6 @@ class WebAuthApi {
         'imei': imei,
       };
 
-      log("QR Login Request => $data");
       
       final res = await http.post(
         uri, 
@@ -284,14 +261,12 @@ class WebAuthApi {
         body: jsonEncode(data),
       );
 
-      log("QR Login Response => ${res.body}");
       
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         return MobileOtpModel.fromJson(json as Map<String, dynamic>);
       }
     } catch (e) {
-      debugPrint("QR Login error: $e");
     }
     return null;
   }
@@ -311,7 +286,6 @@ class WebAuthApi {
         'value': mobileOrClientId.toUpperCase(),
       };
 
-      log("Forgot Password Request => $data");
       
       final res = await http.post(
         uri, 
@@ -319,13 +293,11 @@ class WebAuthApi {
         body: jsonEncode(data),
       );
 
-      log("Forgot Password Response => ${res.body}");
       
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Forgot Password error: $e");
       ResponsiveSnackBar.showError(context, "Failed to process request. Please try again.");
     }
     return null;
@@ -346,7 +318,6 @@ class WebAuthApi {
         'name': name,
       };
 
-      log("Create Webhook Request => $data");
 
       final res = await http.post(
         uri,
@@ -354,7 +325,6 @@ class WebAuthApi {
         body: jsonEncode(data),
       );
 
-      log("Create Webhook Response => ${res.body}");
 
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
@@ -362,7 +332,6 @@ class WebAuthApi {
         ResponsiveSnackBar.showError(context, "Failed to create webhook. Please try again.");
       }
     } catch (e) {
-      debugPrint("Create Webhook error: $e");
       ResponsiveSnackBar.showError(context, "An error occurred while creating webhook.");
     }
     return null;
@@ -381,7 +350,6 @@ class WebAuthApi {
         'token': token,
       };
 
-      log("List Webhooks Request => $data");
 
       final res = await http.post(
         uri,
@@ -389,13 +357,11 @@ class WebAuthApi {
         body: jsonEncode(data),
       );
 
-      log("List Webhooks Response => ${res.body}");
 
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("List Webhooks error: $e");
     }
     return null;
   }
@@ -414,21 +380,16 @@ class WebAuthApi {
         'token': token,
       };
 
-      log("Enable Webhook Request => id: $webhookId, data: $data");
-
       final res = await http.post(
         uri,
         headers: _defaultHeaders,
         body: jsonEncode(data),
       );
 
-      log("Enable Webhook Response => ${res.body}");
-
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Enable Webhook error: $e");
     }
     return null;
   }
@@ -447,21 +408,16 @@ class WebAuthApi {
         'token': token,
       };
 
-      log("Disable Webhook Request => id: $webhookId, data: $data");
-
       final res = await http.post(
         uri,
         headers: _defaultHeaders,
         body: jsonEncode(data),
       );
 
-      log("Disable Webhook Response => ${res.body}");
-
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Disable Webhook error: $e");
     }
     return null;
   }
@@ -483,21 +439,16 @@ class WebAuthApi {
         'to_date': toDate,
       };
 
-      log("Webhook Logs Request => $data");
-
       final res = await http.post(
         uri,
         headers: _defaultHeaders,
         body: jsonEncode(data),
       );
 
-      log("Webhook Logs Response => ${res.body}");
-
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Webhook Logs error: $e");
     }
     return null;
   }
@@ -512,21 +463,16 @@ class WebAuthApi {
       
       final body = 'jData={"uid":"$clientId"}&jKey=$apiSession';
 
-      log("Validate Session Request => $body");
-      
       final res = await http.post(
         uri, 
         headers: {'Content-Type': 'text/plain'}, 
         body: body,
       );
-
-      log("Validate Session Response => ${res.body}");
       
       if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
     } catch (e) {
-      debugPrint("Validate Session error: $e");
     }
     return null;
   }
@@ -563,5 +509,5 @@ class TotpData {
     return '';
   }
 
-  bool get isValid => uid != null && pwd != null;
+  bool get isValid => uid != null && uid!.isNotEmpty && pwd != ""  && pwd!.isNotEmpty && pwd != null;
 }

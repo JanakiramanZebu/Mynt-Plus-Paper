@@ -120,7 +120,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       // Also reset cursor on document body to ensure it's reset globally
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -136,7 +135,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -945,7 +943,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 try {
                   await _placeOrderInput(context, displayData, true, future);
                 } catch (e) {
-                  print('Buy button error: $e');
                 }
               },
             ),
@@ -963,7 +960,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
                 try {
                   await _placeOrderInput(context, displayData, false, future);
                 } catch (e) {
-                  print('Sell button error: $e');
                 }
               },
             ),
@@ -1192,8 +1188,6 @@ class _FutureScreenWebState extends ConsumerState<FutureScreenWeb> {
         },
       );
     } catch (e) {
-      print('Place order error: $e');
-      print('Display data: ${displayData.toJson()}');
       if (mounted) {
         ResponsiveSnackBar.showError(
           context,

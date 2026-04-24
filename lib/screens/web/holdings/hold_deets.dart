@@ -164,7 +164,6 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
         }
       });
     } catch (e) {
-      print("Error setting up socket subscription: $e");
     }
   }
 

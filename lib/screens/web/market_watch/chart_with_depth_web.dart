@@ -102,8 +102,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
 
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
-      // Clear fundamental data immediately when scrip changes to prevent stale data
-      ref.read(marketWatchProvider).clearFundamentalData();
+      // Clear fundamental data silently (without notifyListeners) to prevent
+      // stale data. The notification is deferred to after the build phase.
+      ref.read(marketWatchProvider).clearFundamentalDataSilent();
 
       // Reset depth subscription for new scrip when scrip changes
       // Delay provider modification until after build phase completes
@@ -159,10 +160,12 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
     _tabController?.dispose();
     _tabController = null;
 
-    // Hide inline chart portal when this widget is disposed
+    // Hide inline chart portal when this widget is disposed.
+    // Use hideInlineChartSilent to avoid notifyListeners during unmount,
+    // which would trigger "Tried to modify a provider while the widget tree was building".
     if (_storedContainer != null) {
       try {
-        _storedContainer!.read(userProfileProvider).hideInlineChart();
+        _storedContainer!.read(userProfileProvider).hideInlineChartSilent();
       } catch (e) {
         // Ignore if provider is not available
       }
@@ -180,8 +183,6 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
         }
       } catch (e) {
         // Depth will be cleaned up when scrip changes anyway
-        print(
-            '⚠️ [ChartWithDepthWeb] Error unsubscribing from depth in dispose: $e');
       }
     }
 
@@ -1249,7 +1250,6 @@ class _ScripInfoDialogWrapperState extends State<_ScripInfoDialogWrapper> {
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -1266,7 +1266,6 @@ class _ScripInfoDialogWrapperState extends State<_ScripInfoDialogWrapper> {
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

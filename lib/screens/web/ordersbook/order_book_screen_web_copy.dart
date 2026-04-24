@@ -145,7 +145,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         });
       }
     } catch (e) {
-      print('Error initializing Order Book components: $e');
       // Fallback initialization
       if (mounted) {
         setState(() {

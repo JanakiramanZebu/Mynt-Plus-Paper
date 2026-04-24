@@ -25,7 +25,6 @@ class MainStreamIpoModel {
             }
           }
         } catch (e) {
-          print("Error parsing MainIPO string: $e");
         }
       }
     }
@@ -157,7 +156,6 @@ class MainIPO {
             }
           }
         } catch (e) {
-          print("Error parsing categoryDetails string: $e");
         }
       }
     }
@@ -207,7 +205,6 @@ class MainIPO {
             }
           }
         } catch (e) {
-          print("Error parsing subCategorySettings string: $e");
         }
       }
     }

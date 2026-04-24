@@ -32,7 +32,6 @@ class ImageUtils {
       
       return correctedFile;
     } catch (e) {
-      print('Error fixing image orientation: $e');
       // If there's an error, return the original file
       return imageFile;
     }
@@ -85,7 +84,6 @@ class ImageUtils {
       
       return processedFile;
     } catch (e) {
-      print('Error processing image: $e');
       return imageFile;
     }
   }

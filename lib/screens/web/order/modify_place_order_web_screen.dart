@@ -175,11 +175,6 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
     required OrderScreenArgs orderArg,
     Offset? initialPosition,
   }) {
-    print('🟡 [showDraggable] Starting - context mounted: ${context.mounted}');
-    print('🟡 [showDraggable] modifyOrderArgs: ${modifyOrderArgs.norenordno}');
-    print('🟡 [showDraggable] scripInfo provided: true');
-    print('🟡 [showDraggable] orderArg.token: ${orderArg.token}');
-    print('🟡 [showDraggable] initialPosition: $initialPosition');
     
     try {
       // Use rootOverlay to ensure we can show dialog even after sheet closes
@@ -199,7 +194,6 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
             (mediaQuery.size.height - dialogHeight) / 2,
           );
 
-      print('🟡 [showDraggable] Overlay obtained, position: $position');
 
     overlayEntry = OverlayEntry(
       builder: (context) => _DraggableModifyPlaceOrderScreenDialog(
@@ -220,14 +214,10 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
     );
 
       overlay.insert(overlayEntry);
-      print('🟡 [showDraggable] Overlay entry inserted');
 
       // Register with overlay manager for global control
       OverlayManager.register(overlayEntry);
-      print('🟡 [showDraggable] Overlay registered successfully');
     } catch (e, stackTrace) {
-      print('🟡 [showDraggable] ERROR: $e');
-      print('🟡 [showDraggable] StackTrace: $stackTrace');
       rethrow;
     }
   }
@@ -3198,13 +3188,6 @@ class _DraggableModifyPlaceOrderScreenDialogState
   @override
   void initState() {
     super.initState();
-    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] initState - initialPosition: ${widget.initialPosition}');
-    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] modifyOrderArgs: ${widget.modifyOrderArgs.norenordno}');
-    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] scripInfo provided: true');
-    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] scripInfo.symbol: ${widget.scripInfo.symbol}');
-    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] orderArg.token: ${widget.orderArg.token}');
-    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] onPositionChanged provided: true');
-    print('🟡 [_DraggableModifyPlaceOrderScreenDialog] onClose provided: true');
     _position = widget.initialPosition;
   }
 
@@ -3220,7 +3203,6 @@ class _DraggableModifyPlaceOrderScreenDialogState
       // Also reset cursor on iframes to default
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -3233,7 +3215,6 @@ class _DraggableModifyPlaceOrderScreenDialogState
         }
       }
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 
@@ -3320,7 +3301,6 @@ class _DraggableModifyPlaceOrderScreenDialogState
                               try {
                                 widget.onPositionChanged(_position);
                               } catch (e) {
-                                debugPrint('Error in onPositionChanged: $e');
                               }
                             }
                           },

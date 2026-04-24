@@ -20,7 +20,6 @@ class PortfolioAnalysisModel {
 
   factory PortfolioAnalysisModel.fromJson(Map<String, dynamic> json) {
     try {
-      print("Parsing PortfolioAnalysisModel from JSON with keys: ${json.keys.toList()}");
       
       return PortfolioAnalysisModel(
         total: _safeFromJson<PortfolioTotal>(
@@ -86,8 +85,6 @@ class PortfolioAnalysisModel {
         ),
       );
     } catch (e) {
-      print("Error parsing PortfolioAnalysisModel: $e");
-      print("JSON data: $json");
       rethrow;
     }
   }
@@ -97,7 +94,6 @@ class PortfolioAnalysisModel {
       try {
         return fromJson(data);
       } catch (e) {
-        print("Error parsing $T: $e");
         return fallback();
       }
     }
@@ -112,7 +108,6 @@ class PortfolioAnalysisModel {
             try {
               return fromJson(e);
             } catch (e) {
-              print("Error parsing list item: $e");
               return null;
             }
           })

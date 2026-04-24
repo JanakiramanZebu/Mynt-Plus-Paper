@@ -201,7 +201,6 @@ class WebSocketProvider extends ChangeNotifier {
   /// fix this because its guard `if (_connecting && !_wsConnected) return;`
   /// prevents cleanup during an in-progress connection attempt.
   void resetForNewSession() {
-    print('🔄 [WEBSOCKET] Resetting all state for new session');
     log('🔄 WebSocket: resetForNewSession called');
 
     // Cancel all timers first
@@ -244,7 +243,6 @@ class WebSocketProvider extends ChangeNotifier {
     _socketDatas.clear();
     _ltpCache.clear();
 
-    print('✅ [WEBSOCKET] State reset complete, ready for fresh connection');
     log('✅ WebSocket: State reset complete');
   }
 
@@ -252,14 +250,12 @@ class WebSocketProvider extends ChangeNotifier {
   /// call will actually send symbols to the server instead of skipping them.
   /// Call this before re-subscribing after a forced reconnect.
   void clearSentSubscriptions() {
-    print('🧹 [WEBSOCKET] Clearing _sentSubscriptions (${_sentSubscriptions.length} entries)');
     _sentSubscriptions.clear();
   }
 
   void closeSocket(bool mounted, {bool force = false, bool preserveData = false}) {
     // Prevent closing if already closed to avoid unnecessary operations
     if (!_wsConnected && _channel == null && !_connecting) {
-      print('ℹ️  [WEBSOCKET] Already closed, skipping close operation');
       log('ℹ️  WebSocket: Already closed, skipping');
       return;
     }
@@ -267,8 +263,6 @@ class WebSocketProvider extends ChangeNotifier {
     // Prevent closing if socket is currently being established
     // UNLESS force=true (used by logout/session expiry to ensure clean state)
     if (_connecting && !_wsConnected && !force) {
-      print('⚠️  [WEBSOCKET] Connection in progress, preventing premature close');
-      print('   Connecting: $_connecting, Connected: $_wsConnected');
       log('⚠️  WebSocket: Preventing close during connection establishment');
       return;
     }
@@ -286,14 +280,6 @@ class WebSocketProvider extends ChangeNotifier {
       }
     }
 
-    print('\n═══════════════════════════════════════════════════════════');
-    print('🔴 [WEBSOCKET] CLOSING CONNECTION');
-    print('   Status: ${_wsConnected ? "Connected" : "Not Connected"}');
-    print('   Connecting: $_connecting');
-    print('   Mounted: $mounted');
-    print('   Reason: ${mounted ? "App/Screen disposed" : "Connection closed"}');
-    print('   Caller: $callerInfo');
-    print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Closing connection (mounted: $mounted)');
     log('   Caller: $callerInfo');
 
@@ -351,7 +337,6 @@ class WebSocketProvider extends ChangeNotifier {
       log('Cleared all WebSocket subscriptions tracking and socket data');
     }
 
-    print('✅ [WEBSOCKET] Connection closed successfully\n');
     log('✅ WebSocket: Connection closed successfully');
 
     if (mounted) {
@@ -477,7 +462,6 @@ class WebSocketProvider extends ChangeNotifier {
     // CRITICAL: Check and set _connecting flag FIRST to prevent race conditions
     // If already connected and we have a subscription request, process it
     if (_wsConnected && _channel != null) {
-      print('ℹ️  [WEBSOCKET] Already connected, processing subscription request');
       log('ℹ️  WebSocket: Already connected, processing subscription');
       if (channelInput.isNotEmpty) {
         _handleSubscription(channelInput, task, context);
@@ -487,8 +471,6 @@ class WebSocketProvider extends ChangeNotifier {
 
     // If connection already in progress, wait for it to complete
     if (_connecting) {
-      print('⏳ [WEBSOCKET] Connection already in progress, waiting...');
-      print('   Will wait up to ${_isLowBandwidth ? 20 : 10} seconds');
       log('⏳ WebSocket: Connection already in progress, waiting');
       try {
         // Use a shorter timeout for waiting on an existing connection attempt in low bandwidth
@@ -503,7 +485,6 @@ class WebSocketProvider extends ChangeNotifier {
           _handleSubscription(channelInput, task, context);
         }
       } catch (e) {
-        print('⚠️  [WEBSOCKET] Waiting for connection timed out: $e');
         log('⚠️  WebSocket: Waiting for connection timed out: $e');
         // **FIX: Check if provider is disposed before reconnecting from timeout**
         if (_connectionCount < _maxReconnectAttempts && !_reconnecting && !_isDisposed) {
@@ -515,7 +496,6 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Prevent duplicate connection attempts
     if (_reconnecting) {
-      print('⏸️  [WEBSOCKET] Reconnection in progress, deferring new connection attempt');
       log('⏸️  WebSocket: Reconnection in progress, deferring');
       // Wait a bit and retry
       Future.delayed(const Duration(milliseconds: 500), () {
@@ -531,18 +511,10 @@ class WebSocketProvider extends ChangeNotifier {
     _connecting = true;
     _connectionCompleter = Completer<void>();
 
-    print('\n═══════════════════════════════════════════════════════════');
-    print('🟡 [WEBSOCKET] ATTEMPTING CONNECTION');
-    print('   URL: ${ApiLinks.wsURL}');
-    print('   Task: $task');
-    print('   Connection Attempt: ${_connectionCount + 1}/$_maxReconnectAttempts');
-    print('   Current State: Connected=$_wsConnected, Connecting=$_connecting, Reconnecting=$_reconnecting');
-    print('═══════════════════════════════════════════════════════════\n');
     log('🟡 WebSocket: Attempting connection (attempt ${_connectionCount + 1})');
 
     // Double-check that channel doesn't already exist
     if (_channel != null) {
-      print('⚠️  [WEBSOCKET] Channel already exists, closing old channel first');
       log('⚠️  WebSocket: Closing existing channel before creating new one');
       try {
         _channel?.sink.close();
@@ -558,7 +530,6 @@ class WebSocketProvider extends ChangeNotifier {
 
       final uri = Uri.parse(ApiLinks.wsURL);
 
-      print('📡 [WEBSOCKET] Creating WebSocket channel...');
       log('📡 WebSocket: Creating channel');
 
       // Create connection with timeout
@@ -567,13 +538,11 @@ class WebSocketProvider extends ChangeNotifier {
       // Set up a timeout for connection
       final timeoutTimer = Timer(connectTimeout, () {
         if (_connecting && (_channel == null || !_wsConnected)) {
-          print('⏱️  [WEBSOCKET] Connection timeout after ${connectTimeout.inSeconds}s');
           log('⏱️  WebSocket: Connection timeout');
           _handleConnectionError(TimeoutException('WebSocket connection timed out'), context);
         }
       });
 
-      print('📤 [WEBSOCKET] Sending connection request...');
       log('📤 WebSocket: Sending connection request');
 
       // Validate session before sending connection request
@@ -581,9 +550,6 @@ class WebSocketProvider extends ChangeNotifier {
       final clientSession = _pref.clientSession ?? "";
       
       if (clientId.isEmpty || clientSession.isEmpty) {
-        print('❌ [WEBSOCKET] Invalid credentials - clientId or session is empty');
-        print('   clientId: ${clientId.isEmpty ? "EMPTY" : "OK"}');
-        print('   session: ${clientSession.isEmpty ? "EMPTY" : "OK"}');
         log('❌ WebSocket: Invalid credentials');
         _handleConnectionError("Invalid credentials", context);
         return;
@@ -607,7 +573,6 @@ class WebSocketProvider extends ChangeNotifier {
       await _channelSubscription?.cancel();
       _channelSubscription = null;
 
-      print('👂 [WEBSOCKET] Setting up stream listener...');
       log('👂 WebSocket: Setting up stream listener');
 
       // Create new stream subscription BEFORE sending request
@@ -619,20 +584,15 @@ class WebSocketProvider extends ChangeNotifier {
       );
 
       // Now send the connection request
-      print('📤 [WEBSOCKET] Sending connection request with:');
-      print('   Client ID: ${clientId.substring(0, clientId.length > 4 ? 4 : clientId.length)}...');
-      print('   Session: ${clientSession.substring(0, clientSession.length > 8 ? 8 : clientSession.length)}...');
       log('📤 WebSocket: Sending connection request');
 
       _channel!.sink.add(jsonEncode(connectionRequest));
 
-      print('👂 [WEBSOCKET] Waiting for server response...');
       log('👂 WebSocket: Waiting for response');
 
       // Cancel timeout timer as we've successfully set up the connection
       timeoutTimer.cancel();
     } catch (error) {
-      print('❌ [WEBSOCKET] Connection error: $error');
       log('❌ WebSocket: Connection error: $error');
       _handleConnectionError(error, context);
     }
@@ -647,12 +607,6 @@ class WebSocketProvider extends ChangeNotifier {
       final res = jsonDecode(event.toString());
 
       if (res['s']?.toString().toLowerCase() == "ok" && res['t']?.toString() == "ck") {
-        print('\n═══════════════════════════════════════════════════════════');
-        print('🟢 [WEBSOCKET] ✅ CONNECTED SUCCESSFULLY');
-        print('   Status: OK');
-        print('   Response Type: ${res['t']}');
-        print('   Connection State: Active');
-        print('═══════════════════════════════════════════════════════════\n');
         log("🟢 WebSocket: ✅ Connected successfully");
         _handleConnectionSuccess();
       } else if (res['t']?.toString().toLowerCase() == "tf" || res['t']?.toString().toLowerCase() == "df") {
@@ -759,8 +713,6 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _handleConnectionSuccess() {
-    print('🟢 [WEBSOCKET] Connection established and ready');
-    print('   Starting ping timer for connection monitoring');
     log('🟢 WebSocket: Connection established and ready');
 
     _wsConnected = true;
@@ -790,7 +742,6 @@ class WebSocketProvider extends ChangeNotifier {
     // Send any pending subscriptions that were queued while connecting
     _sendPendingSubscriptionsAfterConnect();
 
-    print('✅ [WEBSOCKET] All connection setup completed\n');
     log('✅ WebSocket: All connection setup completed');
 
     // Notify listeners so WebSubscriptionManager can restore subscriptions
@@ -804,22 +755,15 @@ class WebSocketProvider extends ChangeNotifier {
     final pendingTouchline = _pendingSubscriptions['t'] ?? [];
     final pendingDepth = _pendingSubscriptions['d'] ?? [];
 
-    print('📋 [WEBSOCKET] Checking pending subscriptions after connect:');
-    print('   Pending touchline: ${pendingTouchline.length}');
-    print('   Pending depth: ${pendingDepth.length}');
     log('📋 WebSocket: Pending - touchline: ${pendingTouchline.length}, depth: ${pendingDepth.length}');
 
     // Check for pending touchline subscriptions
     if (pendingTouchline.isNotEmpty) {
-      print('📤 [WEBSOCKET] Sending ${pendingTouchline.length} pending touchline subscriptions after connect');
       log('📤 WebSocket: Sending pending touchline subscriptions');
       final symbols = pendingTouchline.toSet().toList();
       final batchInput = symbols.join('#');
 
       if (symbols.length <= 10) {
-        print('   Symbols: ${symbols.join(", ")}');
-      } else {
-        print('   First 10 symbols: ${symbols.take(10).join(", ")}...');
       }
 
       // Track as sent
@@ -831,12 +775,10 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Send to websocket
       _channel?.sink.add(jsonEncode({"t": "t", "k": batchInput}));
-      print('✅ [WEBSOCKET] Sent ${symbols.length} touchline subscriptions');
     }
 
     // Check for pending depth subscriptions
     if (pendingDepth.isNotEmpty) {
-      print('📤 [WEBSOCKET] Sending ${pendingDepth.length} pending depth subscriptions after connect');
       log('📤 WebSocket: Sending pending depth subscriptions');
       final symbols = pendingDepth.toSet().toList();
       final batchInput = symbols.join('#');
@@ -850,11 +792,9 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Send to websocket
       _channel?.sink.add(jsonEncode({"t": "d", "k": batchInput}));
-      print('✅ [WEBSOCKET] Sent ${symbols.length} depth subscriptions');
     }
 
     if (pendingTouchline.isEmpty && pendingDepth.isEmpty) {
-      print('ℹ️  [WEBSOCKET] No pending subscriptions to send');
     }
   }
 
@@ -935,10 +875,12 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Show order status notification
     _showOrderStatusNotification(res);
+    
+    final status = res['status']?.toString().toUpperCase() ?? '';
 
     _holdStartTime = Timer(const Duration(milliseconds: 500), () {
       if (_context != null) {
-        _refreshData(_context!);
+        _refreshData(_context!, orderStatus: status);
       }
       _holdStartTime = null;
     });
@@ -1003,7 +945,7 @@ class WebSocketProvider extends ChangeNotifier {
     }
   }
 
-  void _refreshData(BuildContext context) {
+  void _refreshData(BuildContext context, {String orderStatus = ''}) {
     // **FIX: Check if provider is disposed before using ref.read()**
     // This prevents "provider[_addListener] is not a function" errors
     // that occur when reconnection timer fires after provider disposal
@@ -1015,7 +957,6 @@ class WebSocketProvider extends ChangeNotifier {
     // Log session info for debugging session issues
     final sessionForDebug = _pref.clientSession;
     final clientIdForDebug = _pref.clientId;
-    print('🔄 [WEBSOCKET] _refreshData - Using session: ${sessionForDebug?.substring(0, sessionForDebug.length > 20 ? 20 : sessionForDebug.length)}... for client: $clientIdForDebug');
     log('🔄 WebSocket: _refreshData - clientId: $clientIdForDebug, session: ${sessionForDebug != null && sessionForDebug.isNotEmpty ? sessionForDebug.substring(0, sessionForDebug.length > 10 ? 10 : sessionForDebug.length) : "EMPTY"}...');
 
     try {
@@ -1025,18 +966,16 @@ class WebSocketProvider extends ChangeNotifier {
       ref.read(orderProvider).fetchGTTOrderBook(context, "");
       ref.read(fundProvider).fetchFunds(context);
 
-      Timer(const Duration(seconds: 1), () async {
-        // Also check before delayed call
-        if (!_isDisposed) {
-          await ref.read(portfolioProvider).fetchPositionBook(context, false);
-
-          // Refresh ticker subscriptions after positions update (web only)
-          // This ensures new position symbols are subscribed for ticker header
+      
+      if (orderStatus == 'COMPLETE') {
+        ref.read(portfolioProvider).fetchPositionBook(context, false).then((_) {
           if (kIsWeb && !_isDisposed) {
-            ref.read(webSubscriptionManagerProvider).refreshTickerSubscriptions(context);
+            ref
+                .read(webSubscriptionManagerProvider)
+                .refreshTickerSubscriptions(context);
           }
-        }
-      });
+        });
+      }
     } catch (e) {
       log('WebSocket: Error in _refreshData (likely provider disposed): $e');
     }
@@ -1230,9 +1169,10 @@ class WebSocketProvider extends ChangeNotifier {
     required BuildContext context,
   }) {
     if (input.isEmpty) {
-      print("WebSocket: Empty input provided to connectTouchLine");
       return;
     }
+
+    _context = context;
 
     // Update SubscriptionManager based on task type
     final subscriptionManager = ref.read(subscriptionManagerProvider);
@@ -1284,15 +1224,10 @@ class WebSocketProvider extends ChangeNotifier {
 
       // DEBUG: Log which symbols are being skipped (already subscribed with data)
       if (skippedSymbols.isNotEmpty) {
-        print('⚠️ [WEBSOCKET] SKIPPED ${skippedSymbols.length} symbols (already subscribed with data):');
-        print('   Skipped symbols: ${skippedSymbols.take(10).join(", ")}${skippedSymbols.length > 10 ? "..." : ""}');
-        print('   Total _sentSubscriptions count: ${_sentSubscriptions.length}');
       }
 
       // Log resubscribed symbols (socket data was missing)
       if (resubscribedSymbols.isNotEmpty) {
-        print('🔄 [WEBSOCKET] RESUBSCRIBING ${resubscribedSymbols.length} symbols (socket data was cleared):');
-        print('   Resubscribed: ${resubscribedSymbols.take(10).join(", ")}${resubscribedSymbols.length > 10 ? "..." : ""}');
       }
 
       if (newSymbols.isEmpty) {
@@ -1327,8 +1262,6 @@ class WebSocketProvider extends ChangeNotifier {
       final taskKey = task.toLowerCase() == "ud" ? "d" : "t";
 
       // DEBUG: Log before removing
-      print('🗑️ [WEBSOCKET] UNSUBSCRIBE: Removing ${symbols.length} $taskKey subscriptions');
-      print('   _sentSubscriptions BEFORE: ${_sentSubscriptions.length} entries');
 
       // Remove task-specific subscription keys
       int removedCount = 0;
@@ -1340,8 +1273,6 @@ class WebSocketProvider extends ChangeNotifier {
         }
       }
 
-      print('   Actually removed: $removedCount (${symbols.length - removedCount} were not in _sentSubscriptions)');
-      print('   _sentSubscriptions AFTER: ${_sentSubscriptions.length} entries');
 
       log("WebSocket: ➖ Removed ${symbols.length} $taskKey subscriptions for task '$task'");
       if (symbols.length <= 10) {
@@ -1385,17 +1316,13 @@ class WebSocketProvider extends ChangeNotifier {
       _pendingSubscriptions[task] = [];
 
       // Send to websocket
-      print('📤 [WEBSOCKET] Sending ${task.toUpperCase()} request for ${uniqueSymbols.length} symbol(s)');
       if (uniqueSymbols.length <= 5) {
-        print('   Symbols: ${batchInput.split('#').where((s) => s.isNotEmpty).join(", ")}');
       }
       log('📤 WebSocket: Sending $task request for ${uniqueSymbols.length} symbols');
       _channel?.sink.add(jsonEncode({"t": task, "k": batchInput}));
     } else {
       // WebSocket not ready - keep subscriptions in pending list
       // They will be sent by _sendPendingSubscriptionsAfterConnect when connection succeeds
-      print('⏸️  [WEBSOCKET] WebSocket not ready, keeping ${uniqueSymbols.length} $task subscriptions in pending');
-      print('   Current State: Connected=$_wsConnected, Channel=${_channel != null}');
       log('⏸️  WebSocket: Keeping $task subscriptions in pending until connected');
     }
   }
@@ -1403,25 +1330,19 @@ class WebSocketProvider extends ChangeNotifier {
   void _sendToWebSocket(String task, String input) {
     if (_wsConnected && _channel != null) {
       final symbolCount = input.split('#').where((s) => s.isNotEmpty).length;
-      print('📤 [WEBSOCKET] Sending ${task.toUpperCase()} request for $symbolCount symbol(s)');
       if (symbolCount <= 5) {
-        print('   Symbols: ${input.split('#').where((s) => s.isNotEmpty).join(", ")}');
       }
       log('📤 WebSocket: Sending $task request for $symbolCount symbols');
       _channel?.sink.add(jsonEncode({"t": task, "k": input}));
     } else {
       // If socket isn't ready yet, schedule a retry
-      print('⚠️  [WEBSOCKET] Connection not ready, scheduling retry in 500ms');
-      print('   Current State: Connected=$_wsConnected, Connecting=$_connecting, Channel=${_channel != null}');
       log('⚠️  WebSocket: Connection not ready, scheduling retry');
       Future.delayed(const Duration(milliseconds: 500), () {
         if (_wsConnected && _channel != null) {
-          print('🔄 [WEBSOCKET] Retrying ${task.toUpperCase()} request after delay');
           log('🔄 WebSocket: Retrying request after delay');
           _channel?.sink.add(jsonEncode({"t": task, "k": input}));
         } else if (!_connecting && !_reconnecting) {
           // Only attempt reconnection if not already connecting
-          print('❌ [WEBSOCKET] Still not connected after delay, attempting full reconnection');
           log('❌ WebSocket: Still not connected, attempting reconnection');
           if (_context != null && input.isNotEmpty) {
             establishConnection(
@@ -1431,7 +1352,6 @@ class WebSocketProvider extends ChangeNotifier {
             );
           }
         } else {
-          print('⏸️  [WEBSOCKET] Connection/reconnection already in progress, skipping');
           log('⏸️  WebSocket: Connection already in progress, skipping');
         }
       });
@@ -1439,18 +1359,10 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _handleConnectionClosed(BuildContext context) {
-    print('\n═══════════════════════════════════════════════════════════');
-    print('🔴 [WEBSOCKET] CONNECTION CLOSED BY SERVER');
-    print('   Reason: Server closed the connection');
-    print('   Reconnecting: ${!_reconnecting}');
-    print('   Connection Count: $_connectionCount/$_maxReconnectAttempts');
-    print('   Consecutive Closures: $_consecutiveServerClosures/$_maxConsecutiveClosures');
-    print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Connection closed by server');
     
     // Don't process if already reconnecting or if we're disposing
     if (_reconnecting) {
-      print('⏸️  [WEBSOCKET] Already reconnecting, ignoring connection closed event');
       log('⏸️  WebSocket: Already reconnecting, ignoring');
       return;
     }
@@ -1469,14 +1381,11 @@ class WebSocketProvider extends ChangeNotifier {
     
     // Check if server keeps closing - stop reconnecting if too many consecutive closures
     if (_consecutiveServerClosures >= _maxConsecutiveClosures) {
-      print('⛔ [WEBSOCKET] Server closed connection $_consecutiveServerClosures times consecutively');
-      print('   Stopping reconnection attempts to prevent loop');
       log('⛔ WebSocket: Too many consecutive server closures, stopping reconnection');
       
       // Reset after cooldown period
       Future.delayed(_serverClosureCooldown, () {
         _consecutiveServerClosures = 0;
-        print('✅ [WEBSOCKET] Server closure cooldown expired, reconnection allowed again');
       });
       
       // Only close if not already closed
@@ -1490,7 +1399,6 @@ class WebSocketProvider extends ChangeNotifier {
     if (_lastServerClosure != null && 
         now.difference(_lastServerClosure!) < _serverClosureCooldown &&
         _consecutiveServerClosures > 1) {
-      print('⏸️  [WEBSOCKET] In cooldown period after server closure, skipping reconnection');
       log('⏸️  WebSocket: In cooldown period, skipping reconnection');
       
       // Only close if not already closed
@@ -1511,10 +1419,8 @@ class WebSocketProvider extends ChangeNotifier {
         if (kIsWeb) {
           final isLoggedIn = _isUserLoggedIn();
           if (isLoggedIn) {
-            print('ℹ️  [WEBSOCKET] Web: No active subscriptions but user is logged in, proceeding with reconnection');
             log('ℹ️  WebSocket: Web - No subscriptions but user logged in, reconnecting');
           } else {
-            print('ℹ️  [WEBSOCKET] Web: No active subscriptions and user not logged in, skipping reconnection');
             log('ℹ️  WebSocket: Web - No subscriptions, user not logged in, skipping');
             if (_wsConnected || _channel != null) {
               closeSocket(true);
@@ -1523,7 +1429,6 @@ class WebSocketProvider extends ChangeNotifier {
           }
         } else {
           // Mobile: keep existing behavior
-          print('ℹ️  [WEBSOCKET] No active subscriptions, skipping reconnection');
           log('ℹ️  WebSocket: No active subscriptions, skipping reconnection');
 
           // Only close if not already closed
@@ -1540,7 +1445,6 @@ class WebSocketProvider extends ChangeNotifier {
     
     if (!_reconnecting) {
       _connectionCount++;
-      print('📊 [WEBSOCKET] Connection count: $_connectionCount/$_maxReconnectAttempts');
       log('📊 WebSocket: Connection count: $_connectionCount');
 
       // Use post-frame callback to avoid modifying provider during build
@@ -1561,7 +1465,6 @@ class WebSocketProvider extends ChangeNotifier {
     if (_connectionCount < _maxReconnectAttempts) {
       // Use longer delay if server has closed multiple times
       final delaySeconds = _consecutiveServerClosures > 1 ? 5 : 2;
-      print('🔄 [WEBSOCKET] Scheduling reconnection attempt in $delaySeconds seconds...');
       log('🔄 WebSocket: Scheduling reconnection in $delaySeconds seconds');
 
       Future.delayed(Duration(seconds: delaySeconds), () {
@@ -1597,29 +1500,20 @@ class WebSocketProvider extends ChangeNotifier {
           if (validContext != null) {
             reconnect(validContext);
           } else {
-            print('⚠️  [WEBSOCKET] No valid context for reconnection');
             log('⚠️  WebSocket: No valid context for reconnection');
           }
         }
       });
     } else {
-      print('❌ [WEBSOCKET] Max reconnection attempts reached. Stopping reconnection.');
       log('❌ WebSocket: Max reconnection attempts reached');
     }
   }
 
   void _handleConnectionError(dynamic error, BuildContext context) {
-    print('\n═══════════════════════════════════════════════════════════');
-    print('❌ [WEBSOCKET] CONNECTION ERROR');
-    print('   Error: $error');
-    print('   Error Type: ${error.runtimeType}');
-    print('   Reconnecting: ${!_reconnecting}');
-    print('═══════════════════════════════════════════════════════════\n');
     log('❌ WebSocket: Connection error: $error');
     
     if (!_reconnecting) {
       _connectionCount++;
-      print('📊 [WEBSOCKET] Connection count: $_connectionCount/$_maxReconnectAttempts');
       log('📊 WebSocket: Connection count: $_connectionCount');
 
       // Use post-frame callback to avoid modifying provider during build
@@ -1635,7 +1529,6 @@ class WebSocketProvider extends ChangeNotifier {
     }
 
     if (_connectionCount < _maxReconnectAttempts) {
-      print('🔄 [WEBSOCKET] Scheduling reconnection attempt after error...');
       log('🔄 WebSocket: Scheduling reconnection after error');
       // Use post-frame callback to avoid provider modification during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1663,12 +1556,10 @@ class WebSocketProvider extends ChangeNotifier {
         if (validContext != null) {
           reconnect(validContext);
         } else {
-          print('⚠️  [WEBSOCKET] No valid context for reconnection after error');
           log('⚠️  WebSocket: No valid context for reconnection after error');
         }
       });
     } else {
-      print('❌ [WEBSOCKET] Max reconnection attempts reached. Stopping reconnection.');
       log('❌ WebSocket: Max reconnection attempts reached');
     }
   }
@@ -1682,14 +1573,12 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Prevent multiple simultaneous reconnection attempts
     if (_reconnecting) {
-      print('⏸️  [WEBSOCKET] Reconnection already in progress, skipping...');
       log('⏸️  WebSocket: Reconnection already in progress');
       return;
     }
 
     // If already connected, don't reconnect
     if (_wsConnected && _channel != null) {
-      print('✅ [WEBSOCKET] Already connected, skipping reconnection');
       log('✅ WebSocket: Already connected, skipping reconnection');
       return;
     }
@@ -1698,13 +1587,6 @@ class WebSocketProvider extends ChangeNotifier {
     final stackTrace = StackTrace.current;
     final caller = stackTrace.toString().split('\n').take(3).join('\n');
     
-    print('\n═══════════════════════════════════════════════════════════');
-    print('🔄 [WEBSOCKET] INITIATING RECONNECTION');
-    print('   Connection Count: $_connectionCount/$_maxReconnectAttempts');
-    print('   Low Bandwidth Mode: $_isLowBandwidth');
-    print('   Current State: Connected=$_wsConnected, Connecting=$_connecting');
-    print('   Caller: ${caller.split('\n')[1].trim()}');
-    print('═══════════════════════════════════════════════════════════\n');
     log('🔄 WebSocket: Initiating reconnection (attempt $_connectionCount)');
     log('   Caller: $caller');
     
@@ -1720,7 +1602,6 @@ class WebSocketProvider extends ChangeNotifier {
 
     // If retry screen is active, attempt immediate reconnection
     if (_retryScreen) {
-      print('⚡ [WEBSOCKET] Retry screen active, attempting immediate reconnection');
       log('⚡ WebSocket: Immediate reconnection (retry screen)');
       _attemptReconnection(context);
     } else {
@@ -1735,7 +1616,6 @@ class WebSocketProvider extends ChangeNotifier {
       }
 
       if (connectionStatus != ConnectivityResult.none) {
-        print('⏱️  [WEBSOCKET] Scheduling reconnection in ${backoffDelay.inSeconds}s (backoff delay)');
         log('⏱️  WebSocket: Scheduling reconnection in ${backoffDelay.inSeconds}s');
         _reconnectBackoff = Timer(backoffDelay, () {
           // **FIX: Check disposed before timer callback executes**
@@ -1743,12 +1623,10 @@ class WebSocketProvider extends ChangeNotifier {
             log('WebSocket: Skipping reconnection timer callback - provider is disposed');
             return;
           }
-          print('⏰ [WEBSOCKET] Backoff delay completed, attempting reconnection now');
           log('⏰ WebSocket: Backoff delay completed');
           _attemptReconnection(context);
         });
       } else {
-        print('📵 [WEBSOCKET] No network connection available, aborting reconnection');
         log('📵 WebSocket: No network, aborting reconnection');
         // Reset reconnecting flag if no network is available
         _reconnecting = false;
@@ -1771,16 +1649,11 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Check if already connected before attempting
     if (_wsConnected && _channel != null) {
-      print('✅ [WEBSOCKET] Already connected, canceling reconnection attempt');
       log('✅ WebSocket: Already connected, canceling reconnection');
       _reconnecting = false;
       return;
     }
 
-    print('\n═══════════════════════════════════════════════════════════');
-    print('🔄 [WEBSOCKET] ATTEMPTING RECONNECTION');
-    print('   Attempt: ${_connectionCount + 1}/$_maxReconnectAttempts');
-    print('═══════════════════════════════════════════════════════════\n');
     log('🔄 WebSocket: Attempting reconnection');
 
     ConnectivityResult connectionStatus;
@@ -1793,7 +1666,6 @@ class WebSocketProvider extends ChangeNotifier {
     }
 
     if (connectionStatus != ConnectivityResult.none) {
-      print('📶 [WEBSOCKET] Network available: ${connectionStatus.toString().split('.').last}');
       log('📶 WebSocket: Network available');
       
       // Reset retry screen flag as we're attempting reconnection
@@ -1802,14 +1674,12 @@ class WebSocketProvider extends ChangeNotifier {
       // Make sure we only try to refresh data once per reconnection attempt
       if (!_wsConnected) {
         if (currentRouteName != Routes.loginScreen){
-          print('🔄 [WEBSOCKET] Refreshing data before reconnection');
           log('🔄 WebSocket: Refreshing data');
           _refreshData(context);
         }
       }
       
 
-      print('🔌 [WEBSOCKET] Establishing base connection...');
       log('🔌 WebSocket: Establishing base connection');
 
       // First establish a base connection if needed
@@ -1830,7 +1700,6 @@ class WebSocketProvider extends ChangeNotifier {
           context: context,
         );
       } else {
-        print('⏸️  [WEBSOCKET] Connection already in progress, waiting...');
         log('⏸️  WebSocket: Connection already in progress');
       }
 
@@ -1839,21 +1708,17 @@ class WebSocketProvider extends ChangeNotifier {
       Future.delayed(const Duration(milliseconds: 500), () {
         // Check connection status after delay
         if (_wsConnected) {
-          print('✅ [WEBSOCKET] Reconnection successful!');
           log('✅ WebSocket: Reconnection successful');
 
           // On web, WebSubscriptionManager handles subscription restoration via its listener
           // which is triggered by notifyListeners() in _handleConnectionSuccess
           if (kIsWeb) {
-            print('   📱 [Web] WebSubscriptionManager will handle subscription restoration');
             log('   WebSubscriptionManager handles restoration on web');
           } else {
             // On mobile, restore from saved constants
-            print('📡 [WEBSOCKET] Restoring previous subscriptions (mobile)...');
             log('📡 WebSocket: Restoring subscriptions (mobile)');
 
             if (ConstantName.lastSubscribe.isNotEmpty) {
-              print('   ➕ Restoring ${ConstantName.lastSubscribe.split('#').length} tick subscriptions');
               log('   ➕ Restoring tick subscriptions');
               connectTouchLine(
                 input: ConstantName.lastSubscribe,
@@ -1863,7 +1728,6 @@ class WebSocketProvider extends ChangeNotifier {
             }
 
             if (ConstantName.lastSubscribeDepth.isNotEmpty) {
-              print('   ➕ Restoring ${ConstantName.lastSubscribeDepth.split('#').length} depth subscriptions');
               log('   ➕ Restoring depth subscriptions');
               connectTouchLine(
                 input: ConstantName.lastSubscribeDepth,
@@ -1874,7 +1738,6 @@ class WebSocketProvider extends ChangeNotifier {
           }
         } else if (_reconnecting) {
           // Connection still in progress or failed
-          print('⏳ [WEBSOCKET] Connection not yet established after 500ms');
           log('⏳ WebSocket: Connection pending');
 
           // Don't reset _reconnecting here - let it continue trying
@@ -1885,7 +1748,6 @@ class WebSocketProvider extends ChangeNotifier {
         // Reset reconnecting flag after attempt, regardless of success
         // The actual connection state is tracked by _wsConnected
         _reconnecting = false;
-        print('🔄 [WEBSOCKET] Reconnection attempt completed');
         log('🔄 WebSocket: Reconnection attempt completed');
 
         // Use post-frame callback to avoid modifying provider during build
@@ -1894,7 +1756,6 @@ class WebSocketProvider extends ChangeNotifier {
         });
       });
     } else {
-      print('📵 [WEBSOCKET] No network connection, aborting reconnection');
       log('📵 WebSocket: No network, aborting reconnection');
       // Reset reconnecting flag if no network is available
       _reconnecting = false;
@@ -1910,14 +1771,9 @@ class WebSocketProvider extends ChangeNotifier {
     // Set disposed flag FIRST to prevent any pending callbacks from calling notifyListeners
     _isDisposed = true;
 
-    print('\n═══════════════════════════════════════════════════════════');
-    print('🔴 [WEBSOCKET] DISPOSING PROVIDER');
-    print('   Cleaning up all resources...');
-    print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Disposing provider');
 
     // Ensure all timers are canceled
-    print('⏹️  [WEBSOCKET] Stopping ping timer');
     _stopPingTimer();
     _holdStartTime?.cancel();
     _reconnectBackoff?.cancel();
@@ -1926,23 +1782,19 @@ class WebSocketProvider extends ChangeNotifier {
     _throttleTimer?.cancel(); // Cancel throttle timer (330ms)
 
     // Cancel all subscription timers
-    print('⏹️  [WEBSOCKET] Canceling ${_subscriptionTimers.length} subscription timer(s)');
     for (var timer in _subscriptionTimers.values) {
       timer.cancel();
     }
     _subscriptionTimers.clear();
 
     // Cancel stream subscription to prevent memory leaks
-    print('🔌 [WEBSOCKET] Canceling stream subscription');
     _channelSubscription?.cancel();
     _channelSubscription = null;
 
     // Close socket channel
-    print('🔌 [WEBSOCKET] Closing socket channel');
     _channel?.sink.close();
 
     // Close data stream
-    print('📡 [WEBSOCKET] Closing data stream');
     _socketDataController.close();
 
     // Clear subscription tracking
@@ -1952,7 +1804,6 @@ class WebSocketProvider extends ChangeNotifier {
     // Clear buffered socket updates
     _pendingSocketUpdates.clear();
 
-    print('✅ [WEBSOCKET] Provider disposed successfully\n');
     log('✅ WebSocket: Provider disposed');
 
     super.dispose();
@@ -1972,7 +1823,6 @@ class WebSocketProvider extends ChangeNotifier {
 
         // Check if the provider is already disposed
         if (marketWatchProv.disposed) {
-          print("Market watch provider is disposed, skipping update");
           return;
         }
 
@@ -1982,10 +1832,8 @@ class WebSocketProvider extends ChangeNotifier {
       } catch (e) {
         // Silent catch - this can happen during app shutdown or page transitions
         // We don't want to crash the app if the provider is being disposed
-        print("Market watch provider access error (likely during transition): $e");
       }
     } catch (e) {
-      print("Error setting up notification to market watch provider: $e");
     }
   }
 }

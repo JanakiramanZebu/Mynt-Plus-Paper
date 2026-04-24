@@ -190,7 +190,6 @@ class LinkExtractor extends StatelessWidget {
               }
             }
           } catch (e) {
-            debugPrint('Error launching URL: $e');
           }
         },
         child: Container(

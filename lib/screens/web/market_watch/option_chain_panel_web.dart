@@ -42,6 +42,10 @@ class _OptionChainPanelWebState extends ConsumerState<OptionChainPanelWeb> {
   /// (e.g. when fetchAvailableSymbols completes and isLoadingSymbols flips).
   VoidCallback? _providerListener;
 
+  /// Saved reference so we can safely removeListener in dispose()
+  /// without calling ref.read() on an unmounted widget.
+  late final _watchlistOC = ref.read(watchlistOCProvider);
+
   @override
   void initState() {
     super.initState();
@@ -50,13 +54,13 @@ class _OptionChainPanelWebState extends ConsumerState<OptionChainPanelWeb> {
     _providerListener = () {
       _searchOverlay?.markNeedsBuild();
     };
-    ref.read(watchlistOCProvider).addListener(_providerListener!);
+    _watchlistOC.addListener(_providerListener!);
   }
 
   @override
   void dispose() {
     if (_providerListener != null) {
-      ref.read(watchlistOCProvider).removeListener(_providerListener!);
+      _watchlistOC.removeListener(_providerListener!);
     }
     _removeSearchOverlay();
     _removeExpiryOverlay();

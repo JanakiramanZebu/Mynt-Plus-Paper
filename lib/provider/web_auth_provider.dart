@@ -207,7 +207,6 @@ class WebAuthProvider extends ChangeNotifier {
 
       // 3. Check if validation successful
       if (result != null && result['stat'] == 'Ok') {
-        debugPrint('Auto-login successful for $clientId');
 
         // Ensure other preferences are set if needed (e.g. clientName from result['uname'])
         if (result['uname'] != null) {
@@ -221,7 +220,6 @@ class WebAuthProvider extends ChangeNotifier {
         }
         return true;
       } else {
-        debugPrint('Auto-login failed: Invalid session');
         // Clear invalid session to ensure fresh login state
         await pref.clearClientSession();
         pref.setLogout(true);
@@ -230,7 +228,6 @@ class WebAuthProvider extends ChangeNotifier {
         reset();
       }
     } catch (e) {
-      debugPrint('Auto-login error: $e');
       // Clear session on error to prevent stale state
       await pref.clearClientSession();
       pref.setLogout(true);
@@ -293,7 +290,6 @@ class WebAuthProvider extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint('Web login error: $e');
       if (context.mounted) {
         ResponsiveSnackBar.showWarning(context, 'Login failed. Please try again.');
       }
@@ -325,7 +321,6 @@ class WebAuthProvider extends ChangeNotifier {
         ResponsiveSnackBar.showWarning(context, result['emsg'].toString());
       }
     } catch (e) {
-      debugPrint('Send OTP error: $e');
       if (context.mounted) {
         ResponsiveSnackBar.showWarning(context, 'Failed to send OTP');
       }
@@ -420,7 +415,6 @@ class WebAuthProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Verify OTP error: $e');
       if (context.mounted) {
         ResponsiveSnackBar.showWarning(context, 'Verification failed. Please try again.');
       }
@@ -466,7 +460,7 @@ class WebAuthProvider extends ChangeNotifier {
 
     try {
       _totpData = await WebAuthApi.getOrGenerateTotp(
-        clientId: loginController.text.trim().toUpperCase(),
+        clientId: _mobileOtp?.clientid ?? loginController.text.trim().toUpperCase(),
         apiSession: _apiSession!,
         context: context,
       );
@@ -474,10 +468,35 @@ class WebAuthProvider extends ChangeNotifier {
       if (_totpData?.isValid == true) {
         _startTotpTimer();
       }
-      
+
       notifyListeners();
     } catch (e) {
-      debugPrint('Fetch TOTP data error: $e');
+    }
+  }
+
+  /// Generate a brand-new TOTP secret key (triggered from "Generate New Key" button
+  /// shown when no existing key is set up for the user).
+  Future<void> generateNewTotpKey(BuildContext context) async {
+    if (_apiSession == null) return;
+
+    _setLoading(true);
+    try {
+      final newData = await WebAuthApi.generateTotpSecretKey(
+        clientId: _mobileOtp?.clientid ?? loginController.text.trim().toUpperCase(),
+        apiSession: _apiSession!,
+        context: context,
+      );
+
+      if (newData != null) {
+        _totpData = newData;
+        if (_totpData?.isValid == true) {
+          _startTotpTimer();
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -588,7 +607,6 @@ class WebAuthProvider extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint("QR Poll Error: $e");
     }
   }
 
@@ -668,7 +686,6 @@ class WebAuthProvider extends ChangeNotifier {
         ResponsiveSnackBar.showWarning(context, result['emsg'].toString());
       }
     } catch (e) {
-      debugPrint('Forgot password error: $e');
       if (context.mounted) {
         ResponsiveSnackBar.showWarning(context, 'Failed to process request');
       }

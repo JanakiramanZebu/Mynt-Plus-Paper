@@ -235,10 +235,8 @@ mixin ProfileAllDetailsApi on ApiCore {
       headers: defaultHeaders,
       body: jsonEncode({"clientId": prefs.clientId}),
     );
-    print("Raw response: ${res.body}");
     return PendingStatus.fromJson(jsonDecode(res.body));
   } catch (e) {
-    print("error fetchpendig :::: $e");
     rethrow;
   }
 }
@@ -258,7 +256,6 @@ mixin ProfileAllDetailsApi on ApiCore {
     );
 
       final json = jsonDecode(res.body);
-      print("json :::: $json");
       switch (type) {
       case "email_change":
         return json["email_file_id"];
@@ -286,7 +283,6 @@ mixin ProfileAllDetailsApi on ApiCore {
         return null;
     }
   } catch (e) {
-    print("Error in fetctfileidapi: $e");
     return null;
   }
   return null;
@@ -304,7 +300,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       return response = "Cancel Failed";
     }
   } catch (e) {
-    print("error cancel pending status :::: $e");
     rethrow;
   }
 }
@@ -320,7 +315,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       );
       return DetailsChangeCurrentStatus.fromJson(jsonDecode(res.body));
     } catch (e) {
-      print("error fetchMobEmailStatusApi :::: $e");
       rethrow;
     }
   }
@@ -388,7 +382,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       final response = await http.Response.fromStream(streamedResponse);
       return jsonDecode(response.body);
     } catch (e) {
-      print("error addSegmentApi :::: $e");
       rethrow;
     }
   }
@@ -412,7 +405,6 @@ mixin ProfileAllDetailsApi on ApiCore {
         }),
       );
     } catch (e) {
-      print("error filedownloadApi :::: $e");
     }
   }
 
@@ -748,7 +740,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception incomeupdateaapi: $e");
       return null;
     }
   }
@@ -775,7 +766,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception pdfLockCheckApi: $e");
       return null;
     }
   }
@@ -807,7 +797,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception pdfPasswordCheckApi: $e");
       return null;
     }
   }
@@ -858,7 +847,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception ifscLookupApi: $e");
       return null;
     }
   }
@@ -879,7 +867,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception pincodeLookupApi: $e");
       return null;
     }
   }
@@ -931,7 +918,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception addressChangeApiWeb: $e");
       return null;
     }
   }
@@ -970,7 +956,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception addressChangeDigilockerApiWeb: $e");
       return null;
     }
   }
@@ -996,7 +981,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception nomineeSubmitApi: $e");
       return null;
     }
   }
@@ -1016,7 +1000,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception nomineeStatusApi: $e");
       return null;
     }
   }
@@ -1082,7 +1065,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception addBankApiWeb: $e");
       return null;
     }
   }
@@ -1299,7 +1281,6 @@ mixin ProfileAllDetailsApi on ApiCore {
         return null;
       }
     } catch (e) {
-      print("acccloserapi Exception: $e");
       return null;
     }
   }
@@ -1322,7 +1303,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       final json = jsonDecode(res.body);
       return json['msg']?.toString();
     } catch (e) {
-      print("Exception mobileOtpVerifyWebApi: $e");
       return null;
     }
   }
@@ -1341,7 +1321,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       final json = jsonDecode(res.body);
       return json['msg']?.toString();
     } catch (e) {
-      print("Exception emailOtpVerifyWebApi: $e");
       return null;
     }
   }
@@ -1368,7 +1347,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       final json = jsonDecode(res.body);
       return json as Map<String, dynamic>;
     } catch (e) {
-      print("Exception mobileFileWriteWebApi: $e");
       return null;
     }
   }
@@ -1395,7 +1373,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       final json = jsonDecode(res.body);
       return json as Map<String, dynamic>;
     } catch (e) {
-      print("Exception emailFileWriteWebApi: $e");
       return null;
     }
   }
@@ -1412,7 +1389,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       final json = jsonDecode(res.body);
       return json['data']?.toString();
     } catch (e) {
-      print("Exception kraImageCheckApi: $e");
       return null;
     }
   }
@@ -1437,7 +1413,6 @@ mixin ProfileAllDetailsApi on ApiCore {
       }
       return null;
     } catch (e) {
-      print("Exception imgUploadApi: $e");
       return null;
     }
   }

@@ -119,13 +119,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       // Tab is being hidden - record the time
       _tabHiddenTime = DateTime.now();
       log('WebSubscriptionManager: Browser tab hidden');
-      print('🔇 [WebSubscriptionManager] Browser tab hidden');
       return;
     }
 
     // Tab is becoming visible again
     log('WebSubscriptionManager: Browser tab visible again');
-    print('🔊 [WebSubscriptionManager] Browser tab visible again');
 
     if (!_isUserLoggedIn()) return;
 
@@ -133,15 +131,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         ? DateTime.now().difference(_tabHiddenTime!)
         : Duration.zero;
 
-    print('   Was hidden for: ${wasHiddenFor.inSeconds}s');
-    print('   Active subscriptions in master list: ${_activeSubscriptions.length}');
 
     _tabHiddenTime = null;
 
     // If tab was hidden long enough for the connection to go stale, force full restore
     if (wasHiddenFor >= _staleConnectionThreshold) {
-      print('🔄 [WebSubscriptionManager] Tab was hidden for ${wasHiddenFor.inSeconds}s (>= ${_staleConnectionThreshold.inSeconds}s threshold)');
-      print('   Forcing WebSocket reconnect and full re-subscription...');
       log('WebSubscriptionManager: Forcing reconnect after tab was hidden for ${wasHiddenFor.inSeconds}s');
 
       _forceReconnectAndResubscribe();
@@ -149,10 +143,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       // Short switch - just verify connection is alive and data is flowing
       final wsProvider = ref.read(websocketProvider);
       if (!wsProvider.wsConnected) {
-        print('⚠️ [WebSubscriptionManager] WebSocket disconnected during short tab switch, reconnecting...');
         _forceReconnectAndResubscribe();
-      } else {
-        print('✅ [WebSubscriptionManager] WebSocket still connected after short tab switch');
       }
     }
   }
@@ -167,7 +158,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
     // Prevent duplicate calls (e.g., visibilitychange + AppLifecycleState both firing)
     if (_isForceReconnecting) {
-      print('⏸️ [WebSubscriptionManager] Force reconnect already in progress, skipping');
       return;
     }
     _isForceReconnecting = true;
@@ -179,13 +169,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     // instead of using the accumulated list which may have stale symbols
     final freshSymbols = _rebuildActiveSymbols();
 
-    print('═══════════════════════════════════════════════════════════');
-    print('🔄 [WebSubscriptionManager] FORCE RECONNECT AFTER TAB SWITCH');
-    print('   Old master list: ${_activeSubscriptions.length} symbols');
-    print('   Rebuilt fresh list: ${freshSymbols.length} symbols');
-    print('   Ticker subscriptions: ${_tickerSubscriptions.length}');
-    print('   Active screens: ${_activeScreens.length}');
-    print('═══════════════════════════════════════════════════════════');
 
     // Replace master list with only what's currently needed
     _activeSubscriptions.clear();
@@ -215,22 +198,17 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       final stillConnected = ref.read(websocketProvider).wsConnected;
       if (stillConnected) {
         // Already reconnected (fast reconnect) - just re-send subscriptions
-        print('⚡ [WebSubscriptionManager] Already reconnected, sending subscriptions from master list');
         _sendAllSubscriptionsFromMasterList();
       } else if (context != null) {
         // Need to reconnect - the _handleWebSocketStateChange listener will
         // pick up the reconnection and call _sendAllSubscriptionsFromMasterList
         // because _activeSubscriptions (master list) is not empty
-        print('🔌 [WebSubscriptionManager] Triggering reconnection...');
         ref.read(websocketProvider).reconnect(context);
-      } else {
-        print('⚠️ [WebSubscriptionManager] No valid context for reconnection');
       }
 
       // Clear tab-switch flag after reconnection completes
       ref.read(websocketProvider).setTabSwitchReconnect(false);
 
-      print('═══════════════════════════════════════════════════════════\n');
     });
   }
 
@@ -351,23 +329,17 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       // Check if socket just connected (was disconnected, now connected)
       if (!_lastKnownWsConnected && isNowConnected) {
         log('WebSubscriptionManager: WebSocket connected');
-        print('🔄 [WebSubscriptionManager] WebSocket connected');
-        print('   Active subscriptions in master list: ${_activeSubscriptions.length}');
-        print('   Pending queue size: ${_pendingSubscriptionQueue.length}');
-        print('   Is initial connection: $_isInitialConnection');
 
         // Clear deduplication tracking (NOT the master list!)
         _currentWebSocketSubscriptions.clear();
 
         // Process any pending subscriptions first
         if (_pendingSubscriptionQueue.isNotEmpty) {
-          print('📤 [WebSubscriptionManager] Processing ${_pendingSubscriptionQueue.length} pending subscriptions');
           _processPendingSubscriptions();
         }
 
         // Check if we have subscriptions to restore from master list
         if (_activeSubscriptions.isNotEmpty && _isUserLoggedIn()) {
-          print('📤 [WebSubscriptionManager] Restoring ${_activeSubscriptions.length} subscriptions from master list');
 
           // Minimal delay to let connection stabilize, then restore
           Future.delayed(const Duration(milliseconds: 100), () {
@@ -385,7 +357,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
             // INITIAL LOAD: Don't try to restore immediately - data hasn't been fetched yet
             // Screen handlers (e.g., _handleDashboardTap) will call _updateSubscriptionManagerForPanels
             // after fetching data, which will properly subscribe with the fetched data.
-            print('⏳ [WebSubscriptionManager] Initial load - waiting for screen handlers to fetch data and subscribe');
             log('WebSubscriptionManager: Initial connection - skipping immediate restore, screen handlers will subscribe after data fetch');
 
             // Mark initial connection as complete
@@ -393,7 +364,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
           } else {
             // RECONNECTION: Try to restore via screen-based method with longer delay
             // to give time for any pending data refreshes
-            print('📤 [WebSubscriptionManager] Reconnection - restoring via active screens');
             Future.delayed(const Duration(milliseconds: 500), () {
               final stillConnected = ref.read(websocketProvider).wsConnected;
               if (stillConnected) {
@@ -423,7 +393,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       final wsProvider = ref.read(websocketProvider);
 
       if (!wsProvider.wsConnected) {
-        print('🔌 [WebSubscriptionManager] WebSocket disconnected, triggering reconnection');
         log('WebSubscriptionManager: Triggering reconnection');
 
         // Update context for future use
@@ -434,13 +403,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       } else {
         // Socket is connected - check if we have subscriptions that need to be sent
         if (_activeSubscriptions.isNotEmpty && _currentWebSocketSubscriptions.isEmpty) {
-          print('📤 [WebSubscriptionManager] Socket connected but no subscriptions sent, restoring...');
           log('WebSubscriptionManager: Restoring subscriptions after connection check');
           _sendAllSubscriptionsFromMasterList();
         }
       }
     } catch (e) {
-      print('❌ [WebSubscriptionManager] Error in ensureConnected: $e');
       log('WebSubscriptionManager: Error in ensureConnected: $e');
     }
   }
@@ -450,11 +417,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   Future<void> forceReconnect(BuildContext context) async {
     if (!_isUserLoggedIn()) return;
 
-    print('═══════════════════════════════════════════════════════════');
-    print('🔄 [WebSubscriptionManager] FORCE RECONNECT');
-    print('   Active screens: ${_activeScreens.length}');
-    print('   Master list subscriptions: ${_activeSubscriptions.length}');
-    print('═══════════════════════════════════════════════════════════');
 
     try {
       final wsProvider = ref.read(websocketProvider);
@@ -474,10 +436,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       // Reconnect
       wsProvider.reconnect(context);
 
-      print('✅ [WebSubscriptionManager] Force reconnect initiated');
-      print('═══════════════════════════════════════════════════════════\n');
     } catch (e) {
-      print('❌ [WebSubscriptionManager] Error in forceReconnect: $e');
       log('WebSubscriptionManager: Error in forceReconnect: $e');
     }
   }
@@ -504,7 +463,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       timestamp: DateTime.now(),
     ));
 
-    print('📋 [WebSubscriptionManager] Queued subscription for $screenType (${symbols.length} symbols, retry $retryCount)');
 
     // Start retry timer if not already running
     _startRetryTimer();
@@ -536,7 +494,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
     for (final pending in toProcess) {
       if (pending.retryCount >= _maxRetries) {
-        print('⚠️ [WebSubscriptionManager] Max retries reached for ${pending.screenType}, dropping');
         continue;
       }
 
@@ -551,7 +508,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
     // Check WebSocket readiness
     if (!_isWebSocketReady()) {
-      print('⏳ [WebSubscriptionManager] WebSocket not ready, queueing ${screenType} subscription (retry $retryCount)');
       _queueSubscription(screenType, symbols, retryCount);
       return;
     }
@@ -565,7 +521,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     }
 
     if (symbols.isEmpty) {
-      print('⚠️ [WebSubscriptionManager] No symbols to subscribe for $screenType');
       return;
     }
 
@@ -573,12 +528,10 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     final newSymbols = symbols.where((s) => !_currentWebSocketSubscriptions.contains(s)).toSet();
 
     if (newSymbols.isEmpty) {
-      print('ℹ️ [WebSubscriptionManager] All symbols for $screenType already subscribed');
       _screenSubscriptions[screenType] = symbols;
       return;
     }
 
-    print('✅ [WebSubscriptionManager] Subscribing ${newSymbols.length} symbols for $screenType (retry $retryCount)');
 
     try {
       final wsProvider = ref.read(websocketProvider);
@@ -594,9 +547,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       _activeSubscriptions.addAll(newSymbols);
       _screenSubscriptions[screenType] = symbols;
 
-      print('✅ [WebSubscriptionManager] Successfully subscribed to $screenType');
     } catch (e) {
-      print('❌ [WebSubscriptionManager] Error subscribing to $screenType: $e');
       // Queue for retry
       if (retryCount < _maxRetries) {
         _queueSubscription(screenType, symbols, retryCount);
@@ -618,10 +569,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return;
     }
 
-    print('═══════════════════════════════════════════════════════════');
-    print('📤 [WebSubscriptionManager] SENDING ALL SUBSCRIPTIONS FROM MASTER LIST');
-    print('   Total symbols: ${_activeSubscriptions.length}');
-    print('═══════════════════════════════════════════════════════════');
 
     try {
       final wsProvider = ref.read(websocketProvider);
@@ -642,7 +589,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         final batchString = batch.join('#');
         final batchNum = (i ~/ batchSize) + 1;
 
-        print('📦 [WebSubscriptionManager] Sending batch $batchNum/$totalBatches (${batch.length} symbols)');
 
         // Send directly via websocket - using depth subscription for web
         wsProvider.connectTouchLine(
@@ -655,11 +601,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         _currentWebSocketSubscriptions.addAll(batch);
       }
 
-      print('✅ [WebSubscriptionManager] All ${_activeSubscriptions.length} subscriptions sent');
-      print('═══════════════════════════════════════════════════════════\n');
 
     } catch (e) {
-      print('❌ [WebSubscriptionManager] Error sending subscriptions: $e');
       log('WebSubscriptionManager: Error sending subscriptions from master list: $e');
     }
   }
@@ -729,7 +672,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   void refreshCurrentScreen(int panelIndex, ScreenType? screenType) {
     if (screenType == null) return;
 
-    print('\n🔄 [WebSubscriptionManager] Refreshing panel $panelIndex subscriptions for: $screenType');
     log('WebSubscriptionManager: Refreshing subscriptions for $screenType');
 
     // Re-subscribe to get fresh symbols (data may have been fetched since initial load)
@@ -738,9 +680,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
   /// Actually perform the screen update (called after debounce)
   void _performScreenUpdate(int panelIndex, ScreenType? previousScreen, ScreenType? screenType) {
-    print('\n🔄 [WebSubscriptionManager] Panel $panelIndex screen change:');
-    print('   From: ${previousScreen ?? "none"}');
-    print('   To: ${screenType ?? "none"}');
     log('WebSubscriptionManager: Panel $panelIndex screen changed from $previousScreen to $screenType');
 
     // CRITICAL FIX: Before unsubscribing, complete ALL pending subscription timers
@@ -783,7 +722,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         // previousScreen is typically null, so we just subscribe the new screen
         final screenToSubscribe = pending.newScreen;
         if (screenToSubscribe != null && !_screenSubscriptions.containsKey(screenToSubscribe)) {
-          print('⚡ [WebSubscriptionManager] Fast-tracking subscription for panel $panelIdx: $screenToSubscribe');
           _activeScreens[panelIdx] = screenToSubscribe;
           _subscribeToScreen(screenToSubscribe);
         }
@@ -809,7 +747,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
     // Check WebSocket readiness BEFORE getting symbols
     if (!_isWebSocketReady()) {
-      print('⏳ [WebSubscriptionManager] WebSocket not ready for $screenType, will retry when connected');
       // Queue empty set - will be filled when retry happens
       _queueSubscription(screenType, {}, 0);
       return;
@@ -821,11 +758,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return;
     }
 
-    print('═══════════════════════════════════════════════════════════');
-    print('📱 [WebSubscriptionManager] SUBSCRIBING to screen: $screenType');
-    print('   Subscription Type: $subscriptionType');
-    print('   WebSocket ready: ${_isWebSocketReady()}');
-    print('═══════════════════════════════════════════════════════════');
     log('WebSubscriptionManager: Subscribing to $screenType (type: $subscriptionType)');
 
     try {
@@ -855,7 +787,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       Set<String> symbolsToSubscribe = _getSymbolsForScreen(screenType, subscriptionType);
 
       if (symbolsToSubscribe.isEmpty) {
-        print('⚠️  [WebSubscriptionManager] No symbols to subscribe for $screenType');
         log('WebSubscriptionManager: No symbols to subscribe for $screenType');
         return;
       }
@@ -866,18 +797,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       ).toSet();
 
       if (newSymbols.isEmpty) {
-        print('ℹ️  [WebSubscriptionManager] All symbols for $screenType already subscribed');
-        print('   Total symbols needed: ${symbolsToSubscribe.length}');
-        print('   Already subscribed: ${symbolsToSubscribe.length}');
-        print('   Total tracked symbols in WebSubscriptionManager: ${_currentWebSocketSubscriptions.length}');
         if (symbolsToSubscribe.length <= 10) {
-          print('   Symbols: ${symbolsToSubscribe.join(", ")}');
-        } else {
-          print('   First 10 symbols: ${symbolsToSubscribe.take(10).join(", ")}...');
         }
-        print('   ℹ️  Reason: These symbols were previously subscribed by WebSubscriptionManager');
-        print('   ✅ Tracking these symbols for $screenType cleanup');
-        print('═══════════════════════════════════════════════════════════\n');
         // Still track these symbols for this screen even if already subscribed
         // This ensures proper cleanup when screen is removed
         _screenSubscriptions[screenType] = symbolsToSubscribe;
@@ -885,20 +806,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         return;
       }
 
-      print('✅ [WebSubscriptionManager] Subscribing to ${newSymbols.length} symbols for $screenType');
-      print('   Total symbols needed: ${symbolsToSubscribe.length}');
-      print('   New symbols: ${newSymbols.length}');
-      print('   Already subscribed: ${symbolsToSubscribe.length - newSymbols.length}');
       if (newSymbols.length <= 10) {
-        print('   Symbols: ${newSymbols.join(", ")}');
-      } else {
-        print('   First 10 symbols: ${newSymbols.take(10).join(", ")}...');
       }
       log('WebSubscriptionManager: Subscribing to ${newSymbols.length} new symbols for $screenType');
 
       // Final WebSocket check before sending
       if (!_isWebSocketReady()) {
-        print('⏳ [WebSubscriptionManager] WebSocket disconnected before sending, queueing $screenType');
         _queueSubscription(screenType, symbolsToSubscribe, 0);
         return;
       }
@@ -920,19 +833,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       // ADD TO MASTER LIST (for reconnection)
       _activeSubscriptions.addAll(newSymbols);
 
-      print('📝 [WebSubscriptionManager] Added ${newSymbols.length} symbols to tracking');
-      print('   Current subscriptions: ${_currentWebSocketSubscriptions.length}');
-      print('   Master list total: ${_activeSubscriptions.length}');
 
       // Store symbols per screen type for cleanup later
       _screenSubscriptions[screenType] = symbolsToSubscribe;
 
-      print('✅ [WebSubscriptionManager] Successfully subscribed to $screenType');
-      print('═══════════════════════════════════════════════════════════\n');
 
     } catch (e) {
-      print('❌ [WebSubscriptionManager] ERROR subscribing to $screenType: $e');
-      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Error subscribing to $screenType: $e');
       // Queue for retry on error
       final symbols = _getSymbolsForScreen(screenType, _screenSubscriptionTypes[screenType] ?? SubscriptionType.none);
@@ -1161,13 +1067,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
     // Check WebSocket readiness
     if (!_isWebSocketReady()) {
-      print('⏳ [WebSubscriptionManager] WebSocket not ready for ticker subscriptions');
       return;
     }
 
-    print('═══════════════════════════════════════════════════════════');
-    print('📊 [WebSubscriptionManager] SUBSCRIBING TICKER SYMBOLS (Positions)');
-    print('═══════════════════════════════════════════════════════════');
 
     try {
       // Get position symbols for ticker
@@ -1182,8 +1084,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       }
 
       if (newTickerSymbols.isEmpty) {
-        print('ℹ️  [WebSubscriptionManager] No positions for ticker subscription');
-        print('═══════════════════════════════════════════════════════════\n');
         return;
       }
 
@@ -1197,19 +1097,10 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       _tickerSubscriptions.addAll(newTickerSymbols);
 
       if (symbolsToSubscribe.isEmpty) {
-        print('ℹ️  [WebSubscriptionManager] All ticker symbols already subscribed');
-        print('   Ticker symbols: ${newTickerSymbols.length}');
-        print('═══════════════════════════════════════════════════════════\n');
         return;
       }
 
-      print('✅ [WebSubscriptionManager] Subscribing ${symbolsToSubscribe.length} ticker symbols');
-      print('   Total ticker symbols: ${newTickerSymbols.length}');
-      print('   New symbols: ${symbolsToSubscribe.length}');
       if (symbolsToSubscribe.length <= 10) {
-        print('   Symbols: ${symbolsToSubscribe.join(", ")}');
-      } else {
-        print('   First 10 symbols: ${symbolsToSubscribe.take(10).join(", ")}...');
       }
 
       // Subscribe via websocket
@@ -1226,13 +1117,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       _currentWebSocketSubscriptions.addAll(symbolsToSubscribe);
       _activeSubscriptions.addAll(symbolsToSubscribe);
 
-      print('✅ [WebSubscriptionManager] Ticker symbols subscribed successfully');
-      print('   Current total subscriptions: ${_currentWebSocketSubscriptions.length}');
-      print('   Master list total: ${_activeSubscriptions.length}');
-      print('═══════════════════════════════════════════════════════════\n');
 
     } catch (e) {
-      print('❌ [WebSubscriptionManager] Error subscribing ticker symbols: $e');
       log('WebSubscriptionManager: Error subscribing ticker symbols: $e');
     }
   }
@@ -1240,7 +1126,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   /// Refresh ticker subscriptions when positions data changes
   /// Call this after positions are fetched/refreshed
   Future<void> refreshTickerSubscriptions(BuildContext context) async {
-    print('🔄 [WebSubscriptionManager] Refreshing ticker subscriptions...');
     await subscribeTickerSymbols(context);
   }
 
@@ -1275,16 +1160,10 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return; // Screen doesn't have subscriptions
     }
 
-    print('═══════════════════════════════════════════════════════════');
-    print('📱 [WebSubscriptionManager] UNSUBSCRIBING from screen: $screenType');
-    print('   Subscription Type: $subscriptionType');
-    print('═══════════════════════════════════════════════════════════');
 
     // Get symbols that were subscribed for this screen
     final screenSymbols = _screenSubscriptions[screenType];
     if (screenSymbols == null || screenSymbols.isEmpty) {
-      print('⚠️  [WebSubscriptionManager] No symbols tracked for $screenType, skipping unsubscribe');
-      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: No symbols tracked for $screenType, skipping unsubscribe');
       return;
     }
@@ -1310,21 +1189,18 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       final depthSymbol = marketWatch.currentDepthSymbol;
       if (depthSymbol != null && depthSymbol.isNotEmpty) {
         symbolsStillNeeded.add(depthSymbol);
-        print('   🔒 Protected depth symbol: $depthSymbol');
       }
 
       // Add all watchlist symbols (visible in watchlist panel)
       final watchlistSymbols = _getWatchlistSymbols();
       if (watchlistSymbols.isNotEmpty) {
         symbolsStillNeeded.addAll(watchlistSymbols);
-        print('   🔒 Protected ${watchlistSymbols.length} watchlist symbols');
       }
 
       // Add index symbols (visible in dashboard/indices)
       final indexSymbols = _getIndexSymbols();
       if (indexSymbols.isNotEmpty) {
         symbolsStillNeeded.addAll(indexSymbols);
-        print('   🔒 Protected ${indexSymbols.length} index symbols');
       }
 
       // CRITICAL FIX: Protect holdings symbols - they need real-time updates
@@ -1339,7 +1215,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         }
       }
       if (holdings.isNotEmpty) {
-        print('   🔒 Protected ${holdings.length} holdings symbols');
       }
 
       // CRITICAL FIX: Protect positions symbols - they need real-time updates
@@ -1350,17 +1225,14 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         }
       }
       if (positions.isNotEmpty) {
-        print('   🔒 Protected ${positions.length} positions symbols');
       }
 
       // CRITICAL: Protect ticker symbols (positions) - these NEVER get unsubscribed
       // Ticker header needs live position data regardless of which screen is active
       if (_tickerSubscriptions.isNotEmpty) {
         symbolsStillNeeded.addAll(_tickerSubscriptions);
-        print('   🔒 Protected ${_tickerSubscriptions.length} ticker symbols (positions)');
       }
     } catch (e) {
-      print('   ⚠️ Error getting protected symbols: $e');
     }
 
     // Find symbols that can be unsubscribed (not needed by any other screen)
@@ -1369,22 +1241,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     ).toSet();
 
     if (symbolsToUnsubscribe.isEmpty) {
-      print('ℹ️  [WebSubscriptionManager] All symbols for $screenType still needed by other screens');
-      print('   Total symbols: ${screenSymbols.length}');
-      print('   Still needed by: ${_activeScreens.values.where((s) => s != null && s != screenType).join(", ")}');
-      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: All symbols for $screenType still needed by other screens');
       return;
     }
 
-    print('✅ [WebSubscriptionManager] Unsubscribing from ${symbolsToUnsubscribe.length} symbols for $screenType');
-    print('   Total symbols for screen: ${screenSymbols.length}');
-    print('   Symbols to unsubscribe: ${symbolsToUnsubscribe.length}');
-    print('   Symbols still needed: ${screenSymbols.length - symbolsToUnsubscribe.length}');
     if (symbolsToUnsubscribe.length <= 10) {
-      print('   Symbols: ${symbolsToUnsubscribe.join(", ")}');
-    } else {
-      print('   First 10 symbols: ${symbolsToUnsubscribe.take(10).join(", ")}...');
     }
     log('WebSubscriptionManager: Unsubscribing from ${symbolsToUnsubscribe.length} symbols for $screenType');
 
@@ -1406,19 +1267,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       // REMOVE FROM MASTER LIST (for reconnection)
       _activeSubscriptions.removeAll(symbolsToUnsubscribe);
 
-      print('📝 [WebSubscriptionManager] Removed ${symbolsToUnsubscribe.length} symbols from tracking');
-      print('   Current subscriptions: ${_currentWebSocketSubscriptions.length}');
-      print('   Master list total: ${_activeSubscriptions.length}');
 
       // Clear the screen's subscription record
       _screenSubscriptions.remove(screenType);
 
-      print('✅ [WebSubscriptionManager] Successfully unsubscribed from $screenType');
-      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Successfully unsubscribed from $screenType');
     } catch (e) {
-      print('❌ [WebSubscriptionManager] ERROR unsubscribing from $screenType: $e');
-      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Error unsubscribing from $screenType: $e');
     }
   }
@@ -1431,11 +1285,6 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     required Set<String> newSymbols,
     required BuildContext context,
   }) async {
-    print('═══════════════════════════════════════════════════════════');
-    print('🔄 [WebSubscriptionManager] WATCHLIST TAB CHANGE');
-    print('   Old symbols: ${oldSymbols.length}');
-    print('   New symbols: ${newSymbols.length}');
-    print('═══════════════════════════════════════════════════════════');
 
     // Collect all protected symbols (symbols used by other screens)
     final protectedSymbols = <String>{};
@@ -1447,21 +1296,18 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
           protectedSymbols.addAll(entry.value);
         }
       }
-      print('   🔒 Protected ${protectedSymbols.length} symbols from other screens');
 
       // 2. Protect depth symbol
       final marketWatch = ref.read(marketWatchProvider);
       final depthSymbol = marketWatch.currentDepthSymbol;
       if (depthSymbol != null && depthSymbol.isNotEmpty) {
         protectedSymbols.add(depthSymbol);
-        print('   🔒 Protected depth symbol: $depthSymbol');
       }
 
       // 3. Protect index symbols
       final indexSymbols = _getIndexSymbols();
       if (indexSymbols.isNotEmpty) {
         protectedSymbols.addAll(indexSymbols);
-        print('   🔒 Protected ${indexSymbols.length} index symbols');
       }
 
       // 4. Protect holdings symbols
@@ -1487,10 +1333,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       // 6. Protect ticker symbols (always active for ticker header)
       if (_tickerSubscriptions.isNotEmpty) {
         protectedSymbols.addAll(_tickerSubscriptions);
-        print('   🔒 Protected ${_tickerSubscriptions.length} ticker symbols');
       }
     } catch (e) {
-      print('   ⚠️ Error getting protected symbols: $e');
     }
 
     // Find symbols to unsubscribe (in old but not in new, and not protected)
@@ -1503,17 +1347,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       !_currentWebSocketSubscriptions.contains(symbol)
     ).toSet();
 
-    print('   📤 Symbols to unsubscribe: ${symbolsToUnsubscribe.length}');
-    print('   📥 Symbols to subscribe: ${symbolsToSubscribe.length}');
 
     final wsProvider = ref.read(websocketProvider);
 
     // Unsubscribe old symbols
     if (symbolsToUnsubscribe.isNotEmpty) {
       if (symbolsToUnsubscribe.length <= 10) {
-        print('   🗑️ Unsubscribing: ${symbolsToUnsubscribe.join(", ")}');
-      } else {
-        print('   🗑️ Unsubscribing first 10: ${symbolsToUnsubscribe.take(10).join(", ")}...');
       }
 
       try {
@@ -1528,16 +1367,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         _currentWebSocketSubscriptions.removeAll(symbolsToUnsubscribe);
         _activeSubscriptions.removeAll(symbolsToUnsubscribe);
       } catch (e) {
-        print('   ❌ Error unsubscribing: $e');
       }
     }
 
     // Subscribe to new symbols
     if (symbolsToSubscribe.isNotEmpty) {
       if (symbolsToSubscribe.length <= 10) {
-        print('   ➕ Subscribing: ${symbolsToSubscribe.join(", ")}');
-      } else {
-        print('   ➕ Subscribing first 10: ${symbolsToSubscribe.take(10).join(", ")}...');
       }
 
       try {
@@ -1552,17 +1387,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         _currentWebSocketSubscriptions.addAll(symbolsToSubscribe);
         _activeSubscriptions.addAll(symbolsToSubscribe);
       } catch (e) {
-        print('   ❌ Error subscribing: $e');
       }
     }
 
     // Update the watchlist screen subscription record with new symbols
     _screenSubscriptions[ScreenType.watchlist] = newSymbols;
 
-    print('   ✅ Watchlist subscriptions updated');
-    print('   Current total: ${_currentWebSocketSubscriptions.length}');
-    print('   Master list: ${_activeSubscriptions.length}');
-    print('═══════════════════════════════════════════════════════════\n');
   }
 
   /// Get current watchlist symbols as a set (for use in updateWatchlistSubscriptions)
@@ -1579,14 +1409,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     String source = 'unknown',
   }) async {
     if (tokensToCheck.isEmpty) {
-      print('ℹ️  [WebSubscriptionManager] No tokens to unsubscribe for $source');
       return;
     }
 
-    print('═══════════════════════════════════════════════════════════');
-    print('🗑️  [WebSubscriptionManager] UNSUBSCRIBING tokens for: $source');
-    print('   Tokens to check: ${tokensToCheck.length}');
-    print('═══════════════════════════════════════════════════════════');
 
     // Collect all protected symbols
     final protectedSymbols = <String>{};
@@ -1596,13 +1421,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       for (var screenSubscriptions in _screenSubscriptions.values) {
         protectedSymbols.addAll(screenSubscriptions);
       }
-      print('   🔒 Protected ${protectedSymbols.length} symbols from active screens');
 
       // 2. Protect watchlist symbols
       final watchlistSymbols = _getWatchlistSymbols();
       if (watchlistSymbols.isNotEmpty) {
         protectedSymbols.addAll(watchlistSymbols);
-        print('   🔒 Protected ${watchlistSymbols.length} watchlist symbols');
       }
 
       // 3. Protect depth symbol
@@ -1610,14 +1433,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       final depthSymbol = marketWatch.currentDepthSymbol;
       if (depthSymbol != null && depthSymbol.isNotEmpty) {
         protectedSymbols.add(depthSymbol);
-        print('   🔒 Protected depth symbol: $depthSymbol');
       }
 
       // 4. Protect index symbols
       final indexSymbols = _getIndexSymbols();
       if (indexSymbols.isNotEmpty) {
         protectedSymbols.addAll(indexSymbols);
-        print('   🔒 Protected ${indexSymbols.length} index symbols');
       }
 
       // 5. Protect holdings symbols
@@ -1659,18 +1480,15 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
               protectedSymbols.add('${option.exch}|${option.token}');
             }
           }
-          print('   🔒 Protected ${optionChainModel.optValue!.length} option chain symbols');
         }
       }
 
       // 9. Protect ticker symbols (always active for ticker header)
       if (_tickerSubscriptions.isNotEmpty) {
         protectedSymbols.addAll(_tickerSubscriptions);
-        print('   🔒 Protected ${_tickerSubscriptions.length} ticker symbols');
       }
 
     } catch (e) {
-      print('   ⚠️ Error getting protected symbols: $e');
     }
 
     // Find tokens that can be unsubscribed (not protected)
@@ -1679,21 +1497,10 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     ).toSet();
 
     if (tokensToUnsubscribe.isEmpty) {
-      print('ℹ️  [WebSubscriptionManager] All tokens for $source are protected');
-      print('   Total tokens: ${tokensToCheck.length}');
-      print('   Protected: ${tokensToCheck.length}');
-      print('═══════════════════════════════════════════════════════════\n');
       return;
     }
 
-    print('✅ [WebSubscriptionManager] Unsubscribing ${tokensToUnsubscribe.length} tokens for $source');
-    print('   Total tokens: ${tokensToCheck.length}');
-    print('   Protected: ${tokensToCheck.length - tokensToUnsubscribe.length}');
-    print('   To unsubscribe: ${tokensToUnsubscribe.length}');
     if (tokensToUnsubscribe.length <= 10) {
-      print('   Tokens: ${tokensToUnsubscribe.join(", ")}');
-    } else {
-      print('   First 10 tokens: ${tokensToUnsubscribe.take(10).join(", ")}...');
     }
 
     try {
@@ -1712,15 +1519,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       _currentWebSocketSubscriptions.removeAll(tokensToUnsubscribe);
       _activeSubscriptions.removeAll(tokensToUnsubscribe);
 
-      print('📝 [WebSubscriptionManager] Removed ${tokensToUnsubscribe.length} tokens from tracking');
-      print('   Current subscriptions: ${_currentWebSocketSubscriptions.length}');
-      print('   Master list total: ${_activeSubscriptions.length}');
-      print('✅ [WebSubscriptionManager] Successfully unsubscribed tokens for $source');
-      print('═══════════════════════════════════════════════════════════\n');
 
     } catch (e) {
-      print('❌ [WebSubscriptionManager] ERROR unsubscribing tokens for $source: $e');
-      print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Error unsubscribing tokens for $source: $e');
     }
   }

@@ -65,7 +65,6 @@ class _ExitAllPositionsDialogWebState
         Navigator.of(context).pop();
       }
     } catch (e) {
-      debugPrint('Error exiting positions: $e');
       // Still close the dialog even on error
       if (mounted) {
         Navigator.of(context).pop();
@@ -94,7 +93,6 @@ class _ExitAllPositionsDialogWebState
       }
       html.document.body?.style.cursor = 'default';
     } catch (e) {
-      debugPrint('Error disabling iframes: $e');
     }
   }
 
@@ -111,7 +109,6 @@ class _ExitAllPositionsDialogWebState
       }
       html.document.body?.style.cursor = '';
     } catch (e) {
-      debugPrint('Error enabling iframes: $e');
     }
   }
 

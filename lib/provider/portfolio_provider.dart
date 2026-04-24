@@ -34,6 +34,7 @@ import 'index_list_provider.dart';
 
 import 'group_pnl_chart_provider.dart';
 import 'websocket_provider.dart';
+import 'package:mynt_plus/utils/pip_service.dart';
 
 final portfolioProvider =
     ChangeNotifierProvider((ref) => PortfolioProvider(ref));
@@ -65,6 +66,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   List<PositionBookModel>? _postionBookModel = [];
   List<PositionBookModel>? get postionBookModel => _postionBookModel;
+
+  // Set true whenever the position-book API returned an unexpected/error
+  // status or the fetch threw. Reset at the start of every fetchPositionBook
+  // call. The manual refresh button reads `lastRefreshSucceeded` after
+  // awaiting to decide whether to surface an error toaster.
+  bool _positionFetchErrored = false;
+
+  /// True if the last `fetchPositionBook` call finished without an API error
+  /// ('success' or 'no data' — both valid). False if the API returned an
+  /// unknown status or the call threw.
+  bool get lastRefreshSucceeded => !_positionFetchErrored;
+
   List<PositionBookModel>? _openPosition = [];
   List<PositionBookModel>? get openPosition => _openPosition;
   List<PositionBookModel>? _closedPosion = [];
@@ -265,7 +278,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   changeTabIndex(int index) {
     _selectedTab = index;
-    print("selectedTab: $index");
 
     // Animate the TabController to the new index
 
@@ -285,7 +297,6 @@ changeHoldingsTabIndex(int index) {
   try {
     holdingsTabController.animateTo(index);
   } catch (e) {
-    print("TabController animation error: $e");
   }
   
   notifyListeners();
@@ -329,7 +340,6 @@ changeHoldingsTabIndex(int index) {
       }
       notifyListeners();
     } catch (e) {
-      print('Error: $e');
     } finally {
       _tphloader = false;
     }
@@ -579,8 +589,13 @@ changeHoldingsTabIndex(int index) {
       } else {
         if (result['stat'] == 'no data') {
           _postionBookModel = [];
-        }else if(result['emsg'] == "Session Expired :  Invalid Session Key"){
+        } else if (result['emsg'] == "Session Expired :  Invalid Session Key") {
           ref.read(authProvider).ifSessionExpired(context);
+          _positionFetchErrored = true;
+        } else {
+          // Real API error (not 'success', not 'no data', not session expired).
+          // Mark the flag so the manual refresh caller shows an error toaster.
+          _positionFetchErrored = true;
         }
         _tpostionBookModel = [];
       }
@@ -770,7 +785,6 @@ changeHoldingsTabIndex(int index) {
           .logError
           .add({"type": "API Holdings", "Error": "$e"});
       notifyListeners();
-      print(e);
     } finally {
       _holdloader = false;
       _isRefreshingHoldings = false;
@@ -779,6 +793,9 @@ changeHoldingsTabIndex(int index) {
   }
 
   Future fetchPositionBook(BuildContext context, bool isDay, {bool isRefresh = false}) async {
+    // Reset flag at the start of every fetch so lastRefreshSucceeded
+    // reflects THIS call's outcome, not a previous one.
+    _positionFetchErrored = false;
     try {
       // Use separate loader states: full-screen loader for initial load, refresh loader for updates
       if (isRefresh) {
@@ -789,9 +806,14 @@ changeHoldingsTabIndex(int index) {
       notifyListeners();
 
       await setPortfolioupdate('P',context);
+      // [POS_DIAG] Capture what the API actually returned vs what we had before.
+      debugPrint('🔍 [POS_DIAG] fetchPositionBook — isDay=$isDay, old _postionBookModel.length=${_postionBookModel?.length ?? 0}, new _tpostionBookModel.length=${_tpostionBookModel?.length ?? 0}');
       if (_postionBookModel!.isNotEmpty) {
         if (_tpostionBookModel!.isNotEmpty) {
           _postionBookModel = _tpostionBookModel;
+        } else {
+          // [POS_DIAG] API returned empty but we had data — stale-data path.
+          debugPrint('🔍 [POS_DIAG] ⚠️ STALE PATH — _tpostionBookModel is empty but _postionBookModel has ${_postionBookModel!.length} items. Old data kept.');
         }
       } else {
         _posloader = true;
@@ -803,6 +825,10 @@ changeHoldingsTabIndex(int index) {
         _totUnRealMtm = '0.00';
         _posSelection = "All position";
         _postionBookModel = _tpostionBookModel;
+        // Push zeroed P&L to PiP (no positions)
+        if (PipService.isOpen) {
+          PipService.updatePipValues(_totPnL, _totMtm);
+        }
       }
 
       pref.setPosScrip(true);
@@ -834,7 +860,16 @@ changeHoldingsTabIndex(int index) {
 
           ConstantName.sessCheck = true;
           _isDay = isDay;
+
+          // Patch positions where the broker returned lp=0 using the last-good LTP
+          // from the WebSocket cache. Happens when the API is called right after an
+          // order fills — the broker's position aggregator lags the latest tick.
+          // Without this, UI shows 0 P&L until the next df update or manual refresh.
+          _patchStaleLtpsFromSocketCache();
+
           await splitPositionBook(isDay);
+          // [POS_DIAG] After split: see how many ended up in each bucket.
+          debugPrint('🔍 [POS_DIAG] splitPositionBook done — isDay=$isDay, openPosition=${_openPosition?.length ?? 0}, closedPosion=${_closedPosion?.length ?? 0}, allPostionList=${_allPostionList.length}');
 
           // Reapply sorting if previously set
           if (_currentPositionSortOption.isNotEmpty) {
@@ -847,8 +882,8 @@ changeHoldingsTabIndex(int index) {
           // Merges custom group data with live positions after fetch completes.
           _refreshCustomGroups();
         } else {
-          //
-
+          // [POS_DIAG] API returned stat=Not_Ok — positions cleared.
+          debugPrint('🔍 [POS_DIAG] ⚠️ stat=Not_Ok — emsg=${_postionBookModel![0].emsg}, clearing _openPosition');
           if (_postionBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _postionBookModel![0].stat == "Not_Ok") {
@@ -861,11 +896,15 @@ changeHoldingsTabIndex(int index) {
       notifyListeners();
       return _postionBookModel;
     } catch (e) {
-      // print("qwqwqw pos sw catch ${e}");
+      // [POS_DIAG] Exception thrown during fetchPositionBook — positions may be stale.
+      debugPrint('🔍 [POS_DIAG] ❌ fetchPositionBook CATCH — error: $e');
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Position Book", "Error": "$e"});
+      // Exception during fetch counts as a refresh failure so
+      // lastRefreshSucceeded reports false to the caller.
+      _positionFetchErrored = true;
       notifyListeners();
     } finally {
       _posloader = false;
@@ -908,6 +947,13 @@ changeHoldingsTabIndex(int index) {
               _mfQuotes = await api.getMFQutoes("${element.exchTsym![0].exch}",
                   "${element.exchTsym![0].token}");
 
+              if (_mfQuotes!.emsg ==
+                      "Session Expired :  Invalid Session Key" &&
+                  _mfQuotes!.stat == "Not_Ok") {
+                ref.read(authProvider).ifSessionExpired(context);
+                return;
+              }
+
               element.exchTsym![0].nav =
                   double.parse("${_mfQuotes!.nav ?? 0.00}").toStringAsFixed(2);
             }
@@ -949,7 +995,6 @@ changeHoldingsTabIndex(int index) {
           .logError
           .add({"type": "API MF Holdings", "Error": "$e"});
       notifyListeners();
-      print(e);
     } finally {
       _mfhloader = false;
     }
@@ -996,7 +1041,6 @@ changeHoldingsTabIndex(int index) {
 
   void timerfunc() {
     if (!times) {
-      print("Timer called");
       _timer = Timer.periodic(const Duration(milliseconds: 500), (Timer t) {
         times = true;
         pnlHoldCal();
@@ -1188,6 +1232,14 @@ changeHoldingsTabIndex(int index) {
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = unRealMtm.toStringAsFixed(2);
     _totBookedPnL = bookPnl.toStringAsFixed(2);
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
     // Use post-frame callback to avoid mouse tracker assertion errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -1291,6 +1343,13 @@ changeHoldingsTabIndex(int index) {
                     : "${ref.read(authProvider).deviceInfo["model"]}");
             _placeOrderModel = await api.getPlaceOrder(
                 placeOrderInput, ref.read(orderProvider).ip);
+
+            if (_placeOrderModel!.emsg ==
+                    "Session Expired :  Invalid Session Key" &&
+                _placeOrderModel!.stat == "Not_Ok") {
+              ref.read(authProvider).ifSessionExpired(context);
+              return;
+            }
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
               break;
@@ -1644,6 +1703,13 @@ changeHoldingsTabIndex(int index) {
               _placeOrderModel = await api.getPlaceOrder(
                   placeOrderInput, ref.read(orderProvider).ip);
 
+              if (_placeOrderModel!.emsg ==
+                      "Session Expired :  Invalid Session Key" &&
+                  _placeOrderModel!.stat == "Not_Ok") {
+                ref.read(authProvider).ifSessionExpired(context);
+                return;
+              }
+
                   if (_placeOrderModel!.stat! == "Ok") {
                     successMessage(context, "Position exited successfully.");
                   }
@@ -1871,27 +1937,19 @@ changeHoldingsTabIndex(int index) {
 // Fetching data from the api and stored in a variable
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
-      debugPrint('>>> fetchGroupName START');
-      debugPrint('Group Name: $name');
-      debugPrint('isCreateGrp: $isCreateGrp');
 
       // _posloader = true;
       _groupName = await api.createGroupName(name);
 
-      debugPrint('API Response Status: ${_groupName!.status}');
 
       if (_groupName!.status == "Data inserted") {
-        debugPrint('>>> Group created, fetching position group symbol...');
         //  ref.read(indexListProvider).bottomMenu(1);
         await fetchPosGroupSymbol(name, isCreateGrp);
-        debugPrint('>>> fetchPosGroupSymbol completed');
         successMessage(c, "Group '$name' created successfully");
         // Navigator.pop is already called in create_group_web.dart before this method
-        debugPrint('>>> fetchGroupName SUCCESS');
       } else {
         // Handle error cases
         final status = _groupName!.status ?? "Unknown error";
-        debugPrint('>>> fetchGroupName FAILED: $status');
         if (status.toLowerCase().contains("already exists") ||
             status.toLowerCase().contains("duplicate")) {
           warningMessage(c, "Group name '$name' already exists");
@@ -1900,9 +1958,6 @@ changeHoldingsTabIndex(int index) {
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('>>> fetchGroupName EXCEPTION');
-      debugPrint('Error: $e');
-      debugPrint('Stack: $stackTrace');
     } finally {
       // _posloader = false;
     }
@@ -2080,6 +2135,51 @@ changeHoldingsTabIndex(int index) {
     _totalCurrentVal = 0.0;
     for (var holdingJson in holdingsModel!) {
       _totalCurrentVal += double.parse("${holdingJson.currentValue ?? 0.0}");
+    }
+  }
+
+  /// Patch positions whose lp came back as 0 / null / empty from the API using
+  /// the last-good LTP cached by the WebSocket provider.
+  ///
+  /// Why: when an order fills, the broker's position-book endpoint may return
+  /// lp=0 for a few seconds because its aggregator lags the latest market tick.
+  /// Meanwhile _socketDatas has the real last-traded price from the live feed.
+  /// Without this patch, the user sees 0 P&L until the next df update or a
+  /// manual refresh.
+  void _patchStaleLtpsFromSocketCache() {
+    if (_postionBookModel == null || _postionBookModel!.isEmpty) return;
+
+    try {
+      final socketDatas = ref.read(websocketProvider).socketDatas;
+      if (socketDatas.isEmpty) return;
+
+      int patched = 0;
+      for (final position in _postionBookModel!) {
+        final token = position.token;
+        if (token == null || token.isEmpty) continue;
+
+        // Only patch when the API-returned lp is missing or zero
+        final apiLp = position.lp;
+        final apiLpNum = double.tryParse(apiLp ?? '') ?? 0.0;
+        if (apiLpNum != 0.0) continue;
+
+        final cached = socketDatas[token];
+        if (cached is! Map) continue;
+        final cachedLp = cached['lp']?.toString();
+        if (cachedLp == null || cachedLp.isEmpty) continue;
+
+        final cachedLpNum = double.tryParse(cachedLp) ?? 0.0;
+        if (cachedLpNum == 0.0) continue;
+
+        position.lp = cachedLp;
+        patched++;
+      }
+
+      if (patched > 0) {
+        debugPrint('🔍 [POS_DIAG] Patched $patched position(s) with cached WebSocket LTP');
+      }
+    } catch (e) {
+      debugPrint('🔍 [POS_DIAG] _patchStaleLtpsFromSocketCache error: $e');
     }
   }
 
@@ -2338,7 +2438,14 @@ changeHoldingsTabIndex(int index) {
       _totUnRealMtm = unRealMtm.toStringAsFixed(2);
       _totBookedPnL = bookPnl.toStringAsFixed(2);
     }
-
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
     // Use post-frame callback to avoid mouse tracker assertion errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -2444,6 +2551,7 @@ changeHoldingsTabIndex(int index) {
       _exitAll = false;
       if (isDay) {
         int check = 0;
+        int skippedCount = 0;
         for (var element in _openPosition!) {
           if (element.daybuyqty != "0" || element.daysellqty != "0") {
             check = check + 1;
@@ -2452,7 +2560,14 @@ changeHoldingsTabIndex(int index) {
             if (check >= 2) {
               _exitAll = true;
             }
+          } else {
+            skippedCount++;
+            // [POS_DIAG] This open position is being DROPPED from allPostionList in Day mode.
+            debugPrint('🔍 [POS_DIAG] ⚠️ isDay SKIP — tsym=${element.tsym}, netqty=${element.netqty}, daybuyqty=${element.daybuyqty}, daysellqty=${element.daysellqty}');
           }
+        }
+        if (skippedCount > 0) {
+          debugPrint('🔍 [POS_DIAG] ⚠️ isDay=true dropped $skippedCount open positions from allPostionList');
         }
       } else {
         int check = 0;
@@ -2544,13 +2659,9 @@ changeHoldingsTabIndex(int index) {
             if (livePos != null) {
               // Replace with live position data (has current qty, netqty, P&L, etc.)
               final liveMap = jsonDecode(jsonEncode(livePos)) as Map<String, dynamic>;
-              debugPrint(
-                  "DEBUG GROUP ITEM (live) -> ${element.posname} tsym:${livePos.tsym} exch:${livePos.exch} qty:${livePos.qty} netqty:${livePos.netqty} exp:${livePos.expDate}");
               groupListData.add(liveMap);
             } else {
               // No matching live position found - use saved data as fallback
-              debugPrint(
-                  "DEBUG GROUP ITEM (saved) -> ${element.posname} tsym:${pos.tsym} exch:${pos.exch} qty:${pos.qty} netqty:${pos.netqty} exp:${pos.expDate}");
               groupListData.add(posMap);
             }
           }
@@ -2583,7 +2694,6 @@ changeHoldingsTabIndex(int index) {
         }
       }
     } catch (e) {
-      print(e);
     }
 
     notifyListeners();
@@ -2788,10 +2898,6 @@ changeHoldingsTabIndex(int index) {
   // Position conversion
   Future<void> fetchPositionConverstion(
       PositionConvertionInput input, BuildContext context) async {
-    debugPrint('=== PROVIDER: fetchPositionConverstion STARTED ===');
-    debugPrint('Input - exch: ${input.exch}, prd: ${input.prd}, prevprd: ${input.prevprd}');
-    debugPrint('Input - qty: ${input.qty}, trantype: ${input.trantype}, tsym: ${input.tsym}');
-    debugPrint('Context mounted: ${context.mounted}');
 
     // Get display names for toast message
     final fromProduct = _getProductDisplayName(input.prevprd);
@@ -2799,24 +2905,16 @@ changeHoldingsTabIndex(int index) {
 
     try {
       toggleLoadingOn(true);
-      debugPrint('Calling API getPositionConvertion...');
 
       _positionConvertionModel = await api.getPositionConvertion(input);
 
-      debugPrint('API Response received');
-      debugPrint('Response stat: ${_positionConvertionModel?.stat}');
-      debugPrint('Response emsg: ${_positionConvertionModel?.emsg}');
 
       if (_positionConvertionModel!.stat == "Ok") {
-        debugPrint('Conversion SUCCESS - refreshing position book...');
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
-        debugPrint('Position book refreshed, popping dialog...');
-        debugPrint('Context still mounted before pop: ${context.mounted}');
 
         if (context.mounted) {
         Navigator.pop(context);
-          debugPrint('Dialog popped successfully');
 
           // Show success message with from/to product details
           final successMsg = "Position converted from $fromProduct to $toProduct";
@@ -2825,12 +2923,15 @@ changeHoldingsTabIndex(int index) {
       } else {
             successMessage(context, successMsg);
           }
-        } else {
-          debugPrint('ERROR: Context not mounted, cannot pop dialog');
         }
       } else {
-        debugPrint('Conversion FAILED - stat not Ok');
-        debugPrint('Error message: ${_positionConvertionModel!.emsg}');
+
+        if (_positionConvertionModel!.emsg ==
+                "Session Expired :  Invalid Session Key" &&
+            _positionConvertionModel!.stat == "Not_Ok") {
+          ref.read(authProvider).ifSessionExpired(context);
+          return;
+        }
 
         if (context.mounted) {
         Navigator.pop(context);
@@ -2841,14 +2942,9 @@ changeHoldingsTabIndex(int index) {
           } else {
             warningMessage(context, errorMsg);
       }
-        } else {
-          debugPrint('ERROR: Context not mounted, cannot show warning');
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('=== PROVIDER: EXCEPTION in fetchPositionConverstion ===');
-      debugPrint('Error: $e');
-      debugPrint('Stack trace: $stackTrace');
 
       ref
           .read(indexListProvider)
@@ -2865,7 +2961,6 @@ changeHoldingsTabIndex(int index) {
       }
     } finally {
       toggleLoadingOn(false);
-      debugPrint('=== PROVIDER: fetchPositionConverstion FINISHED ===');
     }
   }
 
@@ -3085,6 +3180,14 @@ changeHoldingsTabIndex(int index) {
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = totalUnRealMtm.toStringAsFixed(2);
     _totBookedPnL = totalBookedPnL.toStringAsFixed(2);
+    // Push live P&L to PiP window if open
+    if (PipService.isOpen) {
+      final positions = PipService.buildPositionItems(
+        groupedBySymbol: _groupedBySymbol,
+        groupPositionSym: _groupPositionSym,
+      );
+      PipService.updatePipValues(_totPnL, _totMtm, positions: positions);
+    }
 
     // debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
     notifyListeners();
@@ -3109,7 +3212,6 @@ changeHoldingsTabIndex(int index) {
       }
       notifyListeners();
     } catch (e) {
-      print("Error in cusGrpSelectPosition: $e");
     }
   }
 

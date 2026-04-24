@@ -109,7 +109,6 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
     try {
       await scalperChartManager.loadLibrary();
     } catch (e) {
-      debugPrint('Scalper: Failed to load charting library: $e');
     }
 
     // Fetch positions for the bottom panel
@@ -126,7 +125,6 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
         .map((idx) => "${idx.exch}|${idx.token}")
         .join('#');
 
-    debugPrint('Scalper: Subscribing to indices: $allIndicesTokens');
     websocket.establishConnection(
       channelInput: allIndicesTokens,
       task: "d",
@@ -176,7 +174,6 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   /// reset chart data so TradingView re-fetches history and fills any gaps.
   void _onVisibilityChange(html.Event event) {
     if (html.document.visibilityState == 'visible') {
-      debugPrint('Scalper: Page visible again — resetting chart data');
       scalperChartManager.resetData(chartId: 'index');
       scalperChartManager.resetData(chartId: 'call');
       scalperChartManager.resetData(chartId: 'put');
@@ -188,11 +185,9 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
 
     final scalper = ref.read(scalperProvider);
     if (scalper.selectedExpiry == null) {
-      debugPrint('Scalper: No expiry selected, waiting...');
       return;
     }
 
-    debugPrint('Scalper: Loading option chain with LTP: ${scalper.currentIndexLTP}');
 
     await scalper.loadOptionChain(context);
 
@@ -2305,7 +2300,6 @@ void _disableScalperCharts() {
     }
     html.document.body?.style.cursor = 'default';
   } catch (e) {
-    debugPrint('Error disabling scalper charts: $e');
   }
 }
 
@@ -2325,7 +2319,6 @@ void _enableScalperCharts() {
     }
     html.document.body?.style.cursor = '';
   } catch (e) {
-    debugPrint('Error enabling scalper charts: $e');
   }
 }
 

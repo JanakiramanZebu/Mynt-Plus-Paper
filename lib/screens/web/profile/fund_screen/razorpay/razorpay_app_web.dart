@@ -40,23 +40,19 @@ class _RazorpayPaymentScreenState extends State<RazorpayPaymentScreen> {
     try {
       _razorpay.open(options);
     } catch (e) {
-      print(e.toString());
     }
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     // Handle successful payment
-    print("Payment Successful: ${response.paymentId}");
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
     // Handle payment error
-    print("Payment Error: ${response.code} - ${response.message}");
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     // Handle external wallet selected
-    print("External Wallet: ${response.walletName}");
   }
 
   @override

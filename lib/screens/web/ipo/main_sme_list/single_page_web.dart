@@ -448,7 +448,6 @@ class _IPODetailsContainer extends StatelessWidget {
           }
         }
       } catch (e) {
-        print("Error decoding JSON or processing IPO details: $e");
       }
     }
   }

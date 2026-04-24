@@ -140,7 +140,9 @@ class TranctionProvider extends DefaultChangeNotifier {
   }
 
   segmentselection(int index) {
-    _textValue = decryptclientcheck!.companyCode![index];
+    final codes = decryptclientcheck?.companyCode;
+    if (codes == null || index < 0 || index >= codes.length) return;
+    _textValue = codes[index];
     notifyListeners();
   }
 
@@ -250,15 +252,24 @@ class TranctionProvider extends DefaultChangeNotifier {
     _isUpiAppsBottomSheetShown = false;
     _isUpiIdBottomSheetShown = false;
 
+    // Guard against missing/empty bank and client data
+    final data = bankdetails?.dATA;
+    if (data == null || data.isEmpty) return;
+    final safeIndex = index >= 0 && index < data.length ? index : 0;
+    final safeIndexss = indexss >= 0 && indexss < data.length ? indexss : 0;
+
     // Initialize bank and account data
-    _multipleAccno = _accno = bankdetails!.dATA![index][2];
-    _ifsc = bankdetails!.dATA![indexss][3];
-    _bankname = bankdetails!.dATA![indexss][1];
-    upiAppsAccnoFormat(bankdetails!.dATA![indexss][2]);
+    _multipleAccno = _accno = data[safeIndex][2];
+    _ifsc = data[safeIndexss][3];
+    _bankname = data[safeIndexss][1];
+    upiAppsAccnoFormat(data[safeIndexss][2]);
     _initbank =
-        '${bankdetails!.dATA![indexss][1]} - ${hideAccountNumber(accno)}';
-    _textValue = decryptclientcheck!.companyCode![0];
-    _companycode = decryptclientcheck!.companyCode!;
+        '${data[safeIndexss][1]} - ${hideAccountNumber(accno)}';
+
+    final codes = decryptclientcheck?.companyCode;
+    if (codes == null || codes.isEmpty) return;
+    _textValue = codes[0];
+    _companycode = codes;
     setAccountslist(_accno);
     if (_companycode.contains("NSE_FNO")) {
       _textValue = "NSE_FNO";
@@ -266,10 +277,15 @@ class TranctionProvider extends DefaultChangeNotifier {
       _textValue = "NSE_CASH";
     } else if (_companycode.contains("MCX")) {
       _textValue = "MCX";
+    } else if (_companycode.isNotEmpty) {
+      _textValue = _companycode[0];
     } else {
-      _textValue = decryptclientcheck!.companyCode![0];
+      _textValue = '';
     }
   }
+
+  bool get hasActiveSegments =>
+      (decryptclientcheck?.companyCode?.isNotEmpty ?? false);
 
   changeValue(bool value, BuildContext context, {bool isUpiApps = true}) {
     if (isUpiApps) {
@@ -421,8 +437,6 @@ class TranctionProvider extends DefaultChangeNotifier {
     String orderNo,
     String upiTranID,
   ) async {
-    print(
-        "fetchUpiPaymentstatus called with orderNo: $orderNo, upiTranID: $upiTranID");
     //final localstorage = await SharedPreferences.getInstance();
     try {
       if (!context.mounted) {
@@ -430,7 +444,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
       togglefundLoading(true);
       _hdfcUPIStatus = await api.getHdfcUPIStatus(orderNo, upiTranID);
-      print("UPI Apps Payment Status Response");
       if (!context.mounted) {
         return false;
       }
@@ -586,7 +599,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _bankdetails = await api.getbankDetails();
     } catch (e) {
-      print("Failed to fetch client bank details: $e");
       ref
           .read(indexListProvider)
           .logError
@@ -626,8 +638,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       BuildContext context, String upiId, String clientId, String accno) async {
     try {
       togglefundLoading(true);
-      print(
-          "UPI ID Payment Initiation: upiId=$upiId, clientId=$clientId, accno=$accno, bankname=$_bankname, segment=$_textValue");
       _hdfcpaymentdata =
           await api.getUPIIDPayment(upiId, clientId, accno, _bankname);
 
@@ -639,7 +649,6 @@ class TranctionProvider extends DefaultChangeNotifier {
 
         return; // Stop the flow if UPI ID is invalid
       }
-      print("HDFC BANK $hdfcpaymentdata");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
       ref
@@ -683,8 +692,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       String clientid, String name) async {
     try {
       togglefundLoading(true);
-      print(
-          "UPI Apps Payment Initiation: amt=$amt, bankaccno=$bankaccno, clientid=$clientid, name=$name, segment=$_textValue");
       _hdfcdirectpayment =
           await api.getUPIAppsPayment(amt, _allacc, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -1037,7 +1044,6 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
     _allacc =
         "$accno${items.isNotEmpty ? '!' : ''}${getFormattedAccountNumbers(items)}";
-    print("_allacc $_allacc");
   }
 
   String setAccountis(AccountItem item) {
@@ -1118,7 +1124,6 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
       togglefundLoading(true);
       _hdfcpaymentstatus = await api.getHdfcPaymentstatus(ordno, upiTransid);
-      print("UPI ID Payment Status Response  [32m");
       if (!context.mounted) {
         return false;
       }
@@ -1181,10 +1186,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       togglefundLoading(true);
       _razorpayOptions = null;
-      print(
-          "Net Banking Payment Initiation: amt=$amt, accno=$accno, name=$name, ifsc=$ifsc, segment=$_textValue");
       _razorpay = await api.getrazorpay(amt, accno, name, ifsc);
-      print("Razorpay Order Full Response => ${_razorpay?.toJson()}");
       if (_razorpay?.status == "created") {
         _razorpayOptions = {
           'key': 'rzp_live_M3tazzVCcFf8Iq',
@@ -1219,14 +1221,11 @@ class TranctionProvider extends DefaultChangeNotifier {
             'max_count': 0,
           },
         };
-        print("Razorpay Options => $_razorpayOptions");
         notifyListeners();
       } else {
         notifyListeners();
       }
     } catch (e, stackTrace) {
-      print("Razorpay Order Error => $e");
-      print("Razorpay Order StackTrace => $stackTrace");
       ref
           .read(indexListProvider)
           .logError
@@ -1242,10 +1241,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     try {
       togglefundLoading(true);
       _razorpayTranstationRes = await api.getrazorpayStatus(paymentid);
-      print("Razorpay Payment Status Full Response => ${_razorpayTranstationRes?.toJson()}");
     } catch (e, stackTrace) {
-      print("Razorpay Status Error => $e");
-      print("Razorpay Status StackTrace => $stackTrace");
       ref
           .read(indexListProvider)
           .logError
@@ -1290,12 +1286,10 @@ class TranctionProvider extends DefaultChangeNotifier {
         withdrawamount.clear();
         fetchPaymentWithDrawStatus(context);
       } else {
-        print("Withdrawal failed with message: ${_paymentWithdraw!.msg}");
         warningMessage(
             context, 'Withdrawal failed: ${_paymentWithdraw!.msg}');
       }
     } catch (e) {
-      print("Withdrawal error: ${e.toString()}");
       ref
           .read(indexListProvider)
           .logError

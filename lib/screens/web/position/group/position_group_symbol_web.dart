@@ -59,22 +59,17 @@ String? validateCustomGroupAddition(
   final newToken = position['token']?.toString() ?? '';
   final newPrd = position['prd']?.toString() ?? '';
 
-  debugPrint("DEBUG validateCustomGroupAddition - New Position: token=$newToken, prd=$newPrd, tsym=${position['tsym']}");
-  debugPrint("DEBUG validateCustomGroupAddition - Group has ${groupList.length} positions");
 
   for (var existingPos in groupList) {
     final existingToken = existingPos['token']?.toString() ?? '';
     final existingPrd = existingPos['prd']?.toString() ?? '';
 
-    debugPrint("DEBUG validateCustomGroupAddition - Existing Position: token=$existingToken, prd=$existingPrd, tsym=${existingPos['tsym']}");
 
     if (newToken == existingToken && newPrd == existingPrd) {
-      debugPrint("DEBUG validateCustomGroupAddition - DUPLICATE FOUND!");
       return "This position is already added to the group.";
     }
   }
 
-  debugPrint("DEBUG validateCustomGroupAddition - No duplicate, proceeding to symbol check");
 
   // Rule 3: All F&O positions in the group must have the same underlying symbol
   final newBaseSymbol = getBaseSymbol(position);
@@ -873,14 +868,12 @@ class _HeaderExitButton extends ConsumerWidget {
                 placeOrderInput, orderProv.ip);
 
             if (placeOrderModel.stat?.toLowerCase() != "ok") {
-              debugPrint("Exit failed for ${element.tsym}: ${placeOrderModel.emsg}");
               // Continue with remaining positions instead of stopping
             }
           }
         }
       }
     } catch (e) {
-      debugPrint("Error exiting group positions: $e");
     }
   }
 }
@@ -1033,7 +1026,6 @@ class GroupAnalyseButton extends ConsumerWidget {
           };
       // orderProv.addPayoffLeg(leg);
     } on Exception catch (e) {
-      debugPrint("Failed to add payoff leg for ${position.tsym}: $e");
     }
       }
   // orderProv.setPayoffLegs(orderProv.payoffLegs);
@@ -1052,7 +1044,6 @@ class GroupAnalyseButton extends ConsumerWidget {
     //  Navigator.pushNamed(context, Routes.payofffMainScreen);
       }
       catch(e){
-      print('Error in GroupAnalyseButton:   $e');
       error(context, "Failed to analyse positions");
       }
       },
@@ -2214,7 +2205,6 @@ class GroupExitAllButton extends ConsumerWidget {
                 placeOrderInput, orderProv.ip);
 
             if (placeOrderModel.stat?.toLowerCase() != "ok") {
-              debugPrint("Exit failed for ${element.tsym}: ${placeOrderModel.emsg}");
               // Continue with remaining positions instead of stopping
             }
           }
@@ -2222,7 +2212,6 @@ class GroupExitAllButton extends ConsumerWidget {
       }
     } catch (e) {
       // Stop on error (same as Exit All behavior)
-      print("Error exiting group positions: $e");
     }
   }
 }

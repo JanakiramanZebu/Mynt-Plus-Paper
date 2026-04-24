@@ -68,7 +68,6 @@ class TotpUtils {
       
       return otp.toString().padLeft(digits, '0');
     } catch (e) {
-      print('TOTP generation error: $e');
       return '';
     }
   }

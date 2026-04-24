@@ -73,7 +73,6 @@ class DashboardProvider extends DefaultChangeNotifier {
 
   portfolioloader(bool value) {
     _isPortfolioLoading = value;
-    print("Portfolio Loading: $_isPortfolioLoading");
     notifyListeners();
   }
 
@@ -94,7 +93,6 @@ class DashboardProvider extends DefaultChangeNotifier {
       _portfolioAnalysis = portfolioAnalysis;
       _portfolioError = null;
     } catch (e) {
-      print("Portfolio Analysis Error: $e");
       _portfolioError = e.toString();
       rethrow;
     } finally {
@@ -126,7 +124,6 @@ class DashboardProvider extends DefaultChangeNotifier {
       _referralRewards = referralRewards;
       notifyListeners();
     } catch (e) {
-      print("Referral Rewards Error: $e");
       _referralRewards = null;
       rethrow;
     } finally {
@@ -832,7 +829,6 @@ Color getSectorAllocationColor(String sector) {
   // Loading state management
   strategyLoader(bool value) {
     _isStrategyLoading = value;
-    print("Strategy Loading: $_isStrategyLoading");
     notifyListeners();
   }
 
@@ -847,7 +843,6 @@ Color getSectorAllocationColor(String sector) {
       _savedStrategies = responese;
       return responese;
     } catch (e) {
-      print("fetchbasketlist Error: $e");
       rethrow;
     } finally {
       strategyLoader(false);
@@ -897,7 +892,6 @@ Color getSectorAllocationColor(String sector) {
       ]);
       _strategyError = null;
     } catch (e) {
-      print("Update Strategy Error: $e");
       // error(context, "Failed to update strategy. Please try again.");
       // _strategyError = e.toString();
       rethrow;
@@ -940,7 +934,6 @@ Color getSectorAllocationColor(String sector) {
       }
       _strategyError = null;
     } catch (e) {
-      print("Create Strategy Error: $e");
       rethrow;
     } finally {
       strategyLoader(false);
@@ -965,7 +958,6 @@ Color getSectorAllocationColor(String sector) {
         await updateStrategy(context);
       }
     } catch (e) {
-      print('autoSaveFundChange error: $e');
     } finally {
       _isAutoSaving = false;
       final needsAnotherSave = _pendingAutoSave;
@@ -980,7 +972,6 @@ Color getSectorAllocationColor(String sector) {
   List<Map<String, dynamic>> _convertFundsToSchemaValues(
       List<FundListModel> funds) {
     for (final fund in funds) {
-      print('>>> Saving fund: name=${fund.name}, schemeCode=${fund.schemeCode}, isin=${fund.isin}');
     }
     return funds
         .map((fund) => {
@@ -1026,11 +1017,7 @@ Color getSectorAllocationColor(String sector) {
     }
     try {
       strategyLoader(true);
-      print('=== DELETE STRATEGY ===');
-      print('Payload: {"client_id": "${pref.clientId}", "type_in": "remove", "id": "$strategyId"}');
       final response = await api.deletebasketsStrategy(strategyId);
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
       if (response.statusCode == 200) {
         successMessage(context, "Strategy deleted successfully");
         await fetchbasketlist();
@@ -1041,7 +1028,6 @@ Color getSectorAllocationColor(String sector) {
       _strategyError = null;
       notifyListeners();
     } catch (e) {
-      print('Delete strategy error: $e');
     } finally {
       strategyLoader(false);
     }
@@ -1059,7 +1045,6 @@ Color getSectorAllocationColor(String sector) {
     _selectedFunds.clear();
     if (strategyData.schemaValues != null) {
       for (final schema in strategyData.schemaValues!) {
-        print('>>> Schema raw: name=${schema.name}, schemeCode=${schema.schemeCode}, isin=${schema.isin}, schemaName=${schema.schemaName}');
         final fund = FundListModel(
           name: schema.name ?? '',
           schemeName: schema.schemaName ?? '',
@@ -1152,7 +1137,6 @@ Color getSectorAllocationColor(String sector) {
 
       _updateAllControllerValues();
     } catch (e) {
-      print("Enrich funds by ISINs error: $e");
       // Fallback: try old individual calls if bulk API fails
       await _enrichFundsWithCAGRFallback();
     }
@@ -1197,12 +1181,10 @@ Color getSectorAllocationColor(String sector) {
         }
       }
     } catch (e) {
-      print("Enrich CAGR fallback error: $e");
     }
   }
 
   void addFundToStrategy(FundListModel fund) {
-    print('>>> addFundToStrategy: name=${fund.name}, schemeCode=${fund.schemeCode}, isin=${fund.isin}');
     if (!_selectedFunds.any((f) => f.name == fund.name)) {
       final newFund = FundListModel(
         name: fund.name,
@@ -1778,7 +1760,6 @@ Color getSectorAllocationColor(String sector) {
       // Search completed successfully
       notifyListeners();
     } catch (e) {
-      print("Basket Search Error: $e");
     }
   }
 
@@ -1963,20 +1944,16 @@ Color getSectorAllocationColor(String sector) {
       compareSymbol: "NSE:NIFTYBEES-EQ",
     );
 
-    print("Backtest request created: ${request.toJson()}");
 
     final portfolioAnalysis = await api.performBacktest(request, uuid);
 
     if (portfolioAnalysis != null) {
       _analysisData = portfolioAnalysis;
       _error = null;
-      print("Backtest analysis completed successfully");
     } else {
       _error = "Failed to get portfolio analysis data";
-      print("Backtest analysis returned null");
     }
   } catch (e) {
-    print("Portfolio Analysis Error: $e");
     _error = e.toString();
     rethrow;
   } finally {
@@ -2041,7 +2018,6 @@ Color getSectorAllocationColor(String sector) {
         'sharpe': 0.0,
       }];
     } catch (e) {
-      print("Error fetching real fund data for $category: $e");
       // Return fallback data
       return [{
         'name': '$category Fund',
@@ -2088,7 +2064,6 @@ Color getSectorAllocationColor(String sector) {
         compareSymbol: compareSymbol,
       );
 
-      print("Predefined backtest request created: ${request.toJson()}");
 
       // Generate a unique UUID for this predefined strategy
       final uuid = 'predefined_${DateTime.now().millisecondsSinceEpoch}';
@@ -2098,13 +2073,10 @@ Color getSectorAllocationColor(String sector) {
       if (portfolioAnalysis != null) {
         _analysisData = portfolioAnalysis;
         _error = null;
-        print("Predefined backtest analysis completed successfully");
       } else {
         _error = "Failed to get portfolio analysis data";
-        print("Predefined backtest analysis returned null");
       }
     } catch (e) {
-      print("Predefined Backtest Error: $e");
       _error = e.toString();
       rethrow;
     } finally {
@@ -2245,12 +2217,6 @@ Color getSectorAllocationColor(String sector) {
       final allocation = _basketAllocations[i];
       final schemeCode = allocation.fund.schemeCode ?? '';
 
-      print('>>> [Order ${i + 1}] Fund: ${allocation.fund.name}');
-      print('>>>   schemeCode: "${allocation.fund.schemeCode}"');
-      print('>>>   isin: "${allocation.fund.isin}"');
-      print('>>>   aMCCode: "${allocation.fund.aMCCode}"');
-      print('>>>   schemeName: "${allocation.fund.schemeName}"');
-      print('>>>   amount: ${allocation.allocatedAmount.toStringAsFixed(0)}');
 
       // Skip funds without valid scheme code
       if (schemeCode.isEmpty) {
@@ -2270,7 +2236,6 @@ Color getSectorAllocationColor(String sector) {
           allocation.allocatedAmount.toStringAsFixed(0),
         );
 
-        print('>>> Response: stat=${response.stat}, orderId=${response.orderId}, remarks=${response.remarks}');
 
         _basketOrderResults.add(BasketOrderResult(
           fund: allocation.fund,
@@ -2280,7 +2245,6 @@ Color getSectorAllocationColor(String sector) {
           message: response.remarks ?? (response.stat == 'Ok' ? 'Order placed' : 'Order failed'),
         ));
       } catch (e) {
-        print('>>> Error: $e');
         _basketOrderResults.add(BasketOrderResult(
           fund: allocation.fund,
           amount: allocation.allocatedAmount,
@@ -2317,7 +2281,6 @@ Color getSectorAllocationColor(String sector) {
           }
         }
       } catch (e) {
-        print('Failed to fetch NAV for ${fund.name}: $e');
       }
     }
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:html' as html;
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -76,12 +78,154 @@ class _TradingPreferencesScreenWebState
     return true;
   }
 
+  bool _hasNoActiveSegments(List<SegmentsData>? segmentsData) {
+    if (segmentsData == null || segmentsData.isEmpty) return false;
+    return !segmentsData.any((s) => s.exchangeACTIVEINACTIVE == 'A');
+  }
+
+  void _redirectToRekyc({required String panNo, required String clientId}) {
+    final encoded = base64.encode(utf8.encode('$panNo||$clientId'));
+    html.window.open('https://oa.mynt.in?rekyc=$encoded', '_blank');
+  }
+
+  void _showNoActiveSegmentsDialog({
+    required String panNo,
+    required String clientId,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 420,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'No active segments found?',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: MyntWebTextStyles.body(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                        ),
+                        children: [
+                          const TextSpan(
+                              text:
+                                  'You have in-active segments in your account '),
+                          TextSpan(
+                            text: '"$clientId"',
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: MyntFonts.semiBold,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _redirectToRekyc(panNo: panNo, clientId: clientId);
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.secondary,
+                              light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Re-KYC',
+                          style: MyntWebTextStyles.buttonMd(
+                            context,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(themeProvider);
     final profileDetails = ref.watch(profileAllDetailsProvider);
-    final segmentsData =
-        profileDetails.clientAllDetails.clientData?.segmentsData;
+    final clientAllDetails = profileDetails.clientAllDetailsSafe;
+    final segmentsData = clientAllDetails?.clientData?.segmentsData;
     final isLoading = profileDetails.isLoading;
     final mobStatus = profileDetails.mobEmailStatus;
 
@@ -347,8 +491,17 @@ class _TradingPreferencesScreenWebState
                     if (showActivateBtn) ...[
                       const SizedBox(height: 24),
                       InkWell(
-                        onTap: () =>
-                            _showSegmentChangeDialog(context, segmentsData),
+                        onTap: () {
+                          if (_hasNoActiveSegments(segmentsData)) {
+                            _showNoActiveSegmentsDialog(
+                              panNo: clientAllDetails?.clientData?.pANNO ?? '',
+                              clientId:
+                                  clientAllDetails?.clientData?.cLIENTID ?? '',
+                            );
+                          } else {
+                            _showSegmentChangeDialog(context, segmentsData);
+                          }
+                        },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -621,7 +774,6 @@ class _TradingPreferencesScreenWebState
 
     setState(() => _segmentEsignLoading = true);
 
-    debugPrint("Starting Digio esign: fileId=$fileId, email=$email");
 
     try {
       // Call Digio JS SDK directly (opens inline overlay)
@@ -662,75 +814,118 @@ class _TradingPreferencesScreenWebState
     required String email,
     required String session,
   }) {
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-    final subtitleColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    final cardBg = resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card);
-    final primaryColor = resolveThemeColor(context,
-        dark: MyntColors.primaryDark, light: MyntColors.primary);
-
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor: cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.transparent,
         child: Container(
           width: 420,
-          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('E-Sign Is Pending!',
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.semiBold, color: textColor)),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ref.read(profileAllDetailsProvider).fetchMobEmailStatus();
-                    },
-                    icon: Icon(Icons.close, size: 20, color: subtitleColor),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('Your Segment request is not yet Completed.',
-                  style: MyntWebTextStyles.bodySmall(context,
-                      fontWeight: MyntFonts.medium, color: textColor)),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _openEsignWebView(
-                      fileId: fileId,
-                      email: email,
-                      session: session,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
                     ),
-                    elevation: 0,
                   ),
-                  child: Text('Click here E-sign',
-                      style: MyntWebTextStyles.body(context,
-                          fontWeight: MyntFonts.semiBold,
-                          color: Colors.white)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'E-Sign Is Pending!',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          ref
+                              .read(profileAllDetailsProvider)
+                              .fetchMobEmailStatus();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Your Segment Change request is not yet Completed.',
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _openEsignWebView(
+                            fileId: fileId,
+                            email: email,
+                            session: session,
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.secondary,
+                              light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Click here E-sign',
+                          style: MyntWebTextStyles.buttonMd(
+                            context,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

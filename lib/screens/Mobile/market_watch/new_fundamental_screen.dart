@@ -219,6 +219,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             widget.wlValue.symbol,
             widget.wlValue.exch,
             timeframe: "5Y",
+            context: context,
           ),
         ]).then((_) {
           // Fetch technical data for returns calculation after other data is loaded
