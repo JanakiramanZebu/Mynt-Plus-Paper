@@ -4852,7 +4852,14 @@ getOptionawait(String exch, String token) {
         }
 
         toggleLoadingOn(false);
-        Navigator.pop(context);
+        // On mobile the rename UI is two nested bottom sheets — this pop
+        // dismisses the WatchListRename sheet (the outer sheet has its own
+        // pop chain). On web, the caller pops its own dialog before calling
+        // us, so popping here would eat a live route on the nested right-
+        // panel Navigator and trigger Navigator._debugLocked on unmount.
+        if (!kIsWeb) {
+          Navigator.pop(context);
+        }
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context,
               "The name of the watchlist has been successfully changed.");
@@ -4887,8 +4894,13 @@ getOptionawait(String exch, String token) {
           await changeWLScrip(newName, context);
         }
 
-        Navigator.pop(context);
-        Navigator.pop(context);
+        // See the pending-branch comment above for why these pops are
+        // mobile-only. The two pops dismiss the nested rename + watchlist
+        // bottom sheets on mobile.
+        if (!kIsWeb) {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        }
         if (kIsWeb) {
           ResponsiveSnackBar.showSuccess(context,
               "The name of the watchlist has been successfully changed.");
@@ -4898,8 +4910,10 @@ getOptionawait(String exch, String token) {
         }
         notifyListeners();
       } else if (_watchlistRenameModel!.stat == "Not_Ok") {
-        Navigator.pop(context);
-        Navigator.pop(context);
+        if (!kIsWeb) {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        }
         if (kIsWeb) {
           ResponsiveSnackBar.showWarning(context, "${_watchlistRenameModel!.emsg}");
         } else {

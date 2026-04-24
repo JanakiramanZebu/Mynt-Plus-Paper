@@ -1686,9 +1686,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                   final newName = controller.text.trim();
                                   if (newName.isNotEmpty &&
                                       newName != watchlistName) {
+                                    // Capture the screen's context BEFORE popping
+                                    // the dialog. The dialog's `context` becomes
+                                    // stale after pop, and passing it into the
+                                    // async provider call hits the Navigator
+                                    // _debugLocked assertion during finalizeTree.
+                                    final screenContext = this.context;
                                     Navigator.of(context).pop();
-                                    await _handleWatchlistRename(
-                                        watchlistName, newName, ref, context);
+                                    if (!mounted) return;
+                                    await _handleWatchlistRename(watchlistName,
+                                        newName, ref, screenContext);
                                   }
                                 },
                               ),
