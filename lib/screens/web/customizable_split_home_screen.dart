@@ -155,6 +155,13 @@ enum ScreenTypeParam {
   funds,
   mutualFund,
   ipo,
+  bond,
+  scalper,
+  myAccount,
+  refer,
+  helpSupport,
+  notification,
+  pledgeUnpledge,
   optionChain,
   reports,
   settings,
@@ -648,8 +655,29 @@ class _CustomizableSplitHomeScreenState
       case ScreenTypeParam.ipo:
         _handleIPOTap();
         break;
+      case ScreenTypeParam.bond:
+        _handleBondTap();
+        break;
+      case ScreenTypeParam.scalper:
+        _handleScalperTap();
+        break;
+      case ScreenTypeParam.myAccount:
+        _navigateToScreen(ScreenType.myAccount);
+        break;
+      case ScreenTypeParam.refer:
+        _navigateToScreen(ScreenType.refer);
+        break;
+      case ScreenTypeParam.helpSupport:
+        _navigateToScreen(ScreenType.helpSupport);
+        break;
+      case ScreenTypeParam.notification:
+        _navigateToScreen(ScreenType.notification);
+        break;
+      case ScreenTypeParam.pledgeUnpledge:
+        _navigateToScreen(ScreenType.pledgeUnpledge);
+        break;
       case ScreenTypeParam.mutualFund:
-        _handleHoldingsTap(initialTabIndex: 1); // Mutual funds tab
+        _handleMutualFundTap();
         break;
       case ScreenTypeParam.reports:
         _handleReportsTap();
@@ -1122,7 +1150,7 @@ class _CustomizableSplitHomeScreenState
 
     // Refresh portfolio data (holdings, positions)
     final portfolio = ref.read(portfolioProvider);
-    portfolio.fetchPositionBook(context, true).then((_) {
+    portfolio.fetchPositionBook(context, portfolio.isDay).then((_) {
       // After positions are fetched, refresh ticker subscriptions
       if (mounted) {
         final subscriptionManager = ref.read(webSubscriptionManagerProvider);
@@ -2105,6 +2133,7 @@ class _CustomizableSplitHomeScreenState
 
   void _handleScalperTap() {
     setState(() => _isScalperMode = true);
+    WebNavigationHelper.updateUrl(WebRoutes.scalper);
   }
 
   // Build navigation screens for app bar
@@ -2627,6 +2656,12 @@ class _CustomizableSplitHomeScreenState
 
   // Navigate to a specific screen type in the main panel
   void _navigateToScreen(ScreenType screenType) {
+    // Exit scalper mode when navigating to any other screen — otherwise the
+    // scalper full-width view stays rendered regardless of panel state.
+    if (_isScalperMode && screenType != ScreenType.scalper) {
+      _isScalperMode = false;
+    }
+
     // Find the active panel (not watchlist) and switch to the new screen
     int targetPanelIndex = 0;
     for (int i = 0; i < _panels.length; i++) {
@@ -2652,6 +2687,8 @@ class _CustomizableSplitHomeScreenState
     });
     _saveLayout();
     _handleScreenTypeChange(screenType);
+    // Keep URL in sync (no-op for screens that don't map to a route)
+    _updateUrlForScreenType(screenType);
   }
 
   // Build index slots for app bar
@@ -2753,6 +2790,8 @@ class _CustomizableSplitHomeScreenState
                 ref.watch(portfolioProvider.select((p) => p.posloader));
             final allPostionList =
                 ref.watch(portfolioProvider.select((p) => p.allPostionList));
+
+           
 
             // Show loader only when actively loading, not when no data exists
             if (isLoading || posloader) {
@@ -4463,6 +4502,27 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.ipo:
         urlPath = WebRoutes.ipo;
         break;
+      case ScreenType.bond:
+        urlPath = WebRoutes.bonds;
+        break;
+      case ScreenType.myAccount:
+        urlPath = WebRoutes.myAccount;
+        break;
+      case ScreenType.refer:
+        urlPath = WebRoutes.refer;
+        break;
+      case ScreenType.helpSupport:
+        urlPath = WebRoutes.helpSupport;
+        break;
+      case ScreenType.settings:
+        urlPath = WebRoutes.settings;
+        break;
+      case ScreenType.notification:
+        urlPath = WebRoutes.notification;
+        break;
+      case ScreenType.pledgeUnpledge:
+        urlPath = WebRoutes.pledge;
+        break;
       case ScreenType.mutualFund:
         urlPath = WebRoutes.mutualFunds;
         break;
@@ -4696,6 +4756,30 @@ class _CustomizableSplitHomeScreenState
         break;
       case WebRoutes.ipo: // '/ipo'
         _handleIPOTap();
+        break;
+      case WebRoutes.bonds: // '/bonds'
+        _handleBondTap();
+        break;
+      case WebRoutes.scalper: // '/scalper'
+        _handleScalperTap();
+        break;
+      case WebRoutes.myAccount: // '/my-account'
+        _navigateToScreen(ScreenType.myAccount);
+        break;
+      case WebRoutes.refer: // '/refer'
+        _navigateToScreen(ScreenType.refer);
+        break;
+      case WebRoutes.helpSupport: // '/help-support'
+        _navigateToScreen(ScreenType.helpSupport);
+        break;
+      case WebRoutes.settings: // '/settings'
+        _handleSettingsTap();
+        break;
+      case WebRoutes.notification: // '/notification'
+        _navigateToScreen(ScreenType.notification);
+        break;
+      case WebRoutes.pledge: // '/pledge'
+        _navigateToScreen(ScreenType.pledgeUnpledge);
         break;
       case WebRoutes.mutualFunds: // '/mutual-funds'
         _handleMutualFundTap();
@@ -4948,8 +5032,10 @@ class _CustomizableSplitHomeScreenState
 
   // Handle reports tap
   void _handleReportsTap() async {
-    // Add reports as a panel tab
-    _addScreenAsPanelTab(ScreenType.reports);
+    // Show reports in the right (content) panel. `_addScreenAsPanelTab` adds
+    // to panel 0, but panel 0 is the watchlist panel and renders watchlist
+    // regardless of its screens list — so the tab would be invisible.
+    _replaceScreenInPanel(ScreenType.reports);
 
     final portfolio = ref.read(portfolioProvider);
     final reportsprovider = ref.read(ledgerProvider);
@@ -4983,8 +5069,9 @@ class _CustomizableSplitHomeScreenState
 
   // Handle settings tap
   void _handleSettingsTap() async {
-    // Add settings as a panel tab
-    _addScreenAsPanelTab(ScreenType.settings);
+    // Show settings in the right (content) panel — panel 0 always renders
+    // watchlist, so `_addScreenAsPanelTab` would add an invisible tab.
+    _replaceScreenInPanel(ScreenType.settings);
 
     final portfolio = ref.read(portfolioProvider);
 

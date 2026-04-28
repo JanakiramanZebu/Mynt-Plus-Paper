@@ -53,7 +53,8 @@ import 'package:flutter/material.dart'
         RawScrollbar,
         Radius,
         Builder,
-        ListView;
+        ListView,
+        NeverScrollableScrollPhysics;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
@@ -493,8 +494,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
   // Check if position is closed
   bool _isPositionClosed(PositionBookModel position) {
-    final qty = int.tryParse(position.qty ?? '0') ?? 0;
-    return qty == 0;
+    final netqty = int.tryParse(position.netqty ?? '0') ?? 0;
+    return netqty == 0;
   }
 
   // Get position text color
@@ -742,6 +743,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     final positions = portfolioData.allPostionList.isNotEmpty
         ? portfolioData.allPostionList
         : portfolioData.openPosition ?? [];
+
 
     final theme = ref.read(themeProvider);
     final positionBook = ref.read(portfolioProvider);
@@ -997,33 +999,35 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             );
           }
 
-          // Wrap in horizontal scroll if needed
-          if (needsHorizontalScroll) {
-            return RawScrollbar(
-              controller: _horizontalScrollController,
-              thumbVisibility: true,
-              trackVisibility: true,
-              trackColor: resolveThemeColor(context,
-                  dark: Colors.grey.withOpacity(0.1),
-                  light: Colors.grey.withOpacity(0.1)),
-              thumbColor: resolveThemeColor(context,
-                  dark: Colors.grey.withOpacity(0.3),
-                  light: Colors.grey.withOpacity(0.3)),
-              thickness: 6,
-              radius: const Radius.circular(3),
-              interactive: true,
-              child: SingleChildScrollView(
-                controller: _horizontalScrollController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: totalRequiredWidth,
-                  child: buildTableContent(),
-                ),
+          // Always use the same widget tree structure to prevent
+          // "ScrollController attached to more than one ScrollPosition"
+          // errors caused by LayoutBuilder toggling between different trees.
+          // When horizontal scroll isn't needed, just disable the physics.
+          return RawScrollbar(
+            controller: needsHorizontalScroll ? _horizontalScrollController : null,
+            thumbVisibility: needsHorizontalScroll,
+            trackVisibility: needsHorizontalScroll,
+            trackColor: resolveThemeColor(context,
+                dark: Colors.grey.withOpacity(0.1),
+                light: Colors.grey.withOpacity(0.1)),
+            thumbColor: resolveThemeColor(context,
+                dark: Colors.grey.withOpacity(0.3),
+                light: Colors.grey.withOpacity(0.3)),
+            thickness: needsHorizontalScroll ? 6 : 0,
+            radius: const Radius.circular(3),
+            interactive: needsHorizontalScroll,
+            child: SingleChildScrollView(
+              controller: needsHorizontalScroll ? _horizontalScrollController : null,
+              scrollDirection: Axis.horizontal,
+              physics: needsHorizontalScroll
+                  ? null
+                  : const NeverScrollableScrollPhysics(),
+              child: SizedBox(
+                width: needsHorizontalScroll ? totalRequiredWidth : availableWidth,
+                child: buildTableContent(),
               ),
-            );
-          } else {
-            return buildTableContent();
-          }
+            ),
+          );
         },
       ),
     );

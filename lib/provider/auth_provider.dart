@@ -947,6 +947,7 @@ class AuthProvider extends DefaultChangeNotifier {
     List<String>? jsonList = pref.loggedClient;
 
     if (jsonList != null) {
+      
       return jsonList
           .map((jsonString) => LoggedMobile.fromJson(jsonString))
           .toList();
@@ -956,7 +957,7 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
 // Fetching data from the api and stored in a variable
-  fetchLogout(BuildContext context) async {
+  fetchLogout(BuildContext context, {String? target}) async {
 
     try {
       // Call both logout APIs in parallel
@@ -1015,6 +1016,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
         ref.read(optionFlashProvider).closePanel();
 
+        ref.read(ledgerProvider).clearOnLogout();
+
         // Reset web auth provider state to ensure clean login on web
         if (kIsWeb) {
           ref.read(webAuthProvider).reset();
@@ -1044,7 +1047,7 @@ class AuthProvider extends DefaultChangeNotifier {
         if (currentRouteName != Routes.loginScreen) {
           // Use GoRouter for web, Navigator for mobile
           if (kIsWeb) {
-            context.go(WebRoutes.login);
+            context.go(target ?? WebRoutes.login);
           } else {
             Navigator.pushNamedAndRemoveUntil(
                 context, Routes.loginScreen, (route) => false);
@@ -1919,7 +1922,16 @@ class AuthProvider extends DefaultChangeNotifier {
                                       currentPath == WebRoutes.splash ||
                                       currentPath.isEmpty;
                 if (context.mounted && isOnAuthRoute) {
-                  context.go(WebRoutes.home);
+                  // If user arrived at /login via the OAuth redirect, the client_id
+                  // travels along in the URL. Read it off Uri.base and return there.
+                  final oauthClientId = Uri.base.queryParameters['client_id'];
+                  if (oauthClientId != null && oauthClientId.isNotEmpty) {
+                    context.go(
+                      '${WebRoutes.oauthAuthorize}?client_id=${Uri.encodeQueryComponent(oauthClientId)}',
+                    );
+                  } else {
+                    context.go(WebRoutes.home);
+                  }
                 }
               } else {
                 final targetRoute = getResponsiveWidth(context) == 600
@@ -2109,7 +2121,16 @@ class AuthProvider extends DefaultChangeNotifier {
                                       currentPath == WebRoutes.splash ||
                                       currentPath.isEmpty;
                 if (context.mounted && isOnAuthRoute) {
-                  context.go(WebRoutes.home);
+                  // If user arrived at /login via the OAuth redirect, the client_id
+                  // travels along in the URL. Read it off Uri.base and return there.
+                  final oauthClientId = Uri.base.queryParameters['client_id'];
+                  if (oauthClientId != null && oauthClientId.isNotEmpty) {
+                    context.go(
+                      '${WebRoutes.oauthAuthorize}?client_id=${Uri.encodeQueryComponent(oauthClientId)}',
+                    );
+                  } else {
+                    context.go(WebRoutes.home);
+                  }
                 }
               } else {
                 getResponsiveWidth(context) == 600
@@ -2322,7 +2343,7 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
 // This method calls and returns to the login screen whenever the client session expires.
-  ifSessionExpired(BuildContext context) {
+  ifSessionExpired(BuildContext context, {String? target}) {
     // Check if we're already in the process of showing the login screen
     // to prevent multiple calls to this method
     print('🔴 [SESSION] ifSessionExpired called — isSessionExpiring: ${ConstantName.isSessionExpiring}');
@@ -2392,7 +2413,7 @@ class AuthProvider extends DefaultChangeNotifier {
             // Use GoRouter for web, Navigator for mobile
             if (kIsWeb) {
               print('[SESSION] ✅ Navigating to login via context.go()');
-              context.go(WebRoutes.login);
+              context.go(target ?? WebRoutes.login);
               ResponsiveSnackBar.showWarning(
                   context, "Session Expired, Please log in again");
             } else {

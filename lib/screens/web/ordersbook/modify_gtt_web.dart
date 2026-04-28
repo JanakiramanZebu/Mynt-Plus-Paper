@@ -20,6 +20,7 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/common_text_fields_web.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import '../../../utils/safe_parse.dart';
 import 'dart:html' as html;
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import '../market_watch/tv_chart/chart_iframe_guard.dart';
@@ -159,6 +160,55 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     return ((input / interval).round() * interval);
   }
 
+  /// MCX uses lot count in the qty field; multiply by lot size to get the actual qty.
+  String _lotsToActualQty(String value) {
+    if (widget.gttOrderBook.exch == "MCX") {
+      final int lotCount = int.tryParse(value) ?? 0;
+      return (lotCount * lotSize).toString();
+    }
+    return value;
+  }
+
+  bool get _isStockExch =>
+      widget.gttOrderBook.exch == "NSE" || widget.gttOrderBook.exch == "BSE";
+
+  /// Step size that moves the qty field by exactly one lot.
+  int get _qtyStep =>
+      widget.gttOrderBook.exch == "MCX" ? 1 : (lotSize > 0 ? lotSize : 1);
+
+  void _decrementQty(TextEditingController ctrl) {
+    final int step = _qtyStep;
+    setState(() {
+      final int current = int.tryParse(ctrl.text) ?? 0;
+      final int snapped =
+          current >= step ? ((current / step).floor()) * step : step;
+      if (current != snapped) {
+        ctrl.text = snapped.toString();
+      } else if (current > step) {
+        ctrl.text = (current - step).toString();
+      } else {
+        ctrl.text = step.toString();
+      }
+    });
+  }
+
+  void _incrementQty(TextEditingController ctrl) {
+    final int step = _qtyStep;
+    setState(() {
+      final String input = ctrl.text;
+      final int current = int.tryParse(input) ?? 0;
+      final int snapped =
+          current >= step ? ((current / step).floor()) * step : step;
+      if (input.isEmpty) {
+        ctrl.text = step.toString();
+      } else if (current != snapped) {
+        ctrl.text = snapped.toString();
+      } else {
+        ctrl.text = (current + step).toString();
+      }
+    });
+  }
+
   /// Handles keyboard up/down arrow to increment/decrement a price field by tick size.
   KeyEventResult _handlePriceArrowKey(KeyEvent event, TextEditingController ctrl) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
@@ -182,7 +232,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     return KeyEventResult.handled;
   }
 
-  /// Handles keyboard up/down arrow to increment/decrement qty by 1.
+  /// Handles keyboard up/down arrow to increment/decrement qty by one lot.
   KeyEventResult _handleQtyArrowKey(KeyEvent event, TextEditingController ctrl) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
 
@@ -190,19 +240,20 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
     if (!isUp && !isDown) return KeyEventResult.ignored;
 
-    final current = int.tryParse(ctrl.text) ?? 0;
-    int newVal = isUp ? current + 1 : current - 1;
-    if (newVal < 1) newVal = 1;
-    ctrl.text = newVal.toString();
+    if (isUp) {
+      _incrementQty(ctrl);
+    } else {
+      _decrementQty(ctrl);
+    }
     ctrl.selection = TextSelection.collapsed(offset: ctrl.text.length);
-    setState(() {});
     return KeyEventResult.handled;
   }
 
   @override
   void initState() {
+    final int initialLotSize = int.tryParse("${widget.scripInfo.ls ?? 0}") ?? 0;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(ordInputProvider).getModifyData(widget.gttOrderBook);
+      ref.read(ordInputProvider).getModifyData(widget.gttOrderBook, lotSize: initialLotSize);
     });
 
     tik = double.tryParse(widget.scripInfo.ti.toString()) ?? 0.00;
@@ -628,8 +679,24 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                     ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
+                  leadingWidget: _isStockExch ? null : GestureDetector(
+                    onTap: () => _decrementQty(orderInput.qtyCtrl),
+                    child: Icon(
+                      Icons.remove,
+                      size: 18,
+                      color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                    ),
+                  ),
+                  trailingWidget: _isStockExch ? null : GestureDetector(
+                    onTap: () => _incrementQty(orderInput.qtyCtrl),
+                    child: Icon(
+                      Icons.add,
+                      size: 18,
+                      color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                    ),
+                  ),
                   controller: orderInput.qtyCtrl,
-                  textAlign: TextAlign.start,
+                  textAlign: _isStockExch ? TextAlign.start : TextAlign.center,
                   onChanged: (value) {
                     if (value.isEmpty || value == "0") {
                       showResponsiveWarningMessage(
@@ -857,8 +924,24 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                     ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
+                  leadingWidget: _isStockExch ? null : GestureDetector(
+                    onTap: () => _decrementQty(orderInput.ocoQtyCtrl),
+                    child: Icon(
+                      Icons.remove,
+                      size: 18,
+                      color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                    ),
+                  ),
+                  trailingWidget: _isStockExch ? null : GestureDetector(
+                    onTap: () => _incrementQty(orderInput.ocoQtyCtrl),
+                    child: Icon(
+                      Icons.add,
+                      size: 18,
+                      color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                    ),
+                  ),
                   controller: orderInput.ocoQtyCtrl,
-                  textAlign: TextAlign.start,
+                  textAlign: _isStockExch ? TextAlign.start : TextAlign.center,
                   onChanged: (value) {
                     if (value.isEmpty || value == "0") {
                       showResponsiveWarningMessage(
@@ -977,8 +1060,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
   Widget _buildFooter(ThemesProvider theme) {
     final orderInput = ref.watch(ordInputProvider);
     final internet = ref.watch(networkStateProvider);
-    final closeNotifier = _ModifyGttDialogCloseNotifier.of(context);
-    
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -1055,21 +1136,30 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                   orderInput.ocoPriceCtrl.text.isNotEmpty &&
                                   orderInput.ocoQtyCtrl.text.isNotEmpty) &&
                               orderInput.qtyCtrl.text.isNotEmpty) {
-                            double ltp = double.parse(widget.gttOrderBook.ltp ?? "0.00");
-                            double val1 = double.parse(orderInput.val1Ctrl.text);
-                            double val2 = double.parse(orderInput.val2Ctrl.text);
+                            double ltp = SafeParse.toDouble(currentLtp ?? widget.gttOrderBook.ltp);
+                            double val1 = SafeParse.toDouble(orderInput.val1Ctrl.text);
+                            double val2 = SafeParse.toDouble(orderInput.val2Ctrl.text);
 
-                            if (val1 > ltp && val2 < ltp) {
+                            // SELL OCO: target > LTP, stoploss < LTP. BUY OCO (F&O): target < LTP, stoploss > LTP.
+                            final bool ocoConditionValid = (isBuy ?? false)
+                                ? (val1 < ltp && val2 > ltp)
+                                : (val1 > ltp && val2 < ltp);
+
+                            if (ocoConditionValid) {
                               prepareToModifyOCOOrder(orderInput);
                             } else {
-                              showResponsiveWarningMessage(
-                                context,
-                                val1 <= ltp
-                                    ? "Target Trigger Price can not be Less than LTP"
-                                    : val2 >= ltp
-                                        ? "Stoploss Trigger Price can not be Greater than LTP"
-                                        : "Trigger Price can not be equal to LTP",
-                              );
+                              final String ocoErrorMsg = (isBuy ?? false)
+                                  ? (val1 >= ltp
+                                      ? "Target Trigger Price can not be Greater than or equal to LTP"
+                                      : val2 <= ltp
+                                          ? "Stoploss Trigger Price can not be Less than or equal to LTP"
+                                          : "Invalid trigger prices")
+                                  : (val1 <= ltp
+                                      ? "Target Trigger Price can not be Less than LTP"
+                                      : val2 >= ltp
+                                          ? "Stoploss Trigger Price can not be Greater than LTP"
+                                          : "Trigger Price can not be equal to LTP");
+                              showResponsiveWarningMessage(context, ocoErrorMsg);
                             }
                           } else {
                             showResponsiveWarningMessage(context, "Enter all Input fields");
@@ -1078,10 +1168,17 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                           if ((orderInput.val1Ctrl.text.isNotEmpty &&
                                   orderInput.priceCtrl.text.isNotEmpty) &&
                               orderInput.qtyCtrl.text.isNotEmpty) {
-                            double ltp = double.parse(widget.gttOrderBook.ltp ?? "0.00");
-                            double val1 = double.parse(orderInput.val1Ctrl.text);
+                            double ltp = SafeParse.toDouble(currentLtp ?? widget.gttOrderBook.ltp);
+                            double val1 = SafeParse.toDouble(orderInput.val1Ctrl.text);
 
+                            // chngCond must run before chngAlert (chngAlert reads _actCond to set _ait).
                             if (val1 > ltp) {
+                              orderInput.chngCond("Greater than");
+                              orderInput.chngAlert("LTP");
+                              prepareToModifyGttOrder(orderInput);
+                            } else if (val1 < ltp) {
+                              orderInput.chngCond("Less than");
+                              orderInput.chngAlert("LTP");
                               prepareToModifyGttOrder(orderInput);
                             } else {
                               showResponsiveWarningMessage(
@@ -1132,7 +1229,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
   prepareToModifyGttOrder(OrderInputProvider orderInput) async {
     PlaceGTTOrderInput input = PlaceGTTOrderInput(
       exch: '${widget.gttOrderBook.exch}',
-      qty: orderInput.qtyCtrl.text,
+      qty: _lotsToActualQty(orderInput.qtyCtrl.text),
       tsym: '${widget.gttOrderBook.tsym}',
       validity: "GTT",
       prc: orderInput.priceCtrl.text,
@@ -1177,7 +1274,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
       trantype: isBuy! ? 'B' : "S",
       ret: 'DAY',
       remarks: orderInput.reMarksCtrl.text,
-      qty1: orderInput.qtyCtrl.text,
+      qty1: _lotsToActualQty(orderInput.qtyCtrl.text),
       trgprc1: orderInput.actOcoPrcType == "SL Limit" || orderInput.actOcoPrcType == "SL MKT"
           ? orderInput.trgPrcCtrl.text
           : "",
@@ -1189,7 +1286,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
       prctyp2: orderInput.ocoPrcType,
       prc2: orderInput.ocoPriceCtrl.text,
       prd2: orderInput.ocoOrderType,
-      qty2: orderInput.ocoQtyCtrl.text,
+      qty2: _lotsToActualQty(orderInput.ocoQtyCtrl.text),
       trgprc2: orderInput.actOcoPrcType == "SL Limit" || orderInput.actOcoPrcType == "SL MKT"
           ? orderInput.ocoTrgPrcCtrl.text
           : "",
